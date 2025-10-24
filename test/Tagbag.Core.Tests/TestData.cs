@@ -1,5 +1,10 @@
-[assembly: Parallelize(Workers = 0, Scope = ExecutionScope.MethodLevel)]
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
+[assembly: Parallelize(Workers = 0, Scope = ExecutionScope.MethodLevel)]
+    
 namespace Tagbag.Core.Tests;
 
 [TestClass]

@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+
 namespace Tagbag.Core;
 
 public class TagbagUtil

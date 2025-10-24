@@ -1,4 +1,6 @@
-using Tagbag.Core;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
 
 namespace Tagbag.Gui;
 

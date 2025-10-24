@@ -1,3 +1,6 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+
 namespace Tagbag.Core.Tests;
 
 [TestClass]

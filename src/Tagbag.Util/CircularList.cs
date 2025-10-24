@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 public class CircularList<E>
 {
     private List<E?> _Elements;
