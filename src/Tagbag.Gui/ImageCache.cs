@@ -21,6 +21,18 @@ public class ImageCache
 
     public Bitmap? GetImage(Guid key)
     {
-        return null;
+        Bitmap? img;
+        if (_Images.TryGetValue(key, out img))
+            return img;
+
+        var entry = _Tagbag.Get(key);
+        if (entry != null)
+        {
+            var path = Tagbag.Core.TagbagUtil.GetPath(_Tagbag, entry.Path);
+            img = new Bitmap(path);
+            _Images[key] = img;
+        }
+
+        return img;
     }
 }

@@ -26,7 +26,7 @@ public class EntryCollection
     private void Refresh()
     {
         var entries = _Tagbag.GetEntries();
-        _EntryCount = _Entries.Count;
+        _EntryCount = entries.Count;
 
         if (_Entries.Capacity >= entries.Count)
         {

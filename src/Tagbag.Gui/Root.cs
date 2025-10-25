@@ -1,21 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Windows.Forms;
-using Tagbag.Core;
 
 namespace Tagbag.Gui;
 
 public class Root : Form
 {
     private TabControl tabControl = new TabControl();
-
-    public Root()
+    
+    public Root(Tagbag.Core.Tagbag tb)
     {
         tabControl.Dock = DockStyle.Fill;
         Controls.Add(tabControl);
 
+        var data = new Data(tb);
+
+        SketchGogo(data);
         SketchResize();
         SketchImage();
         SketchBasicView();
@@ -49,7 +50,7 @@ public class Root : Form
         images.RowCount = 3;
         images.ColumnCount = 3;
         //images.AutoScroll = true;
-        var img = new Bitmap("a.jpg");
+        var img = new Bitmap("test-data\\a.jpg");
         for (var y = 0; y < 3; y++)
         {
             for (var x = 0; x < 3; x++)
@@ -76,7 +77,7 @@ public class Root : Form
 
     private void SketchImage()
     {
-        var img = new Bitmap("a.jpg");
+        var img = new Bitmap("test-data\\a.jpg");
 
         // var images = new TableLayoutPanel();
         // images.Dock = DockStyle.Fill;
@@ -124,7 +125,7 @@ public class Root : Form
 
     private void SketchResize()
     {
-        var img = new Bitmap("a.jpg");
+        var img = new Bitmap("test-data\\a.jpg");
 
         var panel = new TableLayoutPanel();
         panel.RowCount = 3;
@@ -156,62 +157,11 @@ public class Root : Form
 
         Add("resize", panel);
     }
-}
 
-public class ImageGallery : TableLayoutPanel
-{
-    private int _Rows;
-    private int _Columns;
-    private double _CellRatio; // Height / width ratio for cells.
-    private List<ImageCell> _Cells;
-    private EntryCollection _Entries;
-
-    public ImageGallery(EntryCollection entryColl)
+    private void SketchGogo(Data data)
     {
-        _Rows = 3;
-        _Columns = 3;
-        _CellRatio = 1.3;
-        _Cells = new List<ImageCell>();
-        _Entries = entryColl;
+        var ig = new Components.ImageGrid(data);
 
-        RowCount = _Rows;
-        ColumnCount = _Columns;
-        for (int i = 0; i < _Rows * _Columns; i++)
-            _Cells.Add(new ImageCell());
-        UpdateGrid(_Rows);
-
-        ClientSizeChanged += (Object? _, EventArgs _) => { UpdateGrid(_Rows); };
-    }
-
-    private void UpdateGrid(int newRows)
-    {
-        int maxHeight = Height / _Rows;
-        int newColumns = Math.Max(1, (int)(Width / (maxHeight * _CellRatio)));
-        int maxWidth = Width / newColumns;
-
-        if (newRows != RowCount || newColumns != ColumnCount)
-        {
-            var newCells = new List<ImageCell>(_Cells.Take(newRows * newColumns));
-            while (newCells.Count < newRows * newColumns)
-                newCells.Add(new ImageCell());
-            _Cells = newCells;
-        }
-
-        foreach (var cell in _Cells)
-            cell.SetSize(maxWidth, maxHeight);
-
-        // Populate with controls?
-
-        RowCount = newRows;
-        ColumnCount = newColumns;
-    }
-
-    private class ImageCell : Control
-    {
-        public void SetSize(int w, int h)
-        {
-            Width = w;
-            Height = h;
-        }
+        Add("grid", ig);
     }
 }
