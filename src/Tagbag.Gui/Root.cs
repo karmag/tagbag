@@ -1,5 +1,3 @@
-using System;
-using System.Drawing;
 using System.Windows.Forms;
 
 namespace Tagbag.Gui;
@@ -44,21 +42,10 @@ public class Root : Form
 
         data.TagTable.SetEntry(data.EntryCollection.Get(0));
 
-        var inputPanel = new Panel();
-        inputPanel.BackColor = Color.DarkGray;
-        var input = new TextBox();
-        input.Top = pad;
-        input.Font = new Font("Courier New", 16);
-        inputPanel.ClientSizeChanged += (_, _) =>
-        {
-            input.Width = Math.Max(300, inputPanel.Width / 2);
-            input.Left = (inputPanel.Width - input.Width) / 2;
-        };
-        inputPanel.Dock = DockStyle.Bottom;
-        inputPanel.Padding = new Padding(pad);
-        inputPanel.Controls.Add(input);
-        inputPanel.Height = input.Height + pad*2;
-        panel.Controls.Add(inputPanel);
+        var commandLine = new Components.CommandLine(pad);
+        commandLine.Dock = DockStyle.Bottom;
+        commandLine.Padding = new Padding(pad);
+        panel.Controls.Add(commandLine);
 
         return panel;
     }
