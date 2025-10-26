@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Tagbag.Core;
@@ -10,6 +11,8 @@ public class EntryCollection
     private List<Entry> _Entries;
     private int _EntryCount;
 
+    private HashSet<Guid> _Selection;
+
     public EntryCollection(Tagbag tb)
     {
         _Tagbag = tb;
@@ -17,6 +20,8 @@ public class EntryCollection
 
         _Entries = new List<Entry>();
         _EntryCount = 0;
+
+        _Selection = new HashSet<Guid>();
 
         Refresh();
     }
@@ -98,5 +103,26 @@ public class EntryCollection
     {
         _Filters.Clear();
         Refresh();
+    }
+
+    public void AddSelection(Guid id)
+    {
+        _Selection.Add(id);
+    }
+
+    public void SetSelection(Guid id)
+    {
+        _Selection.Clear();
+        _Selection.Add(id);
+    }
+
+    public void ClearSelection()
+    {
+        _Selection.Clear();
+    }
+
+    public bool IsSelected(Guid id)
+    {
+        return _Selection.Contains(id);
     }
 }

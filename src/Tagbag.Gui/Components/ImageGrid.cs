@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using System.Drawing;
 
 namespace Tagbag.Gui.Components;
 
@@ -61,16 +62,30 @@ public class ImageGrid : TableLayoutPanel
                 Controls.Add(cell);
         }
 
+        bool foundCursor = false;
         foreach (var cell in _Cells)
+        {
             cell.SetSize(maxWidth, maxHeight);
+            if (cell.IsCursor())
+                foundCursor = true;
+        }
+        if (!foundCursor)
+        {
+            _Cells[0].SetIsCursor(true);
+        }
+    }
 
-        // Populate with controls?
+    public void SetCursor(Guid id)
+    {
+        foreach (var cell in _Cells)
+            cell.SetIsCursor(cell.GetKey() == id);
     }
 }
 
-public class ImageCell : Control
+public class ImageCell : Panel
 {
     private Data _Data;
+    private bool _IsCursor;
 
     private Guid? _Key;
     private string _Format;
@@ -95,12 +110,52 @@ public class ImageCell : Control
 
         Controls.Add(_Picture);
         Controls.Add(_Text);
+
+        MouseClick += ReportMouseClick;
+        _Picture.MouseClick += ReportMouseClick;
+        _Text.MouseClick += ReportMouseClick;
+
+        BorderStyle = BorderStyle.None;
+    }
+
+    private void ReportMouseClick(Object? _, EventArgs __)
+    {
+        if (_Key is Guid id)
+            _Data.SendEvent(new CellClicked(id));
+    }
+
+    public void SetIsCursor(bool isCursor)
+    {
+        if (isCursor != _IsCursor)
+        {
+            _IsCursor = isCursor;
+            if (_IsCursor)
+            {
+                BorderStyle = BorderStyle.FixedSingle;
+                BackColor = Color.LightBlue;
+            }
+            else
+            {
+                BorderStyle = BorderStyle.None;
+                BackColor = default;
+            }
+        }
+    }
+
+    public bool IsCursor()
+    {
+        return _IsCursor;
     }
 
     public void SetSize(int w, int h)
     {
         Width = w;
         Height = h;
+    }
+
+    public Guid? GetKey()
+    {
+        return _Key;
     }
 
     public void SetKey(Guid? key)
