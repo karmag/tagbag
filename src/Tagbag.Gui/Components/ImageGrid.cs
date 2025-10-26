@@ -27,6 +27,8 @@ public class ImageGrid : TableLayoutPanel
         for (int i = 0; i < _Rows * _Columns; i++)
             _Cells.Add(new ImageCell(_Data));
 
+        Padding = new Padding(5);
+
         ClientSizeChanged += (_, _) => { UpdateGrid(_Rows); };
     }
 
@@ -34,9 +36,13 @@ public class ImageGrid : TableLayoutPanel
     {
         newRows = Math.Max(1, newRows);
 
-        int maxHeight = Height / _Rows;
+        int maxHeight = (Height
+                         - Padding.Top - Padding.Bottom
+                         - (Margin.Top + Margin.Bottom)*newRows) / newRows;
         int newColumns = Math.Max(1, (int)(Width / (maxHeight * _CellRatio)));
-        int maxWidth = Width / newColumns;
+        int maxWidth = (Width
+                        - Padding.Left - Padding.Right
+                        - (Margin.Left + Margin.Right)*newColumns) / newColumns;
 
         if (newRows != RowCount || newColumns != ColumnCount)
         {
@@ -115,7 +121,8 @@ public class ImageCell : Panel
         _Picture.MouseClick += ReportMouseClick;
         _Text.MouseClick += ReportMouseClick;
 
-        BorderStyle = BorderStyle.None;
+        BackColor = Color.LightGray;
+        Padding = new Padding(5);
     }
 
     private void ReportMouseClick(Object? _, EventArgs __)
@@ -130,15 +137,9 @@ public class ImageCell : Panel
         {
             _IsCursor = isCursor;
             if (_IsCursor)
-            {
-                BorderStyle = BorderStyle.FixedSingle;
-                BackColor = Color.LightBlue;
-            }
+                BackColor = Color.FromArgb(0x73, 0x73, 0x9c);
             else
-            {
-                BorderStyle = BorderStyle.None;
-                BackColor = default;
-            }
+                BackColor = Color.LightGray;
         }
     }
 
