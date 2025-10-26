@@ -21,8 +21,8 @@ public class Root : Form
         SketchImage();
         SketchBasicView();
 
-        Width = 500;
-        Height = 500;
+        Width = 800;
+        Height = 600;
     }
 
     private void Add(string name, Control control)
@@ -160,8 +160,21 @@ public class Root : Form
 
     private void SketchGogo(Data data)
     {
-        var ig = new Components.ImageGrid(data);
+        var panel = new Control();
 
-        Add("grid", ig);
+        var ig = new Components.ImageGrid(data);
+        ig.Dock = DockStyle.Fill;
+        panel.Controls.Add(ig);
+
+        var split = new Splitter();
+        panel.Controls.Add(split);
+
+        var tt = new Components.TagTable();
+        tt.Dock = DockStyle.Left;
+        panel.Controls.Add(tt);
+
+        tt.SetEntry(data.EntryCollection.Get(0));
+
+        Add("grid", panel);
     }
 }

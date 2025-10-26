@@ -26,7 +26,7 @@ public class ImageGrid : TableLayoutPanel
         for (int i = 0; i < _Rows * _Columns; i++)
             _Cells.Add(new ImageCell(_Data));
 
-        ClientSizeChanged += (Object? _, EventArgs _) => { UpdateGrid(_Rows); };
+        ClientSizeChanged += (_, _) => { UpdateGrid(_Rows); };
     }
 
     private void UpdateGrid(int newRows)
