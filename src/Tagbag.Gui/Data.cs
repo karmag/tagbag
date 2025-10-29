@@ -16,6 +16,7 @@ public class Data
 
     public Components.TagTable TagTable;
     public Components.ImageGrid ImageGrid;
+    public Components.CommandLine CommandLine;
     public Components.StatusBar StatusBar;
 
     public Data(Tagbag.Core.Tagbag tb)
@@ -30,6 +31,7 @@ public class Data
 
         TagTable = new Components.TagTable();
         ImageGrid = new Components.ImageGrid(this);
+        CommandLine = new Components.CommandLine(this);
         StatusBar = new Components.StatusBar();
     }
 
@@ -37,11 +39,18 @@ public class Data
     {
         EventDispatcher?.Invoke(this, ev);
     }
+
+    public void Report(string msg)
+    {
+        StatusBar.SetText(msg);
+        System.Console.WriteLine(msg);
+    }
 }
 
 public enum Mode
 {
     GridMode,
+    CommandMode,
 }
 
 public abstract record class Event();
