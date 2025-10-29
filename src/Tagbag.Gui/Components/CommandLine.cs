@@ -12,6 +12,7 @@ public class CommandLine : Panel
     {
         _TextBox = new TextBox();
         _TextBox.Top = pad;
+        _TextBox.Left = 100;
         Controls.Add(_TextBox);
 
         BackColor = Color.DarkGray;
@@ -19,7 +20,6 @@ public class CommandLine : Panel
         ClientSizeChanged += (_, _) =>
         {
             _TextBox.Width = Math.Max(300, Width / 2);
-            _TextBox.Left = (Width - _TextBox.Width) / 2;
             Height = _TextBox.Height + 2 * pad;
         };
     }

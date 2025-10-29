@@ -81,6 +81,17 @@ public class ImageGrid : TableLayoutPanel
         }
     }
 
+    public ImageCell? GetCell(int x, int y)
+    {
+        if (x < ColumnCount && y < RowCount)
+        {
+            var index = x + y * ColumnCount;
+            if (index < _Cells.Count)
+                return _Cells[index];
+        }
+        return null;
+    }
+
     public void SetCursor(Guid id)
     {
         foreach (var cell in _Cells)
@@ -92,6 +103,7 @@ public class ImageCell : Panel
 {
     private Data _Data;
     private bool _IsCursor;
+    private bool _IsSelected;
 
     private Guid? _Key;
     private string _Format;
@@ -102,6 +114,8 @@ public class ImageCell : Panel
     public ImageCell(Data data)
     {
         _Data = data;
+        _IsCursor = false;
+        _IsSelected = false;
 
         _Key = null;
         _Format = "";
@@ -172,5 +186,17 @@ public class ImageCell : Panel
     {
         _Format = format;
         _Text.Text = $"Got a format: {format}";
+    }
+
+    public void SetIsSelected(bool isSelected)
+    {
+        if (isSelected != _IsSelected)
+        {
+            if (isSelected)
+                BackColor = Color.Red;
+            else
+                BackColor = Color.LightGray;
+        }
+        _IsSelected = isSelected;
     }
 }

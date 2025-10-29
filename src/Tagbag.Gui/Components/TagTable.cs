@@ -22,6 +22,8 @@ public class TagTable : DataGridView
         EditMode = DataGridViewEditMode.EditProgrammatically;
         SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         MultiSelect = false;
+
+        TabStop = false;
     }
 
     public void SetEntry(Entry? entry)

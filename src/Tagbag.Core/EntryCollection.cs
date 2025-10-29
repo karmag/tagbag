@@ -105,15 +105,12 @@ public class EntryCollection
         Refresh();
     }
 
-    public void AddSelection(Guid id)
+    public void SetSelected(Guid id, bool isSet)
     {
-        _Selection.Add(id);
-    }
-
-    public void SetSelection(Guid id)
-    {
-        _Selection.Clear();
-        _Selection.Add(id);
+        if (isSet)
+            _Selection.Add(id);
+        else
+            _Selection.Remove(id);
     }
 
     public void ClearSelection()
