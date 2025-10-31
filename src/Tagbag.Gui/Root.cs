@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using Tagbag.Core;
+using Tagbag.Core.Input;
 
 namespace Tagbag.Gui;
 
@@ -70,7 +73,6 @@ public class Root : Form
             e.SuppressKeyPress = true;
             action(_Data);
         }
-        _Data.Report($"{e.KeyData}");
         // https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.keyeventargs?view=windowsdesktop-9.0
     }
 
@@ -126,9 +128,19 @@ public static class EventHandler
                 break;
 
             case RunTagCommand e:
-                // get marked or get current cursor
-                // apply tag command
-                // update tagtable
+                var op = TagBuilder.Build(e.Command);
+
+                var marked = data.EntryCollection.GetMarked();
+                IEnumerable<Guid> ids = marked;
+                if (marked.Count == 0 &&
+                    data.ImageGrid.GetCursor()?.GetKey() is Guid selectedId)
+                    ids = new List<Guid>([selectedId]);
+
+                foreach (var id in ids)
+                    if (data.Tagbag.Get(id) is Entry entry)
+                        op.Apply(entry);
+
+                data.TagTable.RefreshEntry();
                 break;
 
             default:

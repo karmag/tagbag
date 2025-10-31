@@ -97,6 +97,14 @@ public class ImageGrid : TableLayoutPanel
         foreach (var cell in _Cells)
             cell.SetIsCursor(cell.GetKey() == id);
     }
+
+    public ImageCell? GetCursor()
+    {
+        foreach (var cell in _Cells)
+            if (cell.IsCursor())
+                return cell;
+        return null;
+    }
 }
 
 public class ImageCell : Panel

@@ -7,6 +7,8 @@ namespace Tagbag.Gui.Components;
 
 public class TagTable : DataGridView
 {
+    private Entry? _Entry;
+
     public TagTable()
     {
         ColumnCount = 2;
@@ -28,6 +30,8 @@ public class TagTable : DataGridView
 
     public void SetEntry(Entry? entry)
     {
+        _Entry = entry;
+
         Rows.Clear();
 
         if (entry != null)
@@ -59,5 +63,10 @@ public class TagTable : DataGridView
             foreach (var row in data)
                 Rows.Add(row);
         }
+    }
+
+    public void RefreshEntry()
+    {
+        SetEntry(_Entry);
     }
 }

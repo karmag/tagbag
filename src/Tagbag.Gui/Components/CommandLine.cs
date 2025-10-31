@@ -37,7 +37,12 @@ public class CommandLine : Panel
         if (e.KeyData == Keys.Enter)
         {
             e.SuppressKeyPress = true;
-            _Data.Report("ENTER GOGO");
+            var txt = _TextBox.Text;
+            if (txt.Length > 0)
+            {
+                _TextBox.Text = "";
+                _Data.SendEvent(new RunTagCommand(txt));
+            }
         }
     }
     

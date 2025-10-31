@@ -37,13 +37,20 @@ public class Data
 
     public void SendEvent(Event ev)
     {
-        EventDispatcher?.Invoke(this, ev);
+        try
+        {
+            EventDispatcher?.Invoke(this, ev);
+        }
+        catch (Exception e)
+        {
+            Report($"SendEvent failed: {ev} -> {e}");
+        }
     }
 
     public void Report(string msg)
     {
-        StatusBar.SetText(msg);
         System.Console.WriteLine(msg);
+        StatusBar.SetText(msg);
     }
 }
 
@@ -57,4 +64,4 @@ public abstract record class Event();
 
 public record CellClicked(Guid Id) : Event();
 
-public record RunTagCommand(string command) : Event();
+public record RunTagCommand(string Command) : Event();
