@@ -103,7 +103,7 @@ public class ImageCell : Panel
 {
     private Data _Data;
     private bool _IsCursor;
-    private bool _IsSelected;
+    private bool _IsMarked;
 
     private Guid? _Key;
     private string _Format;
@@ -115,7 +115,7 @@ public class ImageCell : Panel
     {
         _Data = data;
         _IsCursor = false;
-        _IsSelected = false;
+        _IsMarked = false;
 
         _Key = null;
         _Format = "";
@@ -188,15 +188,15 @@ public class ImageCell : Panel
         _Text.Text = $"Got a format: {format}";
     }
 
-    public void SetIsSelected(bool isSelected)
+    public void SetIsMarked(bool isMarked)
     {
-        if (isSelected != _IsSelected)
+        if (isMarked != _IsMarked)
         {
-            if (isSelected)
+            if (isMarked)
                 BackColor = Color.Red;
             else
                 BackColor = Color.LightGray;
         }
-        _IsSelected = isSelected;
+        _IsMarked = isMarked;
     }
 }

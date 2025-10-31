@@ -24,15 +24,15 @@ public static class Command
         }
     }
 
-    public static void ToggleSelection(Data data, int x, int y)
+    public static void ToggleMarked(Data data, int x, int y)
     {
         if (data.ImageGrid.GetCell(x, y) is ImageCell cell)
         {
             if (cell.GetKey() is Guid id)
             {
-                var selected = data.EntryCollection.IsSelected(id);
-                data.EntryCollection.SetSelected(id, !selected);
-                cell.SetIsSelected(!selected);
+                var marked = data.EntryCollection.IsMarked(id);
+                data.EntryCollection.SetMarked(id, !marked);
+                cell.SetIsMarked(!marked);
             }
         }
     }

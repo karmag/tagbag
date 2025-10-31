@@ -56,3 +56,5 @@ public enum Mode
 public abstract record class Event();
 
 public record CellClicked(Guid Id) : Event();
+
+public record RunTagCommand(string command) : Event();

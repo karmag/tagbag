@@ -11,7 +11,7 @@ public class EntryCollection
     private List<Entry> _Entries;
     private int _EntryCount;
 
-    private HashSet<Guid> _Selection;
+    private HashSet<Guid> _Marked;
 
     public EntryCollection(Tagbag tb)
     {
@@ -21,7 +21,7 @@ public class EntryCollection
         _Entries = new List<Entry>();
         _EntryCount = 0;
 
-        _Selection = new HashSet<Guid>();
+        _Marked = new HashSet<Guid>();
 
         Refresh();
     }
@@ -105,21 +105,26 @@ public class EntryCollection
         Refresh();
     }
 
-    public void SetSelected(Guid id, bool isSet)
+    public void SetMarked(Guid id, bool isSet)
     {
         if (isSet)
-            _Selection.Add(id);
+            _Marked.Add(id);
         else
-            _Selection.Remove(id);
+            _Marked.Remove(id);
     }
 
-    public void ClearSelection()
+    public void ClearMarks()
     {
-        _Selection.Clear();
+        _Marked.Clear();
     }
 
-    public bool IsSelected(Guid id)
+    public bool IsMarked(Guid id)
     {
-        return _Selection.Contains(id);
+        return _Marked.Contains(id);
+    }
+
+    public HashSet<Guid> GetMarked()
+    {
+        return _Marked;
     }
 }

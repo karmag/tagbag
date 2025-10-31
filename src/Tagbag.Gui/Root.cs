@@ -34,23 +34,23 @@ public class Root : Form
         {
             _Data.KeyMap.SwapMode(mode);
 
-            _Data.KeyMap.Register(Keys.Alt | Keys.Q, (data) => { Command.ToggleSelection(data, 0, 0); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.W, (data) => { Command.ToggleSelection(data, 1, 0); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.E, (data) => { Command.ToggleSelection(data, 2, 0); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.R, (data) => { Command.ToggleSelection(data, 3, 0); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.T, (data) => { Command.ToggleSelection(data, 4, 0); });
+            _Data.KeyMap.Register(Keys.Alt | Keys.Q, (data) => { Command.ToggleMarked(data, 0, 0); });
+            _Data.KeyMap.Register(Keys.Alt | Keys.W, (data) => { Command.ToggleMarked(data, 1, 0); });
+            _Data.KeyMap.Register(Keys.Alt | Keys.E, (data) => { Command.ToggleMarked(data, 2, 0); });
+            _Data.KeyMap.Register(Keys.Alt | Keys.R, (data) => { Command.ToggleMarked(data, 3, 0); });
+            _Data.KeyMap.Register(Keys.Alt | Keys.T, (data) => { Command.ToggleMarked(data, 4, 0); });
 
-            _Data.KeyMap.Register(Keys.Alt | Keys.A, (data) => { Command.ToggleSelection(data, 0, 1); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.S, (data) => { Command.ToggleSelection(data, 1, 1); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.D, (data) => { Command.ToggleSelection(data, 2, 1); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.F, (data) => { Command.ToggleSelection(data, 3, 1); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.G, (data) => { Command.ToggleSelection(data, 4, 1); });
+            _Data.KeyMap.Register(Keys.Alt | Keys.A, (data) => { Command.ToggleMarked(data, 0, 1); });
+            _Data.KeyMap.Register(Keys.Alt | Keys.S, (data) => { Command.ToggleMarked(data, 1, 1); });
+            _Data.KeyMap.Register(Keys.Alt | Keys.D, (data) => { Command.ToggleMarked(data, 2, 1); });
+            _Data.KeyMap.Register(Keys.Alt | Keys.F, (data) => { Command.ToggleMarked(data, 3, 1); });
+            _Data.KeyMap.Register(Keys.Alt | Keys.G, (data) => { Command.ToggleMarked(data, 4, 1); });
 
-            _Data.KeyMap.Register(Keys.Alt | Keys.Z, (data) => { Command.ToggleSelection(data, 0, 2); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.X, (data) => { Command.ToggleSelection(data, 1, 2); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.C, (data) => { Command.ToggleSelection(data, 2, 2); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.V, (data) => { Command.ToggleSelection(data, 3, 2); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.B, (data) => { Command.ToggleSelection(data, 4, 2); });
+            _Data.KeyMap.Register(Keys.Alt | Keys.Z, (data) => { Command.ToggleMarked(data, 0, 2); });
+            _Data.KeyMap.Register(Keys.Alt | Keys.X, (data) => { Command.ToggleMarked(data, 1, 2); });
+            _Data.KeyMap.Register(Keys.Alt | Keys.C, (data) => { Command.ToggleMarked(data, 2, 2); });
+            _Data.KeyMap.Register(Keys.Alt | Keys.V, (data) => { Command.ToggleMarked(data, 3, 2); });
+            _Data.KeyMap.Register(Keys.Alt | Keys.B, (data) => { Command.ToggleMarked(data, 4, 2); });
         }
 
         _Data.KeyMap.SwapMode(Mode.GridMode);
@@ -123,6 +123,12 @@ public static class EventHandler
             case CellClicked e:
                 data.ImageGrid.SetCursor(e.Id);
                 data.TagTable.SetEntry(data.Tagbag.Get(e.Id));
+                break;
+
+            case RunTagCommand e:
+                // get marked or get current cursor
+                // apply tag command
+                // update tagtable
                 break;
 
             default:
