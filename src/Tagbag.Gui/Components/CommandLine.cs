@@ -27,8 +27,20 @@ public class CommandLine : Panel
             _TextBox.Width = Math.Max(300, Width / 2);
             Height = _TextBox.Height + 2 * pad;
         };
+
+        _TextBox.KeyDown += HandleKey;
     }
 
+    private void HandleKey(Object? o, KeyEventArgs e)
+    {
+        _Data.Report(e.KeyData.ToString());
+        if (e.KeyData == Keys.Enter)
+        {
+            e.SuppressKeyPress = true;
+            _Data.Report("ENTER GOGO");
+        }
+    }
+    
     public void SetEnabled(bool enabled)
     {
         _TextBox.Enabled = enabled;

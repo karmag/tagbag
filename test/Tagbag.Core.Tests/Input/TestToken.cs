@@ -1,4 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using Tagbag.Core.Input;
 
 namespace Tagbag.Core.Test.Input;
@@ -35,16 +36,23 @@ public class TestToken
     private Token GetFirst(string input)
     {
         var result = Tokenizer.GetTokens(input);
+        Assert.IsNotNull(result);
         Assert.HasCount(1, result);
-        return result[0];
+        if (result?.First?.Value is Token token)
+            return token;
+        throw new ArgumentException("error");
     }
 
     private string[] GetTexts(string input)
     {
         var result = Tokenizer.GetTokens(input);
         var arr = new string[result.Count];
-        for (int i = 0; i < result.Count; i++)
-            arr[i] = result[i].Text;
+        int i = 0;
+        foreach (var token in result)
+        {
+            arr[i] = token.Text;
+            i++;
+        }
         return arr;
     }
 }

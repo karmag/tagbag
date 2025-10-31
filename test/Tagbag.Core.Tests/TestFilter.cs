@@ -1,41 +1,16 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+using Tagbag.Tests;
 
 namespace Tagbag.Core.Tests;
 
 [TestClass]
 public class TestFilter
 {
-    private Entry MakeEntry(params Object?[][] kvArgs)
-    {
-        var entry = new Entry("a");
-
-        foreach (var kv in kvArgs)
-        {
-            if (kv[0] is string k)
-            {
-                if (kv.Length == 1 || kv[1] is null)
-                    entry.Add(k);
-                else if (kv[1] is string v)
-                    entry.Add(k, v);
-                else if (kv[1] is int i)
-                    entry.Add(k, i);
-                else
-                    throw new ArgumentException($"Unknown value type for key {k}: {kv[1]}");
-            }
-            else
-            {
-                throw new ArgumentException($"Keys must be strings: {kv[0]}");
-            }
-        }
-
-        return entry;
-    }
 
     [TestMethod]
     public void TestExistence()
     {
-        var entry = MakeEntry([["key", null], ["str", "str"], ["int", 10]]);
+        var entry = Tester.Entry([["key", null], ["str", "str"], ["int", 10]]);
         Assert.IsTrue(Filter.Has("key").Keep(entry));
         Assert.IsTrue(Filter.Has("str").Keep(entry));
         Assert.IsTrue(Filter.Has("int").Keep(entry));
@@ -45,7 +20,7 @@ public class TestFilter
     [TestMethod]
     public void TestHasValue()
     {
-        var entry = MakeEntry([["key", "value"], ["key", "value 2"], ["number", 1]]);
+        var entry = Tester.Entry([["key", "value"], ["key", "value 2"], ["number", 1]]);
         Assert.IsTrue(Filter.Has("key", "value").Keep(entry));
         Assert.IsTrue(Filter.Has("key", "value 2").Keep(entry));
         Assert.IsTrue(Filter.Has("number", 1).Keep(entry));
@@ -57,7 +32,7 @@ public class TestFilter
     [TestMethod]
     public void TestLogic()
     {
-        var entry = MakeEntry([["alpha"], ["omega"]]);
+        var entry = Tester.Entry([["alpha"], ["omega"]]);
 
         Assert.IsTrue(Filter.Not(Filter.Has("epsilon")).Keep(entry));
         Assert.IsFalse(Filter.Not(Filter.Has("alpha")).Keep(entry));

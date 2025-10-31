@@ -303,6 +303,36 @@ public class Value
         return Ints;
     }
 
+    override public bool Equals(Object? other)
+    {
+        if (other is Value val)
+        {
+            if (Tag != val.Tag)
+                return false;
+
+            if (Strings == null && val.Strings != null)
+                return false;
+
+            if (!Strings?.SetEquals(val.Strings ?? []) ?? false)
+                return false;
+
+            if (Ints == null && val.Ints != null)
+                return false;
+
+            if (!Ints?.SetEquals(val.Ints ?? []) ?? false)
+                return false;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    override public int GetHashCode()
+    {
+        return (ToString() ?? "").GetHashCode();
+    }
+
     override public string? ToString()
     {
         var sb = new System.Text.StringBuilder();

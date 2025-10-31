@@ -13,10 +13,25 @@ public enum TokenType
     ParenClose,
 }
 
-public record Token(int Pos, TokenType Type, string Text);
+public record Token(int Pos, TokenType Type, string Text)
+{
+    public bool Matches(Token? other)
+    {
+        if (other is Token token)
+            return Type == token.Type && Text == other.Text;
+        return false;
+    }
+}
 
 public class Tokenizer
 {
+    public static LinkedList<Token> GetTokens(string input)
+    {
+        var tokenizer = new Tokenizer(input);
+        tokenizer.Run();
+        return tokenizer.result;
+    }
+
     // input
     private string input;
     private StringReader reader;
@@ -29,7 +44,7 @@ public class Tokenizer
     private int discarded = 0;
 
     // output
-    private List<Token> result = new List<Token>();
+    private LinkedList<Token> result = new LinkedList<Token>();
 
     private Tokenizer(string input)
     {
@@ -97,7 +112,7 @@ public class Tokenizer
             charCount - accumulatorIndex - discarded,
             type,
             new String(accumulator, 0, accumulatorIndex));
-        result.Add(token);
+        result.AddLast(token);
         accumulatorIndex = 0;
         discarded = 0;
     }
@@ -170,13 +185,6 @@ public class Tokenizer
             Read();
         }
         AddToken(TokenType.Symbol);
-    }
-
-    public static List<Token> GetTokens(string input)
-    {
-        var tokenizer = new Tokenizer(input);
-        tokenizer.Run();
-        return tokenizer.result;
     }
 }
 

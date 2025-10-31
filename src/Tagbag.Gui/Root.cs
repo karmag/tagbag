@@ -13,7 +13,7 @@ public class Root : Form
         _Data = new Data(tb);
         _Data.EventDispatcher = EventHandler.GridViewEventDispatch;
 
-        Width = 800;
+        Width = 900;
         Height = 600;
         MinimumSize = new Size(500, 500);
 
