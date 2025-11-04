@@ -29,10 +29,10 @@ public class ImageGrid : TableLayoutPanel
 
         Padding = new Padding(5);
 
-        ClientSizeChanged += (_, _) => { UpdateGrid(_Rows); };
+        ClientSizeChanged += (_, _) => { LayoutChanged(_Rows); };
     }
 
-    private void UpdateGrid(int newRows)
+    private void LayoutChanged(int newRows)
     {
         newRows = Math.Max(1, newRows);
 
@@ -78,6 +78,15 @@ public class ImageGrid : TableLayoutPanel
         if (!foundCursor)
         {
             _Cells[0].SetIsCursor(true);
+        }
+    }
+
+    public void DataChanged()
+    {
+        for (int i = 0; i < _Cells.Count; i++)
+        {
+            var entry = _Data.EntryCollection.Get(i);
+            _Cells[i].SetKey(entry?.Id);
         }
     }
 

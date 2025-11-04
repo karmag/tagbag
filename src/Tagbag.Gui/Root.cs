@@ -143,6 +143,15 @@ public static class EventHandler
                 data.TagTable.RefreshEntry();
                 break;
 
+            case RunFilterCommand e:
+                var filter = FilterBuilder.Build(e.Command);
+
+                data.EntryCollection.ClearFilters();
+                data.EntryCollection.PushFilter(filter);
+
+                data.ImageGrid.DataChanged();
+                break;
+
             default:
                 MessageBox.Show($"Unknown event {ev}");
                 break;

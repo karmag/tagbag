@@ -65,3 +65,5 @@ public abstract record class Event();
 public record CellClicked(Guid Id) : Event();
 
 public record RunTagCommand(string Command) : Event();
+
+public record RunFilterCommand(string Command) : Event();

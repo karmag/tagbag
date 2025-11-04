@@ -56,4 +56,39 @@ public class TestBuilder
         TagBuilder.Build(input).Apply(entry);
         Tester.AssertTagsMatch(entry, expectedKvs);
     }
+
+    [TestMethod]
+    public void TestFilterBuilder()
+    {
+        VerifyFilterBuild("tag",
+                          [[["tag"]], [["tag", "value"]]],
+                          [[["other"]]]);
+
+        VerifyFilterBuild("tag value",
+                          [[["tag", "value"]], [["tag", "value", "other"]]],
+                          [[["tag"]], []]);
+
+        VerifyFilterBuild("tag = value",
+                          [[["tag", "value"]], [["tag", "value", "other"]]],
+                          [[["tag"]], []]);
+    }
+
+    private void VerifyFilterBuild(string input,
+                                   Object?[][][] keep,
+                                   Object?[][][] remove)
+    {
+        var filter = FilterBuilder.Build(input);
+        foreach (var args in keep)
+        {
+            var entry = Tester.Entry(args);
+            Assert.IsTrue(filter.Keep(entry),
+                          $"Failed keep for input '{input}'");
+        }
+        foreach (var args in remove)
+        {
+            var entry = Tester.Entry(args);
+            Assert.IsFalse(filter.Keep(entry),
+                           $"Failed remove for input '{input}'");
+        }
+    }
 }

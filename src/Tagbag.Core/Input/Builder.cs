@@ -3,6 +3,17 @@ using System.Collections.Generic;
 
 namespace Tagbag.Core.Input;
 
+public class BuildException(string msg) : ArgumentException(msg)
+{
+    private Token? _Token;
+
+    public BuildException With(Token? token)
+    {
+        _Token = token;
+        return this;
+    }
+}
+
 public class TagBuilder
 {
     public static ITagOperation Build(string input)
@@ -80,9 +91,8 @@ public class TagBuilder
 
         if (inTag is Token tagToken)
         {
-            if (tagToken.Type != TokenType.Symbol &&
-                tagToken.Type != TokenType.String)
-                throw new BuildException("Tag must be symbol or string").With(tagToken);
+            if (tagToken.Type != TokenType.Symbol)
+                throw new BuildException("Tag must be symbol").With(tagToken);
 
             string tag = tagToken.Text;
             string operation = "";
@@ -193,31 +203,103 @@ public class TagBuilder
     }
 }
 
-public class BuildException(string msg) : ArgumentException(msg)
-{
-    private Token? _Token;
-
-    public BuildException With(Token? token)
-    {
-        _Token = token;
-        return this;
-    }
-}
-
 public class FilterBuilder
 {
-/*
-a
-not a
-a and b
-a or not b and c
-tag value     :: tag = value
-a = 10        :: tag has value
-a = hello     :: -"-
-a ~= "regexp" :: regexp found in string value
-a = (b c d)   :: at least one of the values match
-a == (b c d)  :: all of the values match
+    public static IFilter Build(string input)
+    {
+        return Build(Tokenizer.GetTokens(input));
+    }
 
-a == (b c) and not tag value or q
-*/
+    public static IFilter Build(LinkedList<Token> tokens)
+    {
+        if (tokens.Count > 3)
+            throw new BuildException("Too many tokens");
+
+        if (tokens.First?.Value is Token a)
+        {
+            if (tokens.First?.Next?.Value is Token b)
+            {
+                if (tokens.First?.Next?.Next?.Value is Token c)
+                    return Build3(a, b, c);
+
+                return Build2(a, b);
+            }
+
+            return Build1(a);
+        }
+
+        throw new InvalidOperationException("No tokens");
+    }
+
+    private static IFilter Build1(Token a)
+    {
+        if (a.Type == TokenType.Symbol)
+            return Filter.Has(a.Text);
+        throw new BuildException("Tag must be a symbol").With(a);
+    }
+
+    private static IFilter Build2(Token a, Token b)
+    {
+        if (a.Type == TokenType.Symbol)
+        {
+            switch (b.Type)
+            {
+                case TokenType.String:
+                case TokenType.Symbol:
+                    return Filter.Has(a.Text, b.Text);
+
+                case TokenType.Number:
+                    return Filter.Has(a.Text, int.Parse(b.Text));
+
+                default:
+                    throw new BuildException("Unknown value type").With(b);
+            }
+        }
+
+        throw new BuildException("Tag must be a symbol").With(a);
+    }
+
+    private static IFilter Build3(Token a, Token b, Token c)
+    {
+        if (a.Type != TokenType.Symbol)
+            throw new BuildException("Tag must be a symbol").With(a);
+
+        if (b.Type != TokenType.Symbol)
+            throw new BuildException("Operator must be a symbol").With(b);
+
+        switch (b.Text)
+        {
+            case "=":
+                switch (c.Type)
+                {
+                    case TokenType.String:
+                    case TokenType.Symbol:
+                        return Filter.Has(a.Text, c.Text);
+
+                    case TokenType.Number:
+                        return Filter.Has(a.Text, int.Parse(c.Text));
+                }
+                break;
+
+            default:
+                throw new BuildException("Unknown operator").With(b);
+        }
+
+        throw new BuildException("Unknown value type").With(c);
+    }
+
+    /*
+      a
+      not a
+      a and b
+      a or not b and c
+      tag value     :: tag = value
+      a = 10        :: tag has value
+      a = hello     :: -"-
+      a ~= "regexp" :: regexp found in string value
+      a = (b c d)   :: at least one of the values match
+      a == (b c d)  :: all of the values match
+
+      a == (b c) and not tag value or q
+    */
 }
