@@ -7,10 +7,11 @@ public class Data
 {
     public Mode Mode;
 
+    public EventHub EventHub;
+
     public Tagbag.Core.Tagbag Tagbag { get; }
     public EntryCollection EntryCollection { get; }
     public ImageCache ImageCache { get; }
-    public Action<Data, Event>? EventDispatcher;
 
     public KeyMap KeyMap;
 
@@ -22,6 +23,8 @@ public class Data
     public Data(Tagbag.Core.Tagbag tb)
     {
         Mode = Mode.GridMode;
+
+        EventHub = new EventHub();
 
         Tagbag = tb;
         EntryCollection = new EntryCollection(tb);
@@ -39,7 +42,7 @@ public class Data
     {
         try
         {
-            EventDispatcher?.Invoke(this, ev);
+            EventHub.Send(ev);
         }
         catch (Exception e)
         {
@@ -59,11 +62,3 @@ public enum Mode
     GridMode,
     CommandMode,
 }
-
-public abstract record class Event();
-
-public record CellClicked(Guid Id) : Event();
-
-public record RunTagCommand(string Command) : Event();
-
-public record RunFilterCommand(string Command) : Event();

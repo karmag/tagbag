@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using Tagbag.Core;
-using Tagbag.Core.Input;
 
 namespace Tagbag.Gui;
 
@@ -14,7 +11,6 @@ public class Root : Form
     public Root(Tagbag.Core.Tagbag tb)
     {
         _Data = new Data(tb);
-        _Data.EventDispatcher = EventHandler.GridViewEventDispatch;
 
         Width = 900;
         Height = 600;
@@ -113,48 +109,5 @@ public class Root : Form
         panel.Controls.Add(data.StatusBar);
 
         return panel;
-    }
-}
-
-public static class EventHandler
-{
-    public static void GridViewEventDispatch(Data data, Event ev)
-    {
-        switch (ev)
-        {
-            case CellClicked e:
-                data.ImageGrid.SetCursor(e.Id);
-                data.TagTable.SetEntry(data.Tagbag.Get(e.Id));
-                break;
-
-            case RunTagCommand e:
-                var op = TagBuilder.Build(e.Command);
-
-                var marked = data.EntryCollection.GetMarked();
-                IEnumerable<Guid> ids = marked;
-                if (marked.Count == 0 &&
-                    data.ImageGrid.GetCursor()?.GetKey() is Guid selectedId)
-                    ids = new List<Guid>([selectedId]);
-
-                foreach (var id in ids)
-                    if (data.Tagbag.Get(id) is Entry entry)
-                        op.Apply(entry);
-
-                data.TagTable.RefreshEntry();
-                break;
-
-            case RunFilterCommand e:
-                var filter = FilterBuilder.Build(e.Command);
-
-                data.EntryCollection.ClearFilters();
-                data.EntryCollection.PushFilter(filter);
-
-                data.ImageGrid.DataChanged();
-                break;
-
-            default:
-                MessageBox.Show($"Unknown event {ev}");
-                break;
-        }
     }
 }

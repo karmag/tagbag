@@ -26,14 +26,6 @@ public static class Command
 
     public static void ToggleMarked(Data data, int x, int y)
     {
-        if (data.ImageGrid.GetCell(x, y) is ImageCell cell)
-        {
-            if (cell.GetKey() is Guid id)
-            {
-                var marked = data.EntryCollection.IsMarked(id);
-                data.EntryCollection.SetMarked(id, !marked);
-                cell.SetIsMarked(!marked);
-            }
-        }
+        System.Console.WriteLine("ToggleMarked not implemented");
     }
 }

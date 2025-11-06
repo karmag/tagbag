@@ -12,7 +12,7 @@ public enum CommandLineMode
 
 public class CommandLine : Panel
 {
-    private Data _Data;
+    private EventHub _EventHub;
     private CommandLineMode _Mode;
     private bool _Enabled;
 
@@ -21,7 +21,7 @@ public class CommandLine : Panel
 
     public CommandLine(Data data)
     {
-        _Data = data;
+        _EventHub = data.EventHub;
 
         var pad = 5;
 
@@ -49,7 +49,6 @@ public class CommandLine : Panel
 
     private void HandleKey(Object? o, KeyEventArgs e)
     {
-        _Data.Report(e.KeyData.ToString());
         switch (e.KeyData)
         {
             case Keys.F1:
@@ -67,9 +66,9 @@ public class CommandLine : Panel
                 {
                     _TextBox.Text = "";
                     if (_Mode == CommandLineMode.FilterMode)
-                        _Data.SendEvent(new RunFilterCommand(txt));
+                        _EventHub.Send(new FilterCommand(txt));
                     else
-                        _Data.SendEvent(new RunTagCommand(txt));
+                        _EventHub.Send(new TagCommand(txt));
                 }
                 break;
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using Tagbag.Core;
 
 namespace Tagbag.Gui.Components;
 
@@ -57,7 +58,7 @@ public class ImageGrid : TableLayoutPanel
             for (int i = 0; i < newCellCount; i++)
             {
                 var entry = _Data.EntryCollection.Get(i);
-                _Cells[i].SetKey(entry?.Id);
+                _Cells[i].SetEntry(entry);
             }
 
             RowCount = newRows;
@@ -81,15 +82,6 @@ public class ImageGrid : TableLayoutPanel
         }
     }
 
-    public void DataChanged()
-    {
-        for (int i = 0; i < _Cells.Count; i++)
-        {
-            var entry = _Data.EntryCollection.Get(i);
-            _Cells[i].SetKey(entry?.Id);
-        }
-    }
-
     public ImageCell? GetCell(int x, int y)
     {
         if (x < ColumnCount && y < RowCount)
@@ -100,20 +92,6 @@ public class ImageGrid : TableLayoutPanel
         }
         return null;
     }
-
-    public void SetCursor(Guid id)
-    {
-        foreach (var cell in _Cells)
-            cell.SetIsCursor(cell.GetKey() == id);
-    }
-
-    public ImageCell? GetCursor()
-    {
-        foreach (var cell in _Cells)
-            if (cell.IsCursor())
-                return cell;
-        return null;
-    }
 }
 
 public class ImageCell : Panel
@@ -122,7 +100,7 @@ public class ImageCell : Panel
     private bool _IsCursor;
     private bool _IsMarked;
 
-    private Guid? _Key;
+    private Entry? _Entry;
     private string _Format;
 
     private PictureBox _Picture;
@@ -134,7 +112,7 @@ public class ImageCell : Panel
         _IsCursor = false;
         _IsMarked = false;
 
-        _Key = null;
+        _Entry = null;
         _Format = "";
 
         _Picture = new PictureBox();
@@ -158,8 +136,8 @@ public class ImageCell : Panel
 
     private void ReportMouseClick(Object? _, EventArgs __)
     {
-        if (_Key is Guid id)
-            _Data.SendEvent(new CellClicked(id));
+        if (_Entry is Entry entry)
+            _Data.SendEvent(new ShowEntry(entry));
     }
 
     public void SetIsCursor(bool isCursor)
@@ -185,18 +163,18 @@ public class ImageCell : Panel
         Height = h;
     }
 
-    public Guid? GetKey()
+    public void SetEntry(Entry? entry)
     {
-        return _Key;
-    }
-
-    public void SetKey(Guid? key)
-    {
-        _Key = key;
-        var img = _Data.ImageCache.GetImage(key ?? Guid.Empty);
+        _Entry = entry;
+        var img = _Data.ImageCache.GetImage(_Entry?.Id ?? Guid.Empty);
         _Picture.Image = img;
 
-        _Text.Text = _Data.Tagbag.Get(key ?? Guid.Empty)?.Path;
+        _Text.Text = _Data.Tagbag.Get(_Entry?.Id ?? Guid.Empty)?.Path;
+    }
+
+    public Entry? GetEntry()
+    {
+        return _Entry;
     }
 
     public void SetTextFormat(string format)
