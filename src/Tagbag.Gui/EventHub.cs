@@ -10,7 +10,7 @@ public class EventHub
     private Stack<Event> _EventQueue;
     private Semaphore _Lock;
 
-    public Action<EntriesReset>? EntriesReset;
+    public Action<EntriesUpdated>? EntriesUpdated;
     public Action<ShowEntry>? ShowEntry;
 
     public Action<FilterCommand>? FilterCommand;
@@ -19,7 +19,7 @@ public class EventHub
     public EventHub()
     {
         _EventQueue = new Stack<Event>();
-        _Lock = new Semaphore(0, 1);
+        _Lock = new Semaphore(initialCount: 1, maximumCount: 1);
     }
 
     public void Send(Event? newEvent)
@@ -50,11 +50,11 @@ public class EventHub
 
     private void ProcessEvent(Event ev)
     {
-        System.Console.WriteLine($"Processing event: {ev}");
+        System.Console.WriteLine($"Event: {ev}");
 
         switch (ev)
         {
-            case EntriesReset e: EntriesReset?.Invoke(e); break;
+            case EntriesUpdated e: EntriesUpdated?.Invoke(e); break;
             case ShowEntry e: ShowEntry?.Invoke(e); break;
 
             case FilterCommand e: FilterCommand?.Invoke(e); break;
@@ -68,11 +68,12 @@ public class EventHub
 
 public abstract record class Event();
 
-// Entries have been changed in a way that previous entries are no
-// longer valid.
-public record EntriesReset() : Event();
+// The collection of entries have been changed. This may include
+// cursor and filter changes.
+public record EntriesUpdated() : Event();
 // Highlight the given entry.
-public record ShowEntry(Entry? entry) : Event();
+public record ShowEntry(Entry? Entry) : Event();
+public record CursorMoved(int Index) : Event();
 
-public record FilterCommand(string command) : Event();
-public record TagCommand(string command) : Event();
+public record FilterCommand(IFilter Filter) : Event();
+public record TagCommand(ITagOperation Operation) : Event();

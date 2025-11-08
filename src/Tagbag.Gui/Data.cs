@@ -1,4 +1,3 @@
-using System;
 using Tagbag.Core;
 
 namespace Tagbag.Gui;
@@ -27,27 +26,15 @@ public class Data
         EventHub = new EventHub();
 
         Tagbag = tb;
-        EntryCollection = new EntryCollection(tb);
+        EntryCollection = new EntryCollection(EventHub);
         ImageCache = new ImageCache(tb);
 
         KeyMap = new KeyMap();
 
         TagTable = new Components.TagTable();
-        ImageGrid = new Components.ImageGrid(this);
-        CommandLine = new Components.CommandLine(this);
+        ImageGrid = new Components.ImageGrid(EventHub, EntryCollection, ImageCache);
+        CommandLine = new Components.CommandLine(EventHub);
         StatusBar = new Components.StatusBar();
-    }
-
-    public void SendEvent(Event ev)
-    {
-        try
-        {
-            EventHub.Send(ev);
-        }
-        catch (Exception e)
-        {
-            Report($"SendEvent failed: {ev} -> {e}");
-        }
     }
 
     public void Report(string msg)

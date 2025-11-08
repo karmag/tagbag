@@ -12,7 +12,6 @@ static class Program
         // settings or default font, see
         // https://aka.ms/applicationconfiguration.
 
-        Tagbag.Core.Tagbag tb = Tagbag.Core.Tagbag.Open("test-data");
         // foreach (var entry in tb.GetEntries())
         // {
         //     Tagbag.Core.TagbagUtil.PopulateImageTags(tb, entry);
@@ -21,6 +20,6 @@ static class Program
         // tb.Save();
 
         ApplicationConfiguration.Initialize();
-        Application.Run(new Root(tb));
+        Application.Run(new Root());
     }    
 }

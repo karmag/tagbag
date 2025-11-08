@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Tagbag.Core.Input;
 
 namespace Tagbag.Gui.Components;
 
@@ -19,9 +20,9 @@ public class CommandLine : Panel
     private Label _ModeLabel;
     private TextBox _TextBox;
 
-    public CommandLine(Data data)
+    public CommandLine(EventHub eventHub)
     {
-        _EventHub = data.EventHub;
+        _EventHub = eventHub;
 
         var pad = 5;
 
@@ -51,14 +52,6 @@ public class CommandLine : Panel
     {
         switch (e.KeyData)
         {
-            case Keys.F1:
-                SetMode(CommandLineMode.FilterMode);
-                break;
-
-            case Keys.F2:
-                SetMode(CommandLineMode.TagMode);
-                break;
-
             case Keys.Enter:
                 e.SuppressKeyPress = true;
                 var txt = _TextBox.Text;
@@ -66,11 +59,37 @@ public class CommandLine : Panel
                 {
                     _TextBox.Text = "";
                     if (_Mode == CommandLineMode.FilterMode)
-                        _EventHub.Send(new FilterCommand(txt));
+                        PerformFilterCommand(txt);
                     else
-                        _EventHub.Send(new TagCommand(txt));
+                        PerformTagCommand(txt);
                 }
                 break;
+        }
+    }
+
+    private void PerformFilterCommand(string text)
+    {
+        try
+        {
+            var filter = FilterBuilder.Build(text);
+            _EventHub.Send(new FilterCommand(filter));
+        }
+        catch (BuildException e)
+        {
+            System.Console.WriteLine($"Filter failed: {e}");
+        }
+    }
+
+    private void PerformTagCommand(string text)
+    {
+        try
+        {
+            var tagOperation = TagBuilder.Build(text);
+            _EventHub.Send(new TagCommand(tagOperation));
+        }
+        catch (BuildException e)
+        {
+            System.Console.WriteLine($"Tag failed {e}");
         }
     }
 

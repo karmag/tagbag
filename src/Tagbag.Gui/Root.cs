@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Tagbag.Gui.Components;
 
 namespace Tagbag.Gui;
 
@@ -8,8 +9,9 @@ public class Root : Form
 {
     private Data _Data;
 
-    public Root(Tagbag.Core.Tagbag tb)
+    public Root()
     {
+        Tagbag.Core.Tagbag tb = Tagbag.Core.Tagbag.Open("test-data");
         _Data = new Data(tb);
 
         Width = 900;
@@ -22,44 +24,49 @@ public class Root : Form
 
         Text = "Tagbag";
 
-        Shown += (_, _) => { Command.SwapMode(_Data, Mode.CommandMode); };
+        Shown += (_, _) => { UserCommand.SwapMode(_Data, Mode.CommandMode); };
 
         KeyPreview = true;
         KeyDown += KeyHandler;
         KeyUp += (_, _) => { };
         KeyPress += KeyPressHandler;
 
-        foreach (var mode in new Mode[]{Mode.GridMode, Mode.CommandMode})
-        {
-            _Data.KeyMap.SwapMode(mode);
+        _Data.KeyMap.SwapMode(null);
 
-            _Data.KeyMap.Register(Keys.Alt | Keys.Q, (data) => { Command.ToggleMarked(data, 0, 0); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.W, (data) => { Command.ToggleMarked(data, 1, 0); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.E, (data) => { Command.ToggleMarked(data, 2, 0); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.R, (data) => { Command.ToggleMarked(data, 3, 0); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.T, (data) => { Command.ToggleMarked(data, 4, 0); });
+        _Data.KeyMap.Register(Keys.F9, (data) => { _Data.Report($"{this.ActiveControl}"); });
 
-            _Data.KeyMap.Register(Keys.Alt | Keys.A, (data) => { Command.ToggleMarked(data, 0, 1); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.S, (data) => { Command.ToggleMarked(data, 1, 1); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.D, (data) => { Command.ToggleMarked(data, 2, 1); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.F, (data) => { Command.ToggleMarked(data, 3, 1); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.G, (data) => { Command.ToggleMarked(data, 4, 1); });
+        _Data.KeyMap.Register(Keys.F1, (data) => { UserCommand.SetCommandMode(data, CommandLineMode.FilterMode); });
+        _Data.KeyMap.Register(Keys.F2, (data) => { UserCommand.SetCommandMode(data, CommandLineMode.TagMode); });
 
-            _Data.KeyMap.Register(Keys.Alt | Keys.Z, (data) => { Command.ToggleMarked(data, 0, 2); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.X, (data) => { Command.ToggleMarked(data, 1, 2); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.C, (data) => { Command.ToggleMarked(data, 2, 2); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.V, (data) => { Command.ToggleMarked(data, 3, 2); });
-            _Data.KeyMap.Register(Keys.Alt | Keys.B, (data) => { Command.ToggleMarked(data, 4, 2); });
-        }
+        _Data.KeyMap.Register(Keys.Alt | Keys.Q, (data) => { UserCommand.ToggleMarked(data, 0, 0); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.W, (data) => { UserCommand.ToggleMarked(data, 1, 0); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.E, (data) => { UserCommand.ToggleMarked(data, 2, 0); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.R, (data) => { UserCommand.ToggleMarked(data, 3, 0); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.T, (data) => { UserCommand.ToggleMarked(data, 4, 0); });
+
+        _Data.KeyMap.Register(Keys.Alt | Keys.A, (data) => { UserCommand.ToggleMarked(data, 0, 1); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.S, (data) => { UserCommand.ToggleMarked(data, 1, 1); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.D, (data) => { UserCommand.ToggleMarked(data, 2, 1); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.F, (data) => { UserCommand.ToggleMarked(data, 3, 1); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.G, (data) => { UserCommand.ToggleMarked(data, 4, 1); });
+
+        _Data.KeyMap.Register(Keys.Alt | Keys.Z, (data) => { UserCommand.ToggleMarked(data, 0, 2); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.X, (data) => { UserCommand.ToggleMarked(data, 1, 2); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.C, (data) => { UserCommand.ToggleMarked(data, 2, 2); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.V, (data) => { UserCommand.ToggleMarked(data, 3, 2); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.B, (data) => { UserCommand.ToggleMarked(data, 4, 2); });
+
 
         _Data.KeyMap.SwapMode(Mode.GridMode);
-        _Data.KeyMap.Register(Keys.Escape, (data) => { Command.SwapMode(data, Mode.CommandMode); });
+        _Data.KeyMap.Register(Keys.Escape, (data) => { UserCommand.SwapMode(data, Mode.CommandMode); });
 
         _Data.KeyMap.SwapMode(Mode.CommandMode);
-        _Data.KeyMap.Register(Keys.Escape, (data) => { Command.SwapMode(data, Mode.GridMode); });
+        _Data.KeyMap.Register(Keys.Escape, (data) => { UserCommand.SwapMode(data, Mode.GridMode); });
 
-        _Data.KeyMap.SwapMode(null);
-        _Data.KeyMap.Register(Keys.F9, (data) => { _Data.Report($"{this.ActiveControl}"); });
+        _Data.EventHub.FilterCommand += ListenFilterCommand;
+        _Data.EventHub.TagCommand += ListenTagCommand;
+
+        _Data.EntryCollection.SetBaseEntries(tb.GetEntries());
     }
 
     private void KeyHandler(Object? o, KeyEventArgs e)
@@ -109,5 +116,14 @@ public class Root : Form
         panel.Controls.Add(data.StatusBar);
 
         return panel;
+    }
+
+    private void ListenFilterCommand(FilterCommand ev)
+    {
+        _Data.EntryCollection.PushFilter(ev.Filter);
+    }
+
+    private void ListenTagCommand(TagCommand ev)
+    {
     }
 }

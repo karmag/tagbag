@@ -13,24 +13,32 @@ public class ImageGrid : TableLayoutPanel
     private int _Columns;
     private double _CellRatio; // Height / width ratio for cells.
     private List<ImageCell> _Cells;
-    private Data _Data;
+    private EventHub _EventHub;
+    private EntryCollection _EntryCollection;
+    private ImageCache _ImageCache;
 
-    public ImageGrid(Data data)
+    public ImageGrid(EventHub eventHub,
+                     EntryCollection entryCollection,
+                     ImageCache imageCache)
     {
         _Rows = 3;
         _Columns = 3;
         _CellRatio = 1.3;
         _Cells = new List<ImageCell>();
-        _Data = data;
+
+        _EventHub = eventHub;
+        _EntryCollection = entryCollection;
+        _ImageCache = imageCache;
 
         RowCount = _Rows;
         ColumnCount = _Columns;
         for (int i = 0; i < _Rows * _Columns; i++)
-            _Cells.Add(new ImageCell(_Data));
+            _Cells.Add(new ImageCell(_EventHub, _ImageCache));
 
         Padding = new Padding(5);
 
         ClientSizeChanged += (_, _) => { LayoutChanged(_Rows); };
+        _EventHub.EntriesUpdated += (_) => { ListenEntriesUpdated(); };
     }
 
     private void LayoutChanged(int newRows)
@@ -52,14 +60,8 @@ public class ImageGrid : TableLayoutPanel
 
             var newCells = new List<ImageCell>(_Cells.Take(newCellCount));
             while (newCells.Count < newCellCount)
-                newCells.Add(new ImageCell(_Data));
+                newCells.Add(new ImageCell(_EventHub, _ImageCache));
             _Cells = newCells;
-
-            for (int i = 0; i < newCellCount; i++)
-            {
-                var entry = _Data.EntryCollection.Get(i);
-                _Cells[i].SetEntry(entry);
-            }
 
             RowCount = newRows;
             ColumnCount = newColumns;
@@ -82,6 +84,12 @@ public class ImageGrid : TableLayoutPanel
         }
     }
 
+    private void ListenEntriesUpdated()
+    {
+        for (int i = 0; i < _Cells.Count; i++)
+            _Cells[i].SetEntry(_EntryCollection.Get(i));
+    }
+
     public ImageCell? GetCell(int x, int y)
     {
         if (x < ColumnCount && y < RowCount)
@@ -96,7 +104,8 @@ public class ImageGrid : TableLayoutPanel
 
 public class ImageCell : Panel
 {
-    private Data _Data;
+    private EventHub _EventHub;
+    private ImageCache _ImageCache;
     private bool _IsCursor;
     private bool _IsMarked;
 
@@ -106,9 +115,10 @@ public class ImageCell : Panel
     private PictureBox _Picture;
     private Label _Text;
 
-    public ImageCell(Data data)
+    public ImageCell(EventHub eventHub, ImageCache imageCache)
     {
-        _Data = data;
+        _EventHub = eventHub;
+        _ImageCache = imageCache;
         _IsCursor = false;
         _IsMarked = false;
 
@@ -137,7 +147,7 @@ public class ImageCell : Panel
     private void ReportMouseClick(Object? _, EventArgs __)
     {
         if (_Entry is Entry entry)
-            _Data.SendEvent(new ShowEntry(entry));
+            _EventHub.Send(new ShowEntry(entry));
     }
 
     public void SetIsCursor(bool isCursor)
@@ -166,10 +176,10 @@ public class ImageCell : Panel
     public void SetEntry(Entry? entry)
     {
         _Entry = entry;
-        var img = _Data.ImageCache.GetImage(_Entry?.Id ?? Guid.Empty);
+        var img = _ImageCache.GetImage(_Entry?.Id ?? Guid.Empty);
         _Picture.Image = img;
 
-        _Text.Text = _Data.Tagbag.Get(_Entry?.Id ?? Guid.Empty)?.Path;
+        _Text.Text = _Entry?.Path;
     }
 
     public Entry? GetEntry()

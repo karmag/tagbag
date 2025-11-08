@@ -1,9 +1,8 @@
-using System;
 using Tagbag.Gui.Components;
 
 namespace Tagbag.Gui;
 
-public static class Command
+public static class UserCommand
 {
     public static void SwapMode(Data data, Mode mode)
     {
@@ -22,6 +21,12 @@ public static class Command
                 data.CommandLine.Focus();
                 break;
         }
+    }
+
+    public static void SetCommandMode(Data data, CommandLineMode mode)
+    {
+        data.CommandLine.SetMode(mode);
+        data.CommandLine.Focus();
     }
 
     public static void ToggleMarked(Data data, int x, int y)
