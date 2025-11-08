@@ -57,11 +57,8 @@ public class Root : Form
         _Data.KeyMap.Register(Keys.Alt | Keys.B, (data) => { UserCommand.ToggleMarked(data, 4, 2); });
 
 
-        _Data.KeyMap.SwapMode(Mode.GridMode);
-        _Data.KeyMap.Register(Keys.Escape, (data) => { UserCommand.SwapMode(data, Mode.CommandMode); });
-
         _Data.KeyMap.SwapMode(Mode.CommandMode);
-        _Data.KeyMap.Register(Keys.Escape, (data) => { UserCommand.SwapMode(data, Mode.GridMode); });
+        _Data.KeyMap.Register(Keys.Escape, (data) => { UserCommand.PopFilter(data); });
 
         _Data.EventHub.FilterCommand += ListenFilterCommand;
         _Data.EventHub.TagCommand += ListenTagCommand;

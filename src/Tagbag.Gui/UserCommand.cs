@@ -33,4 +33,9 @@ public static class UserCommand
     {
         System.Console.WriteLine("ToggleMarked not implemented");
     }
+
+    public static void PopFilter(Data data)
+    {
+        data.EntryCollection.PopFilter();
+    }
 }
