@@ -9,26 +9,31 @@ namespace Tagbag.Gui.Components;
 
 public class ImageGrid : TableLayoutPanel
 {
+    private EventHub _EventHub;
+    private EntryCollection _EntryCollection;
+    private ImageCache _ImageCache;
+
     private int _Rows;
     private int _Columns;
     private double _CellRatio; // Height / width ratio for cells.
     private List<ImageCell> _Cells;
-    private EventHub _EventHub;
-    private EntryCollection _EntryCollection;
-    private ImageCache _ImageCache;
+    private int _IndexOffset;
+    private ImageCell? _CursorCell;
 
     public ImageGrid(EventHub eventHub,
                      EntryCollection entryCollection,
                      ImageCache imageCache)
     {
+        _EventHub = eventHub;
+        _EntryCollection = entryCollection;
+        _ImageCache = imageCache;
+
         _Rows = 3;
         _Columns = 3;
         _CellRatio = 1.3;
         _Cells = new List<ImageCell>();
-
-        _EventHub = eventHub;
-        _EntryCollection = entryCollection;
-        _ImageCache = imageCache;
+        _IndexOffset = 0;
+        _CursorCell = null;
 
         RowCount = _Rows;
         ColumnCount = _Columns;
@@ -56,6 +61,11 @@ public class ImageGrid : TableLayoutPanel
 
         if (newRows != RowCount || newColumns != ColumnCount)
         {
+            if (_EntryCollection.GetCursor() is int index)
+                _IndexOffset = (index / newColumns) * newColumns;
+            else
+                _IndexOffset = 0;
+
             var newCellCount = newRows * newColumns;
             var oldCellCount = RowCount * ColumnCount;
 
@@ -70,19 +80,12 @@ public class ImageGrid : TableLayoutPanel
             Controls.Clear();
             foreach (var cell in _Cells)
                 Controls.Add(cell);
+            UpdateCellEntries();
+            UpdateCursor();
         }
 
-        bool foundCursor = false;
         foreach (var cell in _Cells)
-        {
             cell.SetSize(maxWidth, maxHeight);
-            if (cell.IsCursor())
-                foundCursor = true;
-        }
-        if (!foundCursor)
-        {
-            _Cells[0].SetIsCursor(true);
-        }
     }
 
     public ImageCell? GetCell(int x, int y)
@@ -105,16 +108,54 @@ public class ImageGrid : TableLayoutPanel
         }
     }
 
-    private void ListenEntriesUpdated()
+    private void UpdateCellEntries()
     {
         for (int i = 0; i < _Cells.Count; i++)
-            _Cells[i].SetEntry(_EntryCollection.Get(i));
+            _Cells[i].SetEntry(_EntryCollection.Get(i + _IndexOffset));
+    }
+
+    private void UpdateCursor()
+    {
+        if (_CursorCell is ImageCell cell)
+            cell.SetIsCursor(false);
+
+        _CursorCell = null;
+
+        if (_EntryCollection.GetCursor() is int index)
+        {
+            var cellIndex = index - _IndexOffset;
+            if (0 <= cellIndex && cellIndex < _Cells.Count)
+            {
+                _CursorCell = _Cells[cellIndex];
+                _CursorCell.SetIsCursor(true);
+            }
+        }
+    }
+
+    private void ListenEntriesUpdated()
+    {
+        UpdateCellEntries();
+        UpdateCursor();
     }
 
     private void ListenCursorMoved(CursorMoved ev)
     {
-        for (int i = 0; i < _Cells.Count; i++)
-            _Cells[i].SetIsCursor(i == ev.Index);
+        if (ev.Index is int index)
+        {
+            var rowDiff = index / ColumnCount - _IndexOffset / ColumnCount;
+            if (rowDiff < 0 || rowDiff >= RowCount)
+            {
+                if (rowDiff == -1)
+                    _IndexOffset -= ColumnCount;
+                else if (rowDiff == RowCount)
+                    _IndexOffset += ColumnCount;
+                else
+                    _IndexOffset += rowDiff * ColumnCount;
+                UpdateCellEntries();
+            }
+        }
+
+        UpdateCursor();
     }
 }
 

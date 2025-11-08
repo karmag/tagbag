@@ -133,6 +133,7 @@ public class EntryCollection
             _CursorIndex = 0;
 
         _EventHub.Send(new EntriesUpdated());
+        _EventHub.Send(new CursorMoved(GetCursor()));
         _EventHub.Send(new ShowEntry(GetEntryAtCursor()));
     }
 }

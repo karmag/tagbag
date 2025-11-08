@@ -75,7 +75,7 @@ public abstract record class Event();
 public record EntriesUpdated() : Event();
 // Highlight the given entry.
 public record ShowEntry(Entry? Entry) : Event();
-public record CursorMoved(int Index) : Event();
+public record CursorMoved(int? Index) : Event();
 
 public record FilterCommand(IFilter Filter) : Event();
 public record TagCommand(ITagOperation Operation) : Event();

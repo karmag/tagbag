@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Forms;
+using Tagbag.Core;
 
 namespace Tagbag.Gui;
 
@@ -12,12 +13,12 @@ static class Program
         // settings or default font, see
         // https://aka.ms/applicationconfiguration.
 
-        // foreach (var entry in tb.GetEntries())
-        // {
-        //     Tagbag.Core.TagbagUtil.PopulateImageTags(tb, entry);
-        //     Tagbag.Core.TagbagUtil.PopulateFileTags(tb, entry);
-        // }
+        // Tagbag.Core.Tagbag tb = Tagbag.Core.Tagbag.Open("test-data");
+        // var scan = new Scanner(tb).PopulateAllTags().Recursive();
+        // scan.Scan(".");
         // tb.Save();
+        // var y = 0;
+        // var x = 1 / y;
 
         ApplicationConfiguration.Initialize();
         Application.Run(new Root());
