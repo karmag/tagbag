@@ -108,8 +108,6 @@ public class Root : Form
         ttPanel.Controls.Add(data.TagTable);
         panel.Controls.Add(ttPanel);
 
-        data.TagTable.SetEntry(data.EntryCollection.Get(0));
-
         data.CommandLine.Dock = DockStyle.Top;
         data.CommandLine.Padding = new Padding(pad);
         panel.Controls.Add(data.CommandLine);
