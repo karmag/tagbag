@@ -29,6 +29,11 @@ public static class UserCommand
         data.CommandLine.Focus();
     }
 
+    public static void MoveCursor(Data data, int xDelta, int yDelta)
+    {
+        data.ImageGrid.MoveCursor(xDelta, yDelta);
+    }
+
     public static void ToggleMarked(Data data, int x, int y)
     {
         System.Console.WriteLine("ToggleMarked not implemented");

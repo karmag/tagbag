@@ -37,7 +37,7 @@ public class EntryCollection
 
     public Entry? Get(int index)
     {
-        if (index >= 0 && index < _Entries.Count)
+        if (0 <= index && index < _Entries.Count)
             return _Entries[index];
         return null;
     }
@@ -52,7 +52,7 @@ public class EntryCollection
     public Entry? GetEntryAtCursor()
     {
         if (_CursorIndex is int index)
-            return Get(index);
+            return _Entries[index];
         return null;
     }
 
@@ -72,6 +72,7 @@ public class EntryCollection
 
         _CursorIndex = index;
         _EventHub.Send(new CursorMoved(index));
+        _EventHub.Send(new ShowEntry(GetEntryAtCursor()));
     }
 
     public void PushFilter(IFilter filter)
@@ -123,14 +124,15 @@ public class EntryCollection
                     _CursorIndex = index;
                     pickEntry = false;
                 }
-            }
 
-            index++;
+                index++;
+            }
         }
 
         if (_CursorIndex == null && _Entries.Count > 0)
             _CursorIndex = 0;
 
         _EventHub.Send(new EntriesUpdated());
+        _EventHub.Send(new ShowEntry(GetEntryAtCursor()));
     }
 }

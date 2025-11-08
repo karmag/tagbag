@@ -31,7 +31,7 @@ public class Data
 
         KeyMap = new KeyMap();
 
-        TagTable = new Components.TagTable();
+        TagTable = new Components.TagTable(EventHub);
         ImageGrid = new Components.ImageGrid(EventHub, EntryCollection, ImageCache);
         CommandLine = new Components.CommandLine(EventHub);
         StatusBar = new Components.StatusBar();

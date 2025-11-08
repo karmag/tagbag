@@ -56,6 +56,11 @@ public class Root : Form
         _Data.KeyMap.Register(Keys.Alt | Keys.V, (data) => { UserCommand.ToggleMarked(data, 3, 2); });
         _Data.KeyMap.Register(Keys.Alt | Keys.B, (data) => { UserCommand.ToggleMarked(data, 4, 2); });
 
+        _Data.KeyMap.Register(Keys.Alt | Keys.Up, (data) => { UserCommand.MoveCursor(data, 0, -1); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.Down, (data) => { UserCommand.MoveCursor(data, 0, 1); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.Left, (data) => { UserCommand.MoveCursor(data, -1, 0); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.Right, (data) => { UserCommand.MoveCursor(data, 1, 0); });
+
 
         _Data.KeyMap.SwapMode(Mode.CommandMode);
         _Data.KeyMap.Register(Keys.Escape, (data) => { UserCommand.PopFilter(data); });

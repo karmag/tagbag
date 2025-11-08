@@ -12,6 +12,7 @@ public class EventHub
 
     public Action<EntriesUpdated>? EntriesUpdated;
     public Action<ShowEntry>? ShowEntry;
+    public Action<CursorMoved>? CursorMoved;
 
     public Action<FilterCommand>? FilterCommand;
     public Action<TagCommand>? TagCommand;
@@ -56,6 +57,7 @@ public class EventHub
         {
             case EntriesUpdated e: EntriesUpdated?.Invoke(e); break;
             case ShowEntry e: ShowEntry?.Invoke(e); break;
+            case CursorMoved e: CursorMoved?.Invoke(e); break;
 
             case FilterCommand e: FilterCommand?.Invoke(e); break;
             case TagCommand e: TagCommand?.Invoke(e); break;

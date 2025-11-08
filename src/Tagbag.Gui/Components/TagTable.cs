@@ -9,7 +9,7 @@ public class TagTable : DataGridView
 {
     private Entry? _Entry;
 
-    public TagTable()
+    public TagTable(EventHub eventHub)
     {
         ColumnCount = 2;
         AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCellsExceptHeaders;
@@ -26,6 +26,8 @@ public class TagTable : DataGridView
         MultiSelect = false;
 
         TabStop = false;
+
+        eventHub.ShowEntry += (ev) => { ListenShowEntry(ev); };
     }
 
     public void SetEntry(Entry? entry)
@@ -68,5 +70,10 @@ public class TagTable : DataGridView
     public void RefreshEntry()
     {
         SetEntry(_Entry);
+    }
+
+    private void ListenShowEntry(ShowEntry ev)
+    {
+        SetEntry(ev.Entry);
     }
 }

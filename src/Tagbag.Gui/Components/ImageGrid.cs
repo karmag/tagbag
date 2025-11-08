@@ -39,6 +39,7 @@ public class ImageGrid : TableLayoutPanel
 
         ClientSizeChanged += (_, _) => { LayoutChanged(_Rows); };
         _EventHub.EntriesUpdated += (_) => { ListenEntriesUpdated(); };
+        _EventHub.CursorMoved += (ev) => { ListenCursorMoved(ev); };
     }
 
     private void LayoutChanged(int newRows)
@@ -84,12 +85,6 @@ public class ImageGrid : TableLayoutPanel
         }
     }
 
-    private void ListenEntriesUpdated()
-    {
-        for (int i = 0; i < _Cells.Count; i++)
-            _Cells[i].SetEntry(_EntryCollection.Get(i));
-    }
-
     public ImageCell? GetCell(int x, int y)
     {
         if (x < ColumnCount && y < RowCount)
@@ -99,6 +94,27 @@ public class ImageGrid : TableLayoutPanel
                 return _Cells[index];
         }
         return null;
+    }
+
+    public void MoveCursor(int xDelta, int yDelta)
+    {
+        if (_EntryCollection.GetCursor() is int index)
+        {
+            var offset = xDelta + yDelta * ColumnCount;
+            _EntryCollection.SetCursor(index + offset);
+        }
+    }
+
+    private void ListenEntriesUpdated()
+    {
+        for (int i = 0; i < _Cells.Count; i++)
+            _Cells[i].SetEntry(_EntryCollection.Get(i));
+    }
+
+    private void ListenCursorMoved(CursorMoved ev)
+    {
+        for (int i = 0; i < _Cells.Count; i++)
+            _Cells[i].SetIsCursor(i == ev.Index);
     }
 }
 
