@@ -233,7 +233,7 @@ public class ImageCell : Panel
     public void SetEntry(Entry? entry)
     {
         _Entry = entry;
-        var img = _ImageCache.GetImage(_Entry?.Id ?? Guid.Empty);
+        var img = _ImageCache.GetThumbnail(_Entry?.Id);
         _Picture.Image = img;
 
         _Text.Text = _Entry?.Path;

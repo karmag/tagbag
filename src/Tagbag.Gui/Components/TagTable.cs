@@ -66,7 +66,7 @@ public class TagTable : Panel
     {
         _Entry = entry;
 
-        _Picture.Image = _ImageCache.GetImage(_Entry?.Id ?? Guid.Empty);
+        _Picture.Image = _ImageCache.GetThumbnail(_Entry?.Id);
 
         if (entry != null)
         {
