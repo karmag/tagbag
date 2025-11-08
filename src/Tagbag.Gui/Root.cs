@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using Tagbag.Gui.Components;
+using Tagbag.Core;
 
 namespace Tagbag.Gui;
 
@@ -125,5 +126,10 @@ public class Root : Form
 
     private void ListenTagCommand(TagCommand ev)
     {
+        if (_Data.EntryCollection.GetEntryAtCursor() is Entry entry)
+        {
+            ev.Operation.Apply(entry);
+            _Data.EventHub.Send(new ShowEntry(entry));
+        }
     }
 }
