@@ -10,6 +10,8 @@ public class EventHub
     private Stack<Event> _EventQueue;
     private Semaphore _Lock;
 
+    public Action<Shutdown>? Shutdown;
+
     public Action<EntriesUpdated>? EntriesUpdated;
     public Action<ShowEntry>? ShowEntry;
     public Action<CursorMoved>? CursorMoved;
@@ -55,6 +57,8 @@ public class EventHub
 
         switch (ev)
         {
+            case Shutdown e: Shutdown?.Invoke(e); break;
+
             case EntriesUpdated e: EntriesUpdated?.Invoke(e); break;
             case ShowEntry e: ShowEntry?.Invoke(e); break;
             case CursorMoved e: CursorMoved?.Invoke(e); break;
@@ -69,6 +73,8 @@ public class EventHub
 }
 
 public abstract record class Event();
+
+public record Shutdown() : Event();
 
 // The collection of entries have been changed. This may include
 // cursor and filter changes.

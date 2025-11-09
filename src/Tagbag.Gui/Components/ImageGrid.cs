@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Tagbag.Core;
 
@@ -233,10 +234,26 @@ public class ImageCell : Panel
     public void SetEntry(Entry? entry)
     {
         _Entry = entry;
-        var img = _ImageCache.GetThumbnail(_Entry?.Id);
-        _Picture.Image = img;
+        if (_Entry != null)
+        {
+            _Picture.Image = null;
+            var staticId = _Entry.Id;
+            _ImageCache
+                .GetThumbnail(_Entry.Id)
+                .ContinueWith((task) => SetImage(staticId, task));
+        }
+        else
+        {
+            _Picture.Image = null;
+        }
 
         _Text.Text = _Entry?.Path;
+    }
+
+    private async void SetImage(Guid id, Task<Bitmap?> task)
+    {
+        if (id == _Entry?.Id && await task is Bitmap image)
+            _Picture.Image = image;
     }
 
     public Entry? GetEntry()

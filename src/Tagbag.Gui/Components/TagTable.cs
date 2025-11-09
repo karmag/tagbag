@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Tagbag.Core;
 
@@ -62,11 +64,24 @@ public class TagTable : Panel
         _Tags.TabStop = false;
     }
 
+    private async void SetImage(Guid id, Task<Bitmap?> task)
+    {
+        if (_Entry?.Id == id && await task is Bitmap image)
+            _Picture.Image = image;
+    }
+
     public void SetEntry(Entry? entry)
     {
         _Entry = entry;
 
-        _Picture.Image = _ImageCache.GetThumbnail(_Entry?.Id);
+        _Picture.Image = null;
+
+        if (_Entry != null)
+        {
+            var staticId = _Entry.Id;
+            _ImageCache.GetThumbnail(staticId)
+                .ContinueWith((task) => SetImage(staticId, task));
+        }
 
         if (entry != null)
         {

@@ -27,7 +27,7 @@ public class Data
 
         Tagbag = tb;
         EntryCollection = new EntryCollection(EventHub);
-        ImageCache = new ImageCache(tb);
+        ImageCache = new ImageCache(tb, EventHub);
 
         KeyMap = new KeyMap();
 

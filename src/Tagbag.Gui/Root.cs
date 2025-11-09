@@ -26,6 +26,7 @@ public class Root : Form
         Text = "Tagbag";
 
         Shown += (_, _) => { UserCommand.SwapMode(_Data, Mode.CommandMode); };
+        FormClosing += (_, _) => { _Data.EventHub.Send(new Shutdown()); };
 
         KeyPreview = true;
         KeyDown += KeyHandler;
