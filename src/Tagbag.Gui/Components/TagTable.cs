@@ -46,7 +46,7 @@ public class TagTable : Panel
     {
         _Picture.SizeMode = PictureBoxSizeMode.Zoom;
 
-        _Tags.Enabled = false;
+        _Tags.ReadOnly = true;
         _Tags.ColumnCount = 2;
         _Tags.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCellsExceptHeaders;
         _Tags.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
@@ -62,6 +62,8 @@ public class TagTable : Panel
         _Tags.MultiSelect = false;
 
         _Tags.TabStop = false;
+
+        _Tags.SelectionChanged += (_, _) => { _Tags.ClearSelection(); };
     }
 
     private async void SetImage(Guid id, Task<Bitmap?> task)
@@ -121,8 +123,7 @@ public class TagTable : Panel
 
             foreach (var tag in entry.GetAllTags())
             {
-                var value = entry.Get(tag);
-                if (value != null)
+                if (entry.Get(tag) is Value value)
                 {
                     var valueColl = new List<string>();
 
@@ -134,6 +135,16 @@ public class TagTable : Panel
 
                     foreach (var s in value.GetStrings() ?? [])
                         valueColl.Add(s);
+
+                    switch (tag)
+                    {
+                        case "height":
+                        case "width":
+                        case "size":
+                            if (valueColl.Count == 1)
+                                continue;
+                            break;
+                    }
 
                     data.Add(
                         new string[] { tag, String.Join(", ", valueColl) });
