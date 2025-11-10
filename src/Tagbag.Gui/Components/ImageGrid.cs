@@ -109,6 +109,24 @@ public class ImageGrid : TableLayoutPanel
         }
     }
 
+    public void MovePage(int pages)
+    {
+        var offset = pages * ColumnCount * RowCount;
+        if (_IndexOffset + offset >= _EntryCollection.Size())
+            return;
+
+        _IndexOffset += offset;
+        if (_IndexOffset < 0)
+            _IndexOffset = 0;
+        _IndexOffset = Math.Min(
+            _IndexOffset,
+            (_EntryCollection.Size() / ColumnCount - 1) * ColumnCount);
+
+        UpdateCellEntries();
+        if (_EntryCollection.GetCursor() is int index)
+            _EntryCollection.SetCursor(index + offset);
+    }
+
     private void UpdateCellEntries()
     {
         for (int i = 0; i < _Cells.Count; i++)

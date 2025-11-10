@@ -34,6 +34,11 @@ public static class UserCommand
         data.ImageGrid.MoveCursor(xDelta, yDelta);
     }
 
+    public static void MovePage(Data data, int pages)
+    {
+        data.ImageGrid.MovePage(pages);
+    }
+
     public static void ToggleMarked(Data data, int x, int y)
     {
         System.Console.WriteLine("ToggleMarked not implemented");

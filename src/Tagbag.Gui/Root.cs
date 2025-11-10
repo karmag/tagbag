@@ -63,6 +63,8 @@ public class Root : Form
         _Data.KeyMap.Register(Keys.Alt | Keys.Left, (data) => { UserCommand.MoveCursor(data, -1, 0); });
         _Data.KeyMap.Register(Keys.Alt | Keys.Right, (data) => { UserCommand.MoveCursor(data, 1, 0); });
 
+        _Data.KeyMap.Register(Keys.PageUp, (data) => { UserCommand.MovePage(data, -1); });
+        _Data.KeyMap.Register(Keys.PageDown, (data) => { UserCommand.MovePage(data, 1); });
 
         _Data.KeyMap.SwapMode(Mode.CommandMode);
         _Data.KeyMap.Register(Keys.Escape, (data) => { UserCommand.PopFilter(data); });
