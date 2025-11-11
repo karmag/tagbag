@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Drawing;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -105,7 +106,8 @@ public class ImageCache
         if (entry != null)
         {
             var path = Tagbag.Core.TagbagUtil.GetPath(_Tagbag, entry.Path);
-            return new Bitmap(path);
+            if (File.Exists(path))
+                return new Bitmap(path);
         }
         return null;
     }

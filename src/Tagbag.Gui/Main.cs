@@ -13,14 +13,14 @@ static class Program
         // settings or default font, see
         // https://aka.ms/applicationconfiguration.
 
-        Tagbag.Core.Tagbag tb = Tagbag.Core.Tagbag.Open("test-data");
-        //var scan = new Scanner(tb).PopulateAllTags();
-        //scan.Scan(".");
-        //tb.Save();
+        // Tagbag.Core.Tagbag tb = Tagbag.Core.Tagbag.Open("test-data");
+        // var scan = new Scanner(tb).PopulateAllTags().Recursive();
+        // scan.Scan(".");
+        // tb.Save();
         // var y = 0;
         // var x = 1 / y;
 
-        Json.PrettyPrint(tb);
+        // Json.PrettyPrint(tb);
 
         ApplicationConfiguration.Initialize();
         Application.Run(new Root());
