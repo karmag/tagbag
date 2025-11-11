@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.Json.Serialization;
-using System.Text.Json;
 
 namespace Tagbag.Core;
 
@@ -16,12 +14,11 @@ public static class Const
 
 public class Tagbag
 {
-    public string Path { get; }
-    [JsonInclude]
+    public string Path { get; set; }
     private Dictionary<Guid, Entry> Entries;
 
     // Use static methods New or Open to create a Tagbag object.
-    private Tagbag(string path)
+    public Tagbag(string path)
     {
         Path = System.IO.Path.GetFullPath(path);
         Entries = new Dictionary<Guid, Entry>();
@@ -107,28 +104,14 @@ public class Tagbag
 
     private static Tagbag Load(string path)
     {
-        using(var stream = File.Open(path, FileMode.Open))
-        {
-            var entries = JsonSerializer.Deserialize<List<Entry>>(stream);
-            if (entries == null)
-                throw new IOException($"Failed to load {path}");
-
-            var dict = new Dictionary<Guid, Entry>();
-            foreach (var entry in entries)
-                dict[entry.Id] = entry;
-
-            var tb = new Tagbag(path);
-            tb.Entries = dict;
-            return tb;
-        }
+        var tb = Json.Read(path);
+        tb.Path = path;
+        return tb;
     }
 
     public void Save()
     {
-        using(var stream = File.Open(Path, FileMode.Create))
-        {
-            JsonSerializer.Serialize(stream, Entries.Values);
-        }
+        Json.Write(this, Path);
     }
 
     public void Add(Entry entry)
@@ -151,11 +134,8 @@ public class Tagbag
 
 public class Entry
 {
-    [JsonInclude]
     public readonly Guid Id;
-    [JsonInclude]
     public readonly string Path;
-    [JsonInclude]
     private Dictionary<string, Value> Tags;
 
     public Entry(string path)
@@ -165,7 +145,6 @@ public class Entry
         Tags = new Dictionary<string, Value>();
     }
 
-    [JsonConstructor]
     public Entry(Guid id, string path)
     {
         Id = id;
@@ -222,6 +201,12 @@ public class Entry
 
     public void Set(string tag, string value) { Remove(tag); Add(tag, value); }
     public void Set(string tag, int value)    { Remove(tag); Add(tag, value); }
+    public void Set(string tag, Value value)  {
+        if (value.IsSet())
+            Tags[tag] = value;
+        else
+            Remove(tag);
+    }
 
     public Value? Get(string tag)                  { return GetEx(tag); }
     public HashSet<string>? GetStrings(string tag) { return GetEx(tag)?.GetStrings(); }
@@ -235,11 +220,8 @@ public class Entry
 
 public class Value
 {
-    [JsonInclude]
     private bool Tag;
-    [JsonInclude]
     private HashSet<string>? Strings;
-    [JsonInclude]
     private HashSet<int>? Ints;
 
     // Returns true if this value is set in some way.
