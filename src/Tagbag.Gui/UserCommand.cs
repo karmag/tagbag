@@ -48,4 +48,14 @@ public static class UserCommand
     {
         data.EntryCollection.PopFilter();
     }
+
+    public static void Save(Data data)
+    {
+        data.Tagbag.Save();
+    }
+
+    public static void Backup(Data data)
+    {
+        data.Tagbag.Backup();
+    }
 }

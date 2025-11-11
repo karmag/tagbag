@@ -35,6 +35,9 @@ public class Root : Form
 
         _Data.KeyMap.SwapMode(null);
 
+        _Data.KeyMap.Register(Keys.Control | Keys.S, (data) => { UserCommand.Save(data); });
+        _Data.KeyMap.Register(Keys.Control | Keys.B, (data) => { UserCommand.Backup(data); });
+
         _Data.KeyMap.Register(Keys.F9, (data) => { _Data.Report($"{this.ActiveControl}"); });
 
         _Data.KeyMap.Register(Keys.F1, (data) => { UserCommand.SetCommandMode(data, CommandLineMode.FilterMode); });

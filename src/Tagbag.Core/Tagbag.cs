@@ -114,6 +114,14 @@ public class Tagbag
         Json.Write(this, Path);
     }
 
+    // Saves the tagbag with a file extension that indicates the
+    // current date and time.
+    public void Backup()
+    {
+        var now = DateTime.Now;
+        Json.Write(this, $"{Path}_{now:yyyyMMdd_HHmmss}");
+    }
+
     public void Add(Entry entry)
     {
         Entries.Add(entry.Id, entry);

@@ -32,9 +32,9 @@ public class ImageCache
         _ThumbnailWidth = 300;
         _ThumbnailHeight = 300;
 
-        _Worker.Start();
-
         eventHub.Shutdown += (_) => { _Running = false; };
+
+        _Worker.Start();
     }
 
     public Task<Bitmap?> GetImage(Guid id)
