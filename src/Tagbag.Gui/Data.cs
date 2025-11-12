@@ -8,7 +8,7 @@ public class Data
 
     public EventHub EventHub;
 
-    public Tagbag.Core.Tagbag Tagbag { get; }
+    public Tagbag.Core.Tagbag? Tagbag;
     public EntryCollection EntryCollection { get; }
     public ImageCache ImageCache { get; }
 
@@ -19,15 +19,15 @@ public class Data
     public Components.CommandLine CommandLine;
     public Components.StatusBar StatusBar;
 
-    public Data(Tagbag.Core.Tagbag tb)
+    public Data()
     {
         Mode = Mode.GridMode;
 
         EventHub = new EventHub();
 
-        Tagbag = tb;
+        Tagbag = null;
         EntryCollection = new EntryCollection(EventHub);
-        ImageCache = new ImageCache(tb, EventHub);
+        ImageCache = new ImageCache(EventHub);
 
         KeyMap = new KeyMap();
 
@@ -35,6 +35,16 @@ public class Data
         ImageGrid = new Components.ImageGrid(EventHub, EntryCollection, ImageCache);
         CommandLine = new Components.CommandLine(EventHub);
         StatusBar = new Components.StatusBar();
+    }
+
+    public void SetTagbag(Tagbag.Core.Tagbag? tb)
+    {
+        Tagbag = tb;
+        ImageCache.SetTagbag(tb);
+        if (tb != null)
+            EntryCollection.SetBaseEntries(tb.GetEntries());
+        else
+            EntryCollection.SetBaseEntries([]);
     }
 
     public void Report(string msg)

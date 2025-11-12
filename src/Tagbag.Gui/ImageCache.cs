@@ -9,7 +9,7 @@ namespace Tagbag.Gui;
 
 public class ImageCache
 {
-    private Tagbag.Core.Tagbag _Tagbag;
+    private Tagbag.Core.Tagbag? _Tagbag;
     private ConcurrentDictionary<Guid, Task<Bitmap?>> _ImageCache;
     private ConcurrentDictionary<Guid, Task<Bitmap?>> _ThumbnailCache;
     private ConcurrentStack<Task<Bitmap?>> _TaskStack;
@@ -19,10 +19,9 @@ public class ImageCache
     private decimal _ThumbnailWidth;
     private decimal _ThumbnailHeight;
 
-    public ImageCache(Tagbag.Core.Tagbag tb,
-                      EventHub eventHub)
+    public ImageCache(EventHub eventHub)
     {
-        _Tagbag = tb;
+        _Tagbag = null;
         _ImageCache = new ConcurrentDictionary<Guid, Task<Bitmap?>>();
         _ThumbnailCache = new ConcurrentDictionary<Guid, Task<Bitmap?>>();
         _TaskStack = new ConcurrentStack<Task<Bitmap?>>();
@@ -35,6 +34,14 @@ public class ImageCache
         eventHub.Shutdown += (_) => { _Running = false; };
 
         _Worker.Start();
+    }
+
+    public void SetTagbag(Tagbag.Core.Tagbag? tb)
+    {
+        _Tagbag = tb;
+        _ImageCache.Clear();
+        _ThumbnailCache.Clear();
+        _TaskStack.Clear();
     }
 
     public Task<Bitmap?> GetImage(Guid id)
@@ -102,12 +109,15 @@ public class ImageCache
 
     private Bitmap? LoadImage(Guid id)
     {
-        var entry = _Tagbag.Get(id);
-        if (entry != null)
+        if (_Tagbag != null)
         {
-            var path = Tagbag.Core.TagbagUtil.GetPath(_Tagbag, entry.Path);
-            if (File.Exists(path))
-                return new Bitmap(path);
+            var entry = _Tagbag.Get(id);
+            if (entry != null)
+            {
+                var path = Tagbag.Core.TagbagUtil.GetPath(_Tagbag, entry.Path);
+                if (File.Exists(path))
+                    return new Bitmap(path);
+            }
         }
         return null;
     }

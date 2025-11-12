@@ -1,8 +1,9 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-using Tagbag.Gui.Components;
+using System.Windows.Input;
 using Tagbag.Core;
+using Tagbag.Gui.Components;
 
 namespace Tagbag.Gui;
 
@@ -12,8 +13,8 @@ public class Root : Form
 
     public Root()
     {
-        Tagbag.Core.Tagbag tb = Tagbag.Core.Tagbag.Open("test-data");
-        _Data = new Data(tb);
+        //Tagbag.Core.Tagbag tb = Tagbag.Core.Tagbag.Open("test-data");
+        _Data = new Data();
 
         Width = 900;
         Height = 600;
@@ -22,6 +23,10 @@ public class Root : Form
         var grid = MakeGridView(_Data);
         grid.Dock = DockStyle.Fill;
         Controls.Add(grid);
+
+        var menu = MakeMenu(_Data);
+        menu.Dock = DockStyle.Top;
+        this.Controls.Add(menu);
 
         Text = "Tagbag";
 
@@ -33,6 +38,69 @@ public class Root : Form
         KeyUp += (_, _) => { };
         KeyPress += KeyPressHandler;
 
+        _Data.EventHub.FilterCommand += ListenFilterCommand;
+        _Data.EventHub.TagCommand += ListenTagCommand;
+
+        SetupKeyMap();
+    }
+
+    private MenuStrip MakeMenu(Data data)
+    {
+        var menuStrip = new MenuStrip();
+
+        var fileMenu = new ToolStripMenuItem("File");
+        menuStrip.Items.Add(fileMenu);
+
+        var fNew = new ToolStripMenuItem("New...");
+        var fOpen = new ToolStripMenuItem("Open...");
+        var fRecent = new ToolStripMenuItem("Recent");
+        var fSave = new ToolStripMenuItem("Save");
+        var fBackup = new ToolStripMenuItem("Backup");
+        var fQuit = new ToolStripMenuItem("Quit");
+        fileMenu.DropDownItems.Add(fNew);
+        fileMenu.DropDownItems.Add(fOpen);
+        fileMenu.DropDownItems.Add(fRecent);
+        fileMenu.DropDownItems.Add(new ToolStripSeparator());
+        fileMenu.DropDownItems.Add(fSave);
+        fileMenu.DropDownItems.Add(fBackup);
+        fileMenu.DropDownItems.Add(new ToolStripSeparator());
+        fileMenu.DropDownItems.Add(fQuit);
+
+        fNew.Command = new Button(() => { GuiCommand.NewTagbag(data); });
+        fOpen.Command = new Button(() => { GuiCommand.OpenTagbag(data); });
+        fSave.Command = new Button(() => { UserCommand.Save(data); });
+        fBackup.Command = new Button(() => { UserCommand.Backup(data); });
+        fQuit.Command = new Button(() => { UserCommand.Quit(data); });
+
+        var viewMenu = new ToolStripMenuItem("View");
+        menuStrip.Items.Add(viewMenu);
+
+        var vGrid = new ToolStripMenuItem("Grid");
+        var vSingle = new ToolStripMenuItem("Single");
+        var vSummary = new ToolStripMenuItem("Tag summary");
+        var vBulk = new ToolStripMenuItem("Bulk");
+        viewMenu.DropDownItems.Add(vGrid);
+        viewMenu.DropDownItems.Add(vSingle);
+        viewMenu.DropDownItems.Add(vSummary);
+        viewMenu.DropDownItems.Add(vBulk);
+
+        var helpMenu = new ToolStripMenuItem("Help");
+        menuStrip.Items.Add(helpMenu);
+        
+        return menuStrip;
+    }
+
+    private class Button : ICommand
+    {
+        private Action _Action;
+        public event EventHandler? CanExecuteChanged;
+        public Button(Action action) { _Action = action; }
+        public bool CanExecute(object? _) { return true; }
+        public void Execute(object? _) { _Action.Invoke(); }
+    }
+
+    private void SetupKeyMap()
+    {
         _Data.KeyMap.SwapMode(null);
 
         _Data.KeyMap.Register(Keys.Control | Keys.S, (data) => { UserCommand.Save(data); });
@@ -71,11 +139,6 @@ public class Root : Form
 
         _Data.KeyMap.SwapMode(Mode.CommandMode);
         _Data.KeyMap.Register(Keys.Escape, (data) => { UserCommand.PopFilter(data); });
-
-        _Data.EventHub.FilterCommand += ListenFilterCommand;
-        _Data.EventHub.TagCommand += ListenTagCommand;
-
-        _Data.EntryCollection.SetBaseEntries(tb.GetEntries());
     }
 
     private void KeyHandler(Object? o, KeyEventArgs e)

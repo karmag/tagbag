@@ -1,3 +1,4 @@
+using System.Windows.Forms;
 using Tagbag.Gui.Components;
 
 namespace Tagbag.Gui;
@@ -51,11 +52,16 @@ public static class UserCommand
 
     public static void Save(Data data)
     {
-        data.Tagbag.Save();
+        data.Tagbag?.Save();
     }
 
     public static void Backup(Data data)
     {
-        data.Tagbag.Backup();
+        data.Tagbag?.Backup();
+    }
+
+    public static void Quit(Data data)
+    {
+        Application.Exit();
     }
 }

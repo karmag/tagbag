@@ -28,6 +28,10 @@ public class EntryCollection
         _BaseEntries = entries ?? [];
         _Entries = new List<Entry>(_BaseEntries.Count);
         RefreshEntries();
+
+        _EventHub.Send(new EntriesUpdated());
+        _EventHub.Send(new CursorMoved(GetCursor()));
+        _EventHub.Send(new ShowEntry(GetEntryAtCursor()));
     }
 
     public int Size()
