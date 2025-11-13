@@ -18,7 +18,7 @@ public class Root : Form
 
         Width = 900;
         Height = 600;
-        MinimumSize = new Size(500, 500);
+        MinimumSize = new Size(800, 500);
 
         var grid = MakeGridView(_Data);
         grid.Dock = DockStyle.Fill;

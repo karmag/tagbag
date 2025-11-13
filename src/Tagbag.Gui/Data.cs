@@ -34,7 +34,7 @@ public class Data
         TagTable = new Components.TagTable(EventHub, ImageCache);
         ImageGrid = new Components.ImageGrid(EventHub, EntryCollection, ImageCache);
         CommandLine = new Components.CommandLine(EventHub);
-        StatusBar = new Components.StatusBar();
+        StatusBar = new Components.StatusBar(EventHub, EntryCollection);
     }
 
     public void SetTagbag(Tagbag.Core.Tagbag? tb)
@@ -50,7 +50,6 @@ public class Data
     public void Report(string msg)
     {
         System.Console.WriteLine(msg);
-        StatusBar.SetText(msg);
     }
 }
 

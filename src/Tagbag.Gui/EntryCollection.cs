@@ -34,9 +34,16 @@ public class EntryCollection
         _EventHub.Send(new ShowEntry(GetEntryAtCursor()));
     }
 
+    // The number of currently visible entries.
     public int Size()
     {
         return _Entries.Count;
+    }
+
+    // The number of entries in the tagbag.
+    public int MaxSize()
+    {
+        return _BaseEntries.Count;
     }
 
     public Entry? Get(int index)
@@ -103,6 +110,11 @@ public class EntryCollection
             _Filters.Clear();
             RefreshEntries();
         }
+    }
+
+    public Stack<IFilter> GetFilters()
+    {
+        return _Filters;
     }
 
     private void RefreshEntries()

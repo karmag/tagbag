@@ -1,14 +1,45 @@
-using System.Windows.Forms;
+using System.Linq;
+using System.Drawing;
+using Tagbag.Core;
 
 namespace Tagbag.Gui.Components;
 
-public class StatusBar : Label
+public class StatusBar : RichLabel
 {
-    private int _Counter;
+    private EntryCollection _EntryCollection;
 
-    public void SetText(string msg)
+    public StatusBar(EventHub eventHub,
+                     EntryCollection entryCollection)
     {
-        _Counter++;
-        Text = $"{_Counter} :: {msg}";
+        _EntryCollection = entryCollection;
+        eventHub.EntriesUpdated += ListenEntriesUpdated;
+    }
+
+    private void ListenEntriesUpdated(EntriesUpdated _)
+    {
+        RefreshText();
+    }
+
+    private void RefreshText()
+    {
+        Clear();
+
+        AddText(_EntryCollection.Size().ToString(), Color.Black);
+        AddText(" / ", Color.Gray);
+        AddText(_EntryCollection.MaxSize().ToString(), Color.Gray);
+
+        AddText("  ");
+
+        AddText("[", Color.Gray);
+        var first = true;
+        foreach (var fltr in _EntryCollection.GetFilters().Reverse())
+        {
+            if (first)
+                first = false;
+            else
+                AddText(" / ", Color.Gray);
+            AddText(fltr?.ToString() ?? "", Color.Black);
+        }
+        AddText("]", Color.Gray);
     }
 }

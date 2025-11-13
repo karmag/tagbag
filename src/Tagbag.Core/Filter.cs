@@ -59,6 +59,11 @@ public class Filter
         {
             return entry.Get(_tag) != null;
         }
+
+        override public string? ToString()
+        {
+            return _tag;
+        }
     }
 
     private class HasValue : BaseFilter
@@ -87,17 +92,25 @@ public class Filter
             else
                 return AnyInt(entry, i => i == _int);
         }
+
+        override public string? ToString()
+        {
+            if (_is_string)
+                return $"{_tag} = \"{_string}\"";
+            else
+                return $"{_tag} = {_int}";
+        }
     }
 
     private class Logic : IFilter
     {
         private int _mode;
-        private IEnumerable<IFilter> _filters;
+        private List<IFilter> _filters;
 
         private Logic(int mode, IEnumerable<IFilter> filters)
         {
             _mode = mode;
-            _filters = filters;
+            _filters = new List<IFilter>(filters);
         }
 
         public static Logic Not(IFilter filter)
@@ -120,9 +133,7 @@ public class Filter
             switch (_mode)
             {
                 case 0: // not
-                    foreach (var filter in _filters)
-                        return !filter.Keep(entry);
-                    throw new InvalidOperationException("No filter for 'not'");
+                    return !_filters[0].Keep(entry);
 
                 case 1: // and
                     foreach (var filter in _filters)
@@ -138,6 +149,24 @@ public class Filter
             }
 
             throw new InvalidOperationException("Unknown boolean logic mode");
+        }
+
+        override public string? ToString()
+        {
+            switch (_mode)
+            {
+                case 0: // not
+                    return $"not {_filters[0]}";
+
+                case 1: // and
+                    return String.Join(" and ", _filters);
+
+                case 2: // or
+                    return String.Join(" or ", _filters);
+
+                default:
+                    return "Unknown logic filter type";
+            }
         }
     }
 }
