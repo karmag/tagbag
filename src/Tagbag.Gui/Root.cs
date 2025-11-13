@@ -13,7 +13,6 @@ public class Root : Form
 
     public Root()
     {
-        //Tagbag.Core.Tagbag tb = Tagbag.Core.Tagbag.Open("test-data");
         _Data = new Data();
 
         Width = 900;
@@ -42,6 +41,27 @@ public class Root : Form
         _Data.EventHub.TagCommand += ListenTagCommand;
 
         SetupKeyMap();
+        _Data.SetTagbag(GetInitialTagbag());
+    }
+
+    private Tagbag.Core.Tagbag? GetInitialTagbag()
+    {
+        var args = Environment.GetCommandLineArgs();
+
+        if (args.Length <= 1)
+            return null;
+
+        if (args.Length == 2)
+        {
+            var path = Tagbag.Core.Tagbag.Locate(args[1]);
+            if (path == null)
+                path = Tagbag.Core.Tagbag.Locate(null);
+            if (path == null)
+                return null;
+            return Tagbag.Core.Tagbag.Open(path);
+        }
+
+        throw new ArgumentException($"Multiple command line arguments: [{String.Join(", ", args)}]");
     }
 
     private MenuStrip MakeMenu(Data data)
@@ -178,12 +198,12 @@ public class Root : Form
         ttPanel.Controls.Add(data.TagTable);
         panel.Controls.Add(ttPanel);
 
+        data.StatusBar.Dock = DockStyle.Top;
+        panel.Controls.Add(data.StatusBar);
+
         data.CommandLine.Dock = DockStyle.Top;
         data.CommandLine.Padding = new Padding(pad);
         panel.Controls.Add(data.CommandLine);
-
-        data.StatusBar.Dock = DockStyle.Bottom;
-        panel.Controls.Add(data.StatusBar);
 
         return panel;
     }

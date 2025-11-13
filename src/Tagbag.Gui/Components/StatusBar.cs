@@ -1,6 +1,5 @@
 using System.Linq;
 using System.Drawing;
-using Tagbag.Core;
 
 namespace Tagbag.Gui.Components;
 
@@ -28,7 +27,7 @@ public class StatusBar : RichLabel
         AddText(" / ", Color.Gray);
         AddText(_EntryCollection.MaxSize().ToString(), Color.Gray);
 
-        AddText("  ");
+        AddText(" --- ", Color.White);
 
         AddText("[", Color.Gray);
         var first = true;
