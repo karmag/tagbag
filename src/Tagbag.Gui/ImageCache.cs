@@ -13,6 +13,7 @@ public class ImageCache
     private ConcurrentDictionary<Guid, Task<Bitmap?>> _ImageCache;
     private ConcurrentDictionary<Guid, Task<Bitmap?>> _ThumbnailCache;
     private ConcurrentStack<Task<Bitmap?>> _TaskStack;
+    private ConcurrentQueue<Task<Bitmap?>> _TaskHighPrio;
     private Thread _Worker;
     private bool _Running;
 
@@ -25,6 +26,7 @@ public class ImageCache
         _ImageCache = new ConcurrentDictionary<Guid, Task<Bitmap?>>();
         _ThumbnailCache = new ConcurrentDictionary<Guid, Task<Bitmap?>>();
         _TaskStack = new ConcurrentStack<Task<Bitmap?>>();
+        _TaskHighPrio = new ConcurrentQueue<Task<Bitmap?>>();
         _Worker = new Thread(WorkerFunction);
         _Running = true;
 
@@ -42,54 +44,59 @@ public class ImageCache
         _ImageCache.Clear();
         _ThumbnailCache.Clear();
         _TaskStack.Clear();
+        _TaskHighPrio.Clear();
     }
 
-    public Task<Bitmap?> GetImage(Guid id)
+    // Loads the image for the given entry id. If prio is true the
+    // work of loading the image is assigned to the high priority
+    // queue.
+    public Task<Bitmap?> GetImage(Guid id, bool prio = false)
     {
-        return GetImage(id).ContinueWith(CopyBitmap).Unwrap();
+        var task = GetOrLoad(id, _ImageCache);
+        if (prio && !task.IsCompleted)
+            _TaskHighPrio.Enqueue(task);
+        return task.ContinueWith(CopyBitmap).Unwrap();
     }
 
-    private Task<Bitmap?> GetImageBase(Guid id)
+    // Function as GetImage but also resizes the image to fit as a
+    // thumbnail.
+    public Task<Bitmap?> GetThumbnail(Guid id, bool prio = false)
+    {
+        var task = GetOrLoad(id, _ThumbnailCache, ResizeAsThumbnail);
+        if (prio && !task.IsCompleted)
+            _TaskHighPrio.Enqueue(task);
+        return task.ContinueWith(CopyBitmap).Unwrap();
+    }
+
+    private Task<Bitmap?> GetOrLoad(
+        Guid id,
+        ConcurrentDictionary<Guid, Task<Bitmap?>> cache,
+        Func<Bitmap, Bitmap>? transform = null)
     {
         Task<Bitmap?>? existing;
-        if (_ImageCache.TryGetValue(id, out existing))
+        if (cache.TryGetValue(id, out existing))
             return existing;
 
-        Task<Bitmap?> task = new Task<Bitmap?>(() => LoadImage(id));
-        if (_ImageCache.TryAdd(id, task))
+        Task<Bitmap?>? task;
+        if (transform != null)
+        {
+            task = new Task<Bitmap?>(() => {
+                if (LoadImage(id) is Bitmap image)
+                    return transform(image);
+                return null;
+            });
+        }
+        else
+        {
+            task = new Task<Bitmap?>(() => LoadImage(id));
+        }
+
+        if (cache.TryAdd(id, task))
         {
             _TaskStack.Push(task);
             return task;
         }
-        else if (_ImageCache.TryGetValue(id, out existing))
-        {
-            return existing;
-        }
-        else
-        {
-            throw new InvalidOperationException("Unable to determine cache status");
-        }
-    }
-
-    public Task<Bitmap?> GetThumbnail(Guid id)
-    {
-        return GetThumbnailBase(id).ContinueWith(CopyBitmap).Unwrap();
-    }
-
-    private Task<Bitmap?> GetThumbnailBase(Guid id)
-    {
-        Task<Bitmap?>? existing;
-        if (_ThumbnailCache.TryGetValue(id, out existing))
-            return existing;
-
-        Task<Bitmap?> loadTask  = new Task<Bitmap?>(() => LoadImage(id));
-        Task<Bitmap?> task = loadTask.ContinueWith(IntoThumbnail).Unwrap();
-        if (_ThumbnailCache.TryAdd(id, task))
-        {
-            _TaskStack.Push(loadTask);
-            return task;
-        }
-        else if (_ThumbnailCache.TryGetValue(id, out existing))
+        else if (cache.TryGetValue(id, out existing))
         {
             return existing;
         }
@@ -122,20 +129,16 @@ public class ImageCache
         return null;
     }
 
-    private async Task<Bitmap?> IntoThumbnail(Task<Bitmap?> image)
+    private Bitmap ResizeAsThumbnail(Bitmap original)
     {
-        if (await image is Bitmap original)
-        {
-            var scale = Math.Min(_ThumbnailWidth / original.Width,
-                                 _ThumbnailHeight / original.Height);
-            var w = (int)(original.Width * scale);
-            var h = (int)(original.Height * scale);
+        var scale = Math.Min(_ThumbnailWidth / original.Width,
+                             _ThumbnailHeight / original.Height);
+        var w = (int)(original.Width * scale);
+        var h = (int)(original.Height * scale);
 
-            var thumbnail = new Bitmap(original, w, h);
-            original.Dispose();
-            return thumbnail;
-        }
-        return null;
+        var thumbnail = new Bitmap(original, w, h);
+        original.Dispose();
+        return thumbnail;
     }
 
     private void WorkerFunction()
@@ -143,10 +146,13 @@ public class ImageCache
         Task<Bitmap?>? task;
         while (_Running)
         {
-            if (_TaskStack.TryPop(out task))
+            if (_TaskHighPrio.TryDequeue(out task) || _TaskStack.TryPop(out task))
             {
-                task.RunSynchronously();
-                task.Wait();
+                if (!task.IsCompleted)
+                {
+                    task.RunSynchronously();
+                    task.Wait();
+                }
             }
             else
             {

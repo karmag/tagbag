@@ -81,7 +81,7 @@ public class TagTable : Panel
         if (_Entry != null)
         {
             var staticId = _Entry.Id;
-            _ImageCache.GetThumbnail(staticId)
+            _ImageCache.GetThumbnail(staticId, prio: true)
                 .ContinueWith((task) => SetImage(staticId, task));
         }
 
