@@ -10,7 +10,7 @@ public class RichLabel : RichTextBox
     public RichLabel()
     {
         BorderStyle = BorderStyle.None;
-        Font = new Font("Arial", 16);
+        Font = new Font("Verdana", 16);
         Height = 25;
 
         ReadOnly = true;

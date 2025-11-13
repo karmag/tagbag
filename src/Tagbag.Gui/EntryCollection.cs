@@ -12,6 +12,7 @@ public class EntryCollection
     private List<Entry> _Entries;
     private int? _CursorIndex;
     private Stack<IFilter> _Filters;
+    private HashSet<Guid> _Marked;
 
     public EntryCollection(EventHub eventHub)
     {
@@ -21,6 +22,7 @@ public class EntryCollection
         _Entries = new List<Entry>();
         _CursorIndex = null;
         _Filters = new Stack<IFilter>();
+        _Marked = new HashSet<Guid>();
     }
 
     public void SetBaseEntries(ICollection<Entry>? entries)
@@ -115,6 +117,35 @@ public class EntryCollection
     public Stack<IFilter> GetFilters()
     {
         return _Filters;
+    }
+
+    public void SetMarked(Guid id, bool marked)
+    {
+        if (marked != IsMarked(id))
+        {
+            if (marked)
+                _Marked.Add(id);
+            else
+                _Marked.Remove(id);
+
+            _EventHub.Send(new MarkedChanged());
+        }
+    }
+
+    public HashSet<Guid> GetMarked()
+    {
+        return _Marked;
+    }
+
+    public bool IsMarked(Guid id)
+    {
+        return _Marked.Contains(id);
+    }
+
+    public void ClearMarked()
+    {
+        _Marked.Clear();
+        _EventHub.Send(new MarkedChanged());
     }
 
     private void RefreshEntries()

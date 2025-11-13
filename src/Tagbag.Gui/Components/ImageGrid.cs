@@ -46,6 +46,7 @@ public class ImageGrid : TableLayoutPanel
         ClientSizeChanged += (_, _) => { LayoutChanged(_Rows); };
         _EventHub.EntriesUpdated += (_) => { ListenEntriesUpdated(); };
         _EventHub.CursorMoved += (ev) => { ListenCursorMoved(ev); };
+        _EventHub.MarkedChanged += (_) => { ListenMarkedChanged(); };
     }
 
     private void LayoutChanged(int newRows)
@@ -131,6 +132,15 @@ public class ImageGrid : TableLayoutPanel
     {
         for (int i = 0; i < _Cells.Count; i++)
             _Cells[i].SetEntry(_EntryCollection.Get(i + _IndexOffset));
+        UpdateMarked();
+    }
+
+    private void UpdateMarked()
+    {
+        foreach (var cell in _Cells)
+            cell.SetIsMarked(
+                _EntryCollection.IsMarked(
+                    cell.GetEntry()?.Id ?? Guid.Empty));
     }
 
     private void UpdateCursor()
@@ -175,6 +185,11 @@ public class ImageGrid : TableLayoutPanel
         }
 
         UpdateCursor();
+    }
+
+    private void ListenMarkedChanged()
+    {
+        UpdateMarked();
     }
 }
 
@@ -232,9 +247,9 @@ public class ImageCell : Panel
         {
             _IsCursor = isCursor;
             if (_IsCursor)
-                BackColor = Color.FromArgb(0x73, 0x73, 0x9c);
+                BorderStyle = BorderStyle.FixedSingle;
             else
-                BackColor = Color.LightGray;
+                BorderStyle = BorderStyle.None;
         }
     }
 

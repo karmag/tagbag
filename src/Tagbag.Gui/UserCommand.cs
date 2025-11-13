@@ -1,3 +1,4 @@
+using System;
 using System.Windows.Forms;
 using Tagbag.Gui.Components;
 
@@ -42,7 +43,30 @@ public static class UserCommand
 
     public static void ToggleMarked(Data data, int x, int y)
     {
-        System.Console.WriteLine("ToggleMarked not implemented");
+        if (data.ImageGrid.GetCell(x, y) is ImageCell cell)
+        {
+            if (cell.GetEntry()?.Id is Guid id)
+            {
+                data.EntryCollection.SetMarked(
+                    id,
+                    !data.EntryCollection.IsMarked(id));
+            }
+        }
+    }
+
+    public static void ToggleMarkCursor(Data data)
+    {
+        if (data.EntryCollection.GetEntryAtCursor()?.Id is Guid id)
+        {
+            data.EntryCollection.SetMarked(
+                id,
+                !data.EntryCollection.IsMarked(id));
+        }
+    }
+
+    public static void ClearMarked(Data data)
+    {
+        data.EntryCollection.ClearMarked();
     }
 
     public static void PopFilter(Data data)

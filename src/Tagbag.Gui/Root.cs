@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -149,6 +150,9 @@ public class Root : Form
         _Data.KeyMap.Register(Keys.Alt | Keys.V, (data) => { UserCommand.ToggleMarked(data, 3, 2); });
         _Data.KeyMap.Register(Keys.Alt | Keys.B, (data) => { UserCommand.ToggleMarked(data, 4, 2); });
 
+        _Data.KeyMap.Register(Keys.Control | Keys.Q, (data) => { UserCommand.ClearMarked(data); });
+        _Data.KeyMap.Register(Keys.Control | Keys.Space, (data) => { UserCommand.ToggleMarkCursor(data); });
+
         _Data.KeyMap.Register(Keys.Alt | Keys.Up, (data) => { UserCommand.MoveCursor(data, 0, -1); });
         _Data.KeyMap.Register(Keys.Alt | Keys.Down, (data) => { UserCommand.MoveCursor(data, 0, 1); });
         _Data.KeyMap.Register(Keys.Alt | Keys.Left, (data) => { UserCommand.MoveCursor(data, -1, 0); });
@@ -215,10 +219,18 @@ public class Root : Form
 
     private void ListenTagCommand(TagCommand ev)
     {
-        if (_Data.EntryCollection.GetEntryAtCursor() is Entry entry)
+        var atCursor = _Data.EntryCollection.GetEntryAtCursor();
+        ICollection<Guid> entries = _Data.EntryCollection.GetMarked();
+        if (entries.Count == 0 && atCursor != null)
+            entries = [atCursor.Id];
+
+        if (entries.Count > 0)
         {
-            ev.Operation.Apply(entry);
-            _Data.EventHub.Send(new ShowEntry(entry));
+            foreach (var id in entries)
+                if (_Data.Tagbag?.Get(id) is Entry entry)
+                    ev.Operation.Apply(entry);
         }
+
+        _Data.EventHub.Send(new ShowEntry(atCursor));
     }
 }

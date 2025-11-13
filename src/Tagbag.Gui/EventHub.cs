@@ -15,6 +15,7 @@ public class EventHub
     public Action<EntriesUpdated>? EntriesUpdated;
     public Action<ShowEntry>? ShowEntry;
     public Action<CursorMoved>? CursorMoved;
+    public Action<MarkedChanged>? MarkedChanged;
 
     public Action<FilterCommand>? FilterCommand;
     public Action<TagCommand>? TagCommand;
@@ -62,6 +63,7 @@ public class EventHub
             case EntriesUpdated e: EntriesUpdated?.Invoke(e); break;
             case ShowEntry e: ShowEntry?.Invoke(e); break;
             case CursorMoved e: CursorMoved?.Invoke(e); break;
+            case MarkedChanged e: MarkedChanged?.Invoke(e); break;
 
             case FilterCommand e: FilterCommand?.Invoke(e); break;
             case TagCommand e: TagCommand?.Invoke(e); break;
@@ -82,6 +84,7 @@ public record EntriesUpdated() : Event();
 // Highlight the given entry.
 public record ShowEntry(Entry? Entry) : Event();
 public record CursorMoved(int? Index) : Event();
+public record MarkedChanged() : Event();
 
 public record FilterCommand(IFilter Filter) : Event();
 public record TagCommand(ITagOperation Operation) : Event();
