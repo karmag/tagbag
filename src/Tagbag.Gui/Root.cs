@@ -124,8 +124,8 @@ public class Root : Form
     {
         _Data.KeyMap.SwapMode(null);
 
-        _Data.KeyMap.Register(Keys.Control | Keys.S, (data) => { UserCommand.Save(data); });
-        _Data.KeyMap.Register(Keys.Control | Keys.B, (data) => { UserCommand.Backup(data); });
+        _Data.KeyMap.Register(Keys.Control | Keys.S, UserCommand.Save);
+        _Data.KeyMap.Register(Keys.Control | Keys.B, UserCommand.Backup);
 
         _Data.KeyMap.Register(Keys.F9, (data) => { _Data.Report($"{this.ActiveControl}"); });
 
@@ -162,6 +162,9 @@ public class Root : Form
         _Data.KeyMap.Register(Keys.PageDown, (data) => { UserCommand.MovePage(data, 1); });
         _Data.KeyMap.Register(Keys.Home, (data) => { UserCommand.MovePage(data, -1000000); });
         _Data.KeyMap.Register(Keys.End, (data) => { UserCommand.MoveCursor(data, 1000, 1000000); });
+
+        _Data.KeyMap.Register(Keys.Control | Keys.C, UserCommand.CursorImageToClipboard);
+        _Data.KeyMap.Register(Keys.Control | Keys.Shift | Keys.C, UserCommand.CursorPathToClipboard);
 
         _Data.KeyMap.SwapMode(Mode.CommandMode);
         _Data.KeyMap.Register(Keys.Escape, (data) => { UserCommand.PopFilter(data); });

@@ -1,5 +1,7 @@
 using System;
+using System.Windows;
 using System.Windows.Forms;
+using Tagbag.Core;
 using Tagbag.Gui.Components;
 
 namespace Tagbag.Gui;
@@ -87,5 +89,30 @@ public static class UserCommand
     public static void Quit(Data data)
     {
         Application.Exit();
+    }
+
+    public static void CursorImageToClipboard(Data data)
+    {
+        if (data.EntryCollection.GetEntryAtCursor() is Entry entry)
+        {
+            var task = data.ImageCache.GetImage(entry.Id, prio: true);
+            var bitmap = task.Result;
+            if (bitmap != null)
+            {
+                Clipboard.SetData(DataFormats.Bitmap, bitmap);
+                data.Report($"Copied {entry.Path} to clipboard");
+            }
+        }
+    }
+
+    public static void CursorPathToClipboard(Data data)
+    {
+        if (data.EntryCollection.GetEntryAtCursor() is Entry entry &&
+            data.Tagbag is Tagbag.Core.Tagbag tb)
+        {
+            var path = TagbagUtil.GetPath(tb, entry.Path);
+            Clipboard.SetData(DataFormats.Text, path);
+            data.Report($"Copied {entry.Path} to clipboard");
+        }
     }
 }
