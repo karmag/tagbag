@@ -27,7 +27,7 @@ public class CommandLine : Panel
         var pad = 5;
 
         _TextBox = new TextBox();
-        _TextBox.Dock = DockStyle.Fill;
+        _TextBox.Dock = DockStyle.Bottom;
         Controls.Add(_TextBox);
 
         _ModeLabel = new Label();
@@ -43,6 +43,10 @@ public class CommandLine : Panel
             _TextBox.Width = Math.Max(300, Width / 2);
             Height = _TextBox.Height + 2 * pad;
         };
+
+        _TextBox.Multiline = true;
+        _TextBox.AcceptsTab = true;
+        _TextBox.Height = _TextBox.Font.Height + 4;
 
         _TextBox.KeyDown += HandleKey;
         SetMode(CommandLineMode.FilterMode);

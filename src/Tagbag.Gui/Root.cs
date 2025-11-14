@@ -169,6 +169,12 @@ public class Root : Form
 
     private void KeyHandler(Object? o, KeyEventArgs e)
     {
+        if (e.KeyData == Keys.Tab)
+        {
+            System.Console.WriteLine("TAB");
+            e.SuppressKeyPress = true;
+        }
+
         if (_Data.KeyMap.Get(e.KeyData) is Action<Data> action)
         {
             e.SuppressKeyPress = true;
@@ -180,7 +186,7 @@ public class Root : Form
     private void KeyPressHandler(Object? o, KeyPressEventArgs e)
     {
         //e.Handled = true;
-        // e.KeyChar
+        // System.Console.WriteLine(e.KeyChar);
     }
 
     private Control MakeGridView(Data data)
