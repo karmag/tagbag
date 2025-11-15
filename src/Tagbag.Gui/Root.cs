@@ -127,47 +127,47 @@ public class Root : Form
         _Data.KeyMap.Register(Keys.Control | Keys.S, UserCommand.Save);
         _Data.KeyMap.Register(Keys.Control | Keys.B, UserCommand.Backup);
 
-        _Data.KeyMap.Register(Keys.F9, (data) => { _Data.Report($"{this.ActiveControl}"); });
+        _Data.KeyMap.Register(Keys.F9, (data) => _Data.Report($"{this.ActiveControl}"));
 
-        _Data.KeyMap.Register(Keys.F1, (data) => { UserCommand.SetCommandMode(data, CommandLineMode.FilterMode); });
-        _Data.KeyMap.Register(Keys.F2, (data) => { UserCommand.SetCommandMode(data, CommandLineMode.TagMode); });
+        _Data.KeyMap.Register(Keys.F1, (data) => UserCommand.SetCommandMode(data, CommandLineMode.FilterMode));
+        _Data.KeyMap.Register(Keys.F2, (data) => UserCommand.SetCommandMode(data, CommandLineMode.TagMode));
 
-        _Data.KeyMap.Register(Keys.Alt | Keys.Q, (data) => { UserCommand.ToggleMarked(data, 0, 0); });
-        _Data.KeyMap.Register(Keys.Alt | Keys.W, (data) => { UserCommand.ToggleMarked(data, 1, 0); });
-        _Data.KeyMap.Register(Keys.Alt | Keys.E, (data) => { UserCommand.ToggleMarked(data, 2, 0); });
-        _Data.KeyMap.Register(Keys.Alt | Keys.R, (data) => { UserCommand.ToggleMarked(data, 3, 0); });
-        _Data.KeyMap.Register(Keys.Alt | Keys.T, (data) => { UserCommand.ToggleMarked(data, 4, 0); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.Q, (data) => UserCommand.ToggleMarked(data, 0, 0));
+        _Data.KeyMap.Register(Keys.Alt | Keys.W, (data) => UserCommand.ToggleMarked(data, 1, 0));
+        _Data.KeyMap.Register(Keys.Alt | Keys.E, (data) => UserCommand.ToggleMarked(data, 2, 0));
+        _Data.KeyMap.Register(Keys.Alt | Keys.R, (data) => UserCommand.ToggleMarked(data, 3, 0));
+        _Data.KeyMap.Register(Keys.Alt | Keys.T, (data) => UserCommand.ToggleMarked(data, 4, 0));
 
-        _Data.KeyMap.Register(Keys.Alt | Keys.A, (data) => { UserCommand.ToggleMarked(data, 0, 1); });
-        _Data.KeyMap.Register(Keys.Alt | Keys.S, (data) => { UserCommand.ToggleMarked(data, 1, 1); });
-        _Data.KeyMap.Register(Keys.Alt | Keys.D, (data) => { UserCommand.ToggleMarked(data, 2, 1); });
-        _Data.KeyMap.Register(Keys.Alt | Keys.F, (data) => { UserCommand.ToggleMarked(data, 3, 1); });
-        _Data.KeyMap.Register(Keys.Alt | Keys.G, (data) => { UserCommand.ToggleMarked(data, 4, 1); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.A, (data) => UserCommand.ToggleMarked(data, 0, 1));
+        _Data.KeyMap.Register(Keys.Alt | Keys.S, (data) => UserCommand.ToggleMarked(data, 1, 1));
+        _Data.KeyMap.Register(Keys.Alt | Keys.D, (data) => UserCommand.ToggleMarked(data, 2, 1));
+        _Data.KeyMap.Register(Keys.Alt | Keys.F, (data) => UserCommand.ToggleMarked(data, 3, 1));
+        _Data.KeyMap.Register(Keys.Alt | Keys.G, (data) => UserCommand.ToggleMarked(data, 4, 1));
 
-        _Data.KeyMap.Register(Keys.Alt | Keys.Z, (data) => { UserCommand.ToggleMarked(data, 0, 2); });
-        _Data.KeyMap.Register(Keys.Alt | Keys.X, (data) => { UserCommand.ToggleMarked(data, 1, 2); });
-        _Data.KeyMap.Register(Keys.Alt | Keys.C, (data) => { UserCommand.ToggleMarked(data, 2, 2); });
-        _Data.KeyMap.Register(Keys.Alt | Keys.V, (data) => { UserCommand.ToggleMarked(data, 3, 2); });
-        _Data.KeyMap.Register(Keys.Alt | Keys.B, (data) => { UserCommand.ToggleMarked(data, 4, 2); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.Z, (data) => UserCommand.ToggleMarked(data, 0, 2));
+        _Data.KeyMap.Register(Keys.Alt | Keys.X, (data) => UserCommand.ToggleMarked(data, 1, 2));
+        _Data.KeyMap.Register(Keys.Alt | Keys.C, (data) => UserCommand.ToggleMarked(data, 2, 2));
+        _Data.KeyMap.Register(Keys.Alt | Keys.V, (data) => UserCommand.ToggleMarked(data, 3, 2));
+        _Data.KeyMap.Register(Keys.Alt | Keys.B, (data) => UserCommand.ToggleMarked(data, 4, 2));
 
-        _Data.KeyMap.Register(Keys.Control | Keys.Q, (data) => { UserCommand.ClearMarked(data); });
-        _Data.KeyMap.Register(Keys.Control | Keys.Space, (data) => { UserCommand.ToggleMarkCursor(data); });
+        _Data.KeyMap.Register(Keys.Control | Keys.Q, (data) => UserCommand.ClearMarked(data));
+        _Data.KeyMap.Register(Keys.Control | Keys.Space, (data) => UserCommand.ToggleMarkCursor(data));
 
-        _Data.KeyMap.Register(Keys.Alt | Keys.Up, (data) => { UserCommand.MoveCursor(data, 0, -1); });
-        _Data.KeyMap.Register(Keys.Alt | Keys.Down, (data) => { UserCommand.MoveCursor(data, 0, 1); });
-        _Data.KeyMap.Register(Keys.Alt | Keys.Left, (data) => { UserCommand.MoveCursor(data, -1, 0); });
-        _Data.KeyMap.Register(Keys.Alt | Keys.Right, (data) => { UserCommand.MoveCursor(data, 1, 0); });
+        _Data.KeyMap.Register(Keys.Alt | Keys.Up, (data) => UserCommand.MoveCursor(data, 0, -1));
+        _Data.KeyMap.Register(Keys.Alt | Keys.Down, (data) => UserCommand.MoveCursor(data, 0, 1));
+        _Data.KeyMap.Register(Keys.Alt | Keys.Left, (data) => UserCommand.MoveCursor(data, -1, 0));
+        _Data.KeyMap.Register(Keys.Alt | Keys.Right, (data) => UserCommand.MoveCursor(data, 1, 0));
 
-        _Data.KeyMap.Register(Keys.PageUp, (data) => { UserCommand.MovePage(data, -1); });
-        _Data.KeyMap.Register(Keys.PageDown, (data) => { UserCommand.MovePage(data, 1); });
-        _Data.KeyMap.Register(Keys.Home, (data) => { UserCommand.MovePage(data, -1000000); });
-        _Data.KeyMap.Register(Keys.End, (data) => { UserCommand.MoveCursor(data, 1000, 1000000); });
+        _Data.KeyMap.Register(Keys.PageUp, (data) => UserCommand.MovePage(data, -1));
+        _Data.KeyMap.Register(Keys.PageDown, (data) => UserCommand.MovePage(data, 1));
+        _Data.KeyMap.Register(Keys.Home, (data) => UserCommand.MovePage(data, -1000000));
+        _Data.KeyMap.Register(Keys.End, (data) => UserCommand.MoveCursor(data, 1000, 1000000));
 
         _Data.KeyMap.Register(Keys.Control | Keys.C, UserCommand.CursorImageToClipboard);
         _Data.KeyMap.Register(Keys.Control | Keys.Shift | Keys.C, UserCommand.CursorPathToClipboard);
 
         _Data.KeyMap.SwapMode(Mode.CommandMode);
-        _Data.KeyMap.Register(Keys.Escape, (data) => { UserCommand.PopFilter(data); });
+        _Data.KeyMap.Register(Keys.Escape, (data) => UserCommand.PopFilter(data));
     }
 
     private void KeyHandler(Object? o, KeyEventArgs e)
