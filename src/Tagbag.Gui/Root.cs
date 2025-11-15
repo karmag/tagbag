@@ -20,6 +20,8 @@ public class Root : Form
         Height = 600;
         MinimumSize = new Size(800, 500);
 
+        StartPosition = FormStartPosition.CenterScreen;
+
         var grid = MakeGridView(_Data);
         grid.Dock = DockStyle.Fill;
         Controls.Add(grid);
@@ -30,7 +32,7 @@ public class Root : Form
 
         Text = "Tagbag";
 
-        Shown += (_, _) => { UserCommand.SwapMode(_Data, Mode.CommandMode); };
+        Shown += (_, _) => { UserCommand.SetMode(_Data, Mode.BrowseMode); };
         FormClosing += (_, _) => { _Data.EventHub.Send(new Shutdown()); };
 
         KeyPreview = true;
@@ -107,7 +109,7 @@ public class Root : Form
 
         var helpMenu = new ToolStripMenuItem("Help");
         menuStrip.Items.Add(helpMenu);
-        
+
         return menuStrip;
     }
 
@@ -132,52 +134,58 @@ public class Root : Form
         _Data.KeyMap.Register(Keys.F1, (data) => UserCommand.SetCommandMode(data, CommandLineMode.FilterMode));
         _Data.KeyMap.Register(Keys.F2, (data) => UserCommand.SetCommandMode(data, CommandLineMode.TagMode));
 
-        _Data.KeyMap.Register(Keys.Alt | Keys.Q, (data) => UserCommand.ToggleMarked(data, 0, 0));
-        _Data.KeyMap.Register(Keys.Alt | Keys.W, (data) => UserCommand.ToggleMarked(data, 1, 0));
-        _Data.KeyMap.Register(Keys.Alt | Keys.E, (data) => UserCommand.ToggleMarked(data, 2, 0));
-        _Data.KeyMap.Register(Keys.Alt | Keys.R, (data) => UserCommand.ToggleMarked(data, 3, 0));
-        _Data.KeyMap.Register(Keys.Alt | Keys.T, (data) => UserCommand.ToggleMarked(data, 4, 0));
-
-        _Data.KeyMap.Register(Keys.Alt | Keys.A, (data) => UserCommand.ToggleMarked(data, 0, 1));
-        _Data.KeyMap.Register(Keys.Alt | Keys.S, (data) => UserCommand.ToggleMarked(data, 1, 1));
-        _Data.KeyMap.Register(Keys.Alt | Keys.D, (data) => UserCommand.ToggleMarked(data, 2, 1));
-        _Data.KeyMap.Register(Keys.Alt | Keys.F, (data) => UserCommand.ToggleMarked(data, 3, 1));
-        _Data.KeyMap.Register(Keys.Alt | Keys.G, (data) => UserCommand.ToggleMarked(data, 4, 1));
-
-        _Data.KeyMap.Register(Keys.Alt | Keys.Z, (data) => UserCommand.ToggleMarked(data, 0, 2));
-        _Data.KeyMap.Register(Keys.Alt | Keys.X, (data) => UserCommand.ToggleMarked(data, 1, 2));
-        _Data.KeyMap.Register(Keys.Alt | Keys.C, (data) => UserCommand.ToggleMarked(data, 2, 2));
-        _Data.KeyMap.Register(Keys.Alt | Keys.V, (data) => UserCommand.ToggleMarked(data, 3, 2));
-        _Data.KeyMap.Register(Keys.Alt | Keys.B, (data) => UserCommand.ToggleMarked(data, 4, 2));
-
         _Data.KeyMap.Register(Keys.Control | Keys.Q, (data) => UserCommand.ClearMarked(data));
         _Data.KeyMap.Register(Keys.Control | Keys.Space, (data) => UserCommand.ToggleMarkCursor(data));
-
-        _Data.KeyMap.Register(Keys.Alt | Keys.Up, (data) => UserCommand.MoveCursor(data, 0, -1));
-        _Data.KeyMap.Register(Keys.Alt | Keys.Down, (data) => UserCommand.MoveCursor(data, 0, 1));
-        _Data.KeyMap.Register(Keys.Alt | Keys.Left, (data) => UserCommand.MoveCursor(data, -1, 0));
-        _Data.KeyMap.Register(Keys.Alt | Keys.Right, (data) => UserCommand.MoveCursor(data, 1, 0));
-
-        _Data.KeyMap.Register(Keys.PageUp, (data) => UserCommand.MovePage(data, -1));
-        _Data.KeyMap.Register(Keys.PageDown, (data) => UserCommand.MovePage(data, 1));
-        _Data.KeyMap.Register(Keys.Home, (data) => UserCommand.MovePage(data, -1000000));
-        _Data.KeyMap.Register(Keys.End, (data) => UserCommand.MoveCursor(data, 1000, 1000000));
 
         _Data.KeyMap.Register(Keys.Control | Keys.C, UserCommand.CursorImageToClipboard);
         _Data.KeyMap.Register(Keys.Control | Keys.Shift | Keys.C, UserCommand.CursorPathToClipboard);
 
-        _Data.KeyMap.SwapMode(Mode.CommandMode);
         _Data.KeyMap.Register(Keys.Escape, (data) => UserCommand.PopFilter(data));
+
+        // Browse mode
+        
+        _Data.KeyMap.SwapMode(Mode.BrowseMode);
+        _Data.KeyMap.Register(Keys.Tab, (data) => UserCommand.SetMode(data, Mode.SingleMode));
+
+        _Data.KeyMap.Register(Keys.Alt | Keys.Q, (data) => UserCommand.ToggleGridMarked(data, 0, 0));
+        _Data.KeyMap.Register(Keys.Alt | Keys.W, (data) => UserCommand.ToggleGridMarked(data, 1, 0));
+        _Data.KeyMap.Register(Keys.Alt | Keys.E, (data) => UserCommand.ToggleGridMarked(data, 2, 0));
+        _Data.KeyMap.Register(Keys.Alt | Keys.R, (data) => UserCommand.ToggleGridMarked(data, 3, 0));
+        _Data.KeyMap.Register(Keys.Alt | Keys.T, (data) => UserCommand.ToggleGridMarked(data, 4, 0));
+
+        _Data.KeyMap.Register(Keys.Alt | Keys.A, (data) => UserCommand.ToggleGridMarked(data, 0, 1));
+        _Data.KeyMap.Register(Keys.Alt | Keys.S, (data) => UserCommand.ToggleGridMarked(data, 1, 1));
+        _Data.KeyMap.Register(Keys.Alt | Keys.D, (data) => UserCommand.ToggleGridMarked(data, 2, 1));
+        _Data.KeyMap.Register(Keys.Alt | Keys.F, (data) => UserCommand.ToggleGridMarked(data, 3, 1));
+        _Data.KeyMap.Register(Keys.Alt | Keys.G, (data) => UserCommand.ToggleGridMarked(data, 4, 1));
+
+        _Data.KeyMap.Register(Keys.Alt | Keys.Z, (data) => UserCommand.ToggleGridMarked(data, 0, 2));
+        _Data.KeyMap.Register(Keys.Alt | Keys.X, (data) => UserCommand.ToggleGridMarked(data, 1, 2));
+        _Data.KeyMap.Register(Keys.Alt | Keys.C, (data) => UserCommand.ToggleGridMarked(data, 2, 2));
+        _Data.KeyMap.Register(Keys.Alt | Keys.V, (data) => UserCommand.ToggleGridMarked(data, 3, 2));
+        _Data.KeyMap.Register(Keys.Alt | Keys.B, (data) => UserCommand.ToggleGridMarked(data, 4, 2));
+
+        _Data.KeyMap.Register(Keys.Alt | Keys.Up, (data) => UserCommand.MoveGridCursor(data, 0, -1));
+        _Data.KeyMap.Register(Keys.Alt | Keys.Down, (data) => UserCommand.MoveGridCursor(data, 0, 1));
+        _Data.KeyMap.Register(Keys.Alt | Keys.Left, (data) => UserCommand.MoveGridCursor(data, -1, 0));
+        _Data.KeyMap.Register(Keys.Alt | Keys.Right, (data) => UserCommand.MoveGridCursor(data, 1, 0));
+
+        _Data.KeyMap.Register(Keys.PageUp, (data) => UserCommand.MoveGridPage(data, -1));
+        _Data.KeyMap.Register(Keys.PageDown, (data) => UserCommand.MoveGridPage(data, 1));
+        _Data.KeyMap.Register(Keys.Home, (data) => UserCommand.MoveGridPage(data, -1000000));
+        _Data.KeyMap.Register(Keys.End, (data) => UserCommand.MoveGridCursor(data, 1000, 1000000));
+
+        // Single mode
+
+        _Data.KeyMap.SwapMode(Mode.SingleMode);
+        _Data.KeyMap.Register(Keys.Tab, (data) => UserCommand.SetMode(data, Mode.BrowseMode));
+
+        _Data.KeyMap.Register(Keys.Alt | Keys.Left, (data) => UserCommand.MoveCursor(data, -1));
+        _Data.KeyMap.Register(Keys.Alt | Keys.Right, (data) => UserCommand.MoveCursor(data, 1));
     }
 
     private void KeyHandler(Object? o, KeyEventArgs e)
     {
-        if (e.KeyData == Keys.Tab)
-        {
-            System.Console.WriteLine("TAB");
-            e.SuppressKeyPress = true;
-        }
-
         if (_Data.KeyMap.Get(e.KeyData) is Action<Data> action)
         {
             e.SuppressKeyPress = true;
@@ -198,9 +206,9 @@ public class Root : Form
 
         var panel = new Control();
 
-        data.ImageGrid.Dock = DockStyle.Fill;
-        data.ImageGrid.Padding = new Padding(pad);
-        panel.Controls.Add(data.ImageGrid);
+        data.ImagePanel.Dock = DockStyle.Fill;
+        data.ImagePanel.Padding = new Padding(pad);
+        panel.Controls.Add(data.ImagePanel);
 
         var split = new Splitter();
         split.Width = 5;

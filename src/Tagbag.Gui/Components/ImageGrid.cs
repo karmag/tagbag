@@ -44,11 +44,25 @@ public class ImageGrid : TableLayoutPanel
         Padding = new Padding(5);
 
         ClientSizeChanged += (_, _) => { LayoutChanged(_Rows); };
-        _EventHub.EntriesUpdated += (_) => { ListenEntriesUpdated(); };
-        _EventHub.CursorMoved += (ev) => { ListenCursorMoved(ev); };
-        _EventHub.MarkedChanged += (_) => { ListenMarkedChanged(); };
+        SetActive(true);
     }
 
+    public void SetActive(bool active)
+    {
+        if (active)
+        {
+            _EventHub.EntriesUpdated += ListenEntriesUpdated;
+            _EventHub.CursorMoved += ListenCursorMoved;
+            _EventHub.MarkedChanged += ListenMarkedChanged;
+        }
+        else
+        {
+            _EventHub.EntriesUpdated -= ListenEntriesUpdated;
+            _EventHub.CursorMoved -= ListenCursorMoved;
+            _EventHub.MarkedChanged -= ListenMarkedChanged;
+        }
+    }
+    
     private void LayoutChanged(int newRows)
     {
         newRows = Math.Max(1, newRows);
@@ -161,7 +175,7 @@ public class ImageGrid : TableLayoutPanel
         }
     }
 
-    private void ListenEntriesUpdated()
+    private void ListenEntriesUpdated(EntriesUpdated _)
     {
         UpdateCellEntries();
         UpdateCursor();
@@ -187,7 +201,7 @@ public class ImageGrid : TableLayoutPanel
         UpdateCursor();
     }
 
-    private void ListenMarkedChanged()
+    private void ListenMarkedChanged(MarkedChanged _)
     {
         UpdateMarked();
     }

@@ -1,5 +1,3 @@
-using Tagbag.Core;
-
 namespace Tagbag.Gui;
 
 public class Data
@@ -15,13 +13,13 @@ public class Data
     public KeyMap KeyMap;
 
     public Components.TagTable TagTable;
-    public Components.ImageGrid ImageGrid;
+    public Components.ImagePanel ImagePanel;
     public Components.CommandLine CommandLine;
     public Components.StatusBar StatusBar;
 
     public Data()
     {
-        Mode = Mode.GridMode;
+        Mode = Mode.BrowseMode;
 
         EventHub = new EventHub();
 
@@ -32,7 +30,7 @@ public class Data
         KeyMap = new KeyMap();
 
         TagTable = new Components.TagTable(EventHub, ImageCache);
-        ImageGrid = new Components.ImageGrid(EventHub, EntryCollection, ImageCache);
+        ImagePanel = new Components.ImagePanel(EventHub, EntryCollection, ImageCache);
         CommandLine = new Components.CommandLine(EventHub);
         StatusBar = new Components.StatusBar(EventHub, EntryCollection);
     }
@@ -55,6 +53,6 @@ public class Data
 
 public enum Mode
 {
-    GridMode,
-    CommandMode,
+    BrowseMode,
+    SingleMode,
 }

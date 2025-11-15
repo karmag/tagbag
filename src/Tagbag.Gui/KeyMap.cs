@@ -12,7 +12,7 @@ public class KeyMap
 
     public KeyMap()
     {
-        _Mode = Mode.GridMode;
+        _Mode = Mode.BrowseMode;
         _Mapping = new Dictionary<Mode, Dictionary<Keys, Action<Data>>>();
         _Common = new Dictionary<Keys, Action<Data>>();
     }

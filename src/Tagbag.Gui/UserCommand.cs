@@ -8,23 +8,21 @@ namespace Tagbag.Gui;
 
 public static class UserCommand
 {
-    public static void SwapMode(Data data, Mode mode)
+    public static void SetMode(Data data, Mode mode)
     {
-        data.KeyMap.SwapMode(mode);
-
-        data.Report($"Mode: {mode}");
-
+        data.Mode = mode;
         switch (mode)
         {
-            case Mode.GridMode:
-                data.CommandLine.SetEnabled(false);
+            case Mode.BrowseMode:
+                data.ImagePanel.ShowGrid(true);
                 break;
 
-            case Mode.CommandMode:
-                data.CommandLine.SetEnabled(true);
-                data.CommandLine.Focus();
+            case Mode.SingleMode:
+                data.ImagePanel.ShowGrid(false);
                 break;
         }
+
+        data.KeyMap.SwapMode(mode);
     }
 
     public static void SetCommandMode(Data data, CommandLineMode mode)
@@ -33,19 +31,28 @@ public static class UserCommand
         data.CommandLine.Focus();
     }
 
-    public static void MoveCursor(Data data, int xDelta, int yDelta)
+    public static void MoveCursor(Data data, int offset)
     {
-        data.ImageGrid.MoveCursor(xDelta, yDelta);
+        if (data.EntryCollection.GetCursor() is int index)
+            data.EntryCollection.SetCursor(index + offset);
     }
 
-    public static void MovePage(Data data, int pages)
+    public static void MoveGridCursor(Data data, int xDelta, int yDelta)
     {
-        data.ImageGrid.MovePage(pages);
+        if (data.Mode == Mode.BrowseMode)
+            data.ImagePanel.ImageGrid.MoveCursor(xDelta, yDelta);
     }
 
-    public static void ToggleMarked(Data data, int x, int y)
+    public static void MoveGridPage(Data data, int pages)
     {
-        if (data.ImageGrid.GetCell(x, y) is ImageCell cell)
+        if (data.Mode == Mode.BrowseMode)
+            data.ImagePanel.ImageGrid.MovePage(pages);
+    }
+
+    public static void ToggleGridMarked(Data data, int x, int y)
+    {
+        if (data.Mode == Mode.BrowseMode &&
+            data.ImagePanel.ImageGrid.GetCell(x, y) is ImageCell cell)
         {
             if (cell.GetEntry()?.Id is Guid id)
             {

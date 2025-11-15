@@ -13,7 +13,7 @@ public class ImageCache
     private ConcurrentDictionary<Guid, Task<Bitmap?>> _ImageCache;
     private ConcurrentDictionary<Guid, Task<Bitmap?>> _ThumbnailCache;
     private ConcurrentStack<Task<Bitmap?>> _TaskStack;
-    private ConcurrentQueue<Task<Bitmap?>> _TaskHighPrio;
+    private ConcurrentStack<Task<Bitmap?>> _TaskHighPrio;
     private Thread _Worker;
     private bool _Running;
 
@@ -26,7 +26,7 @@ public class ImageCache
         _ImageCache = new ConcurrentDictionary<Guid, Task<Bitmap?>>();
         _ThumbnailCache = new ConcurrentDictionary<Guid, Task<Bitmap?>>();
         _TaskStack = new ConcurrentStack<Task<Bitmap?>>();
-        _TaskHighPrio = new ConcurrentQueue<Task<Bitmap?>>();
+        _TaskHighPrio = new ConcurrentStack<Task<Bitmap?>>();
         _Worker = new Thread(WorkerFunction);
         _Running = true;
 
@@ -54,7 +54,7 @@ public class ImageCache
     {
         var task = GetOrLoad(id, _ImageCache);
         if (prio && !task.IsCompleted)
-            _TaskHighPrio.Enqueue(task);
+            _TaskHighPrio.Push(task);
         return task.ContinueWith(CopyBitmap).Unwrap();
     }
 
@@ -64,7 +64,7 @@ public class ImageCache
     {
         var task = GetOrLoad(id, _ThumbnailCache, ResizeAsThumbnail);
         if (prio && !task.IsCompleted)
-            _TaskHighPrio.Enqueue(task);
+            _TaskHighPrio.Push(task);
         return task.ContinueWith(CopyBitmap).Unwrap();
     }
 
@@ -146,7 +146,7 @@ public class ImageCache
         Task<Bitmap?>? task;
         while (_Running)
         {
-            if (_TaskHighPrio.TryDequeue(out task) || _TaskStack.TryPop(out task))
+            if (_TaskHighPrio.TryPop(out task) || _TaskStack.TryPop(out task))
             {
                 if (!task.IsCompleted)
                 {
