@@ -8,6 +8,8 @@ namespace Tagbag.Gui.Components;
 
 public class ImageView : Panel
 {
+    private bool _Active;
+
     private PictureBox _Picture;
     private EventHub _EventHub;
     private EntryCollection _EntryCollection;
@@ -28,18 +30,23 @@ public class ImageView : Panel
         _Picture.SizeMode = PictureBoxSizeMode.Zoom;
         Controls.Add(_Picture);
 
+        _Active = false;
         SetActive(true);
     }
 
     public void SetActive(bool active)
     {
-        if (active)
+        if (_Active != active)
         {
-            _EventHub.CursorMoved += ListenCursorMoved;
-            ListenCursorMoved(new CursorMoved(null));
+            _Active = active;
+            if (active)
+            {
+                _EventHub.CursorMoved += ListenCursorMoved;
+                ListenCursorMoved(new CursorMoved(null));
+            }
+            else
+                _EventHub.CursorMoved -= ListenCursorMoved;
         }
-        else
-            _EventHub.CursorMoved -= ListenCursorMoved;
     }
 
     private void ListenCursorMoved(CursorMoved _)
@@ -57,6 +64,13 @@ public class ImageView : Panel
                 _Picture.Image = null;
                 var staticId = entry.Id;
                 task.ContinueWith((task) => SetImage(staticId, task));
+            }
+
+            // Preload next image
+            if (_EntryCollection.GetCursor() is int index &&
+                _EntryCollection.Get(index + 1) is Entry next)
+            {
+                _ImageCache.GetImage(next.Id);
             }
         }
         else
