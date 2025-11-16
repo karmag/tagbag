@@ -52,14 +52,11 @@ public static class UserCommand
     public static void ToggleGridMarked(Data data, int x, int y)
     {
         if (data.Mode == Mode.BrowseMode &&
-            data.ImagePanel.ImageGrid.GetCell(x, y) is ImageCell cell)
+            data.ImagePanel.ImageGrid.GetEntryAt(x, y) is Entry entry)
         {
-            if (cell.GetEntry()?.Id is Guid id)
-            {
-                data.EntryCollection.SetMarked(
-                    id,
-                    !data.EntryCollection.IsMarked(id));
-            }
+            data.EntryCollection.SetMarked(
+                entry.Id,
+                !data.EntryCollection.IsMarked(entry.Id));
         }
     }
 
