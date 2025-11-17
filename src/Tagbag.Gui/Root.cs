@@ -28,12 +28,15 @@ public class Root : Form
 
         var menu = MakeMenu(_Data);
         menu.Dock = DockStyle.Top;
-        this.Controls.Add(menu);
+        Controls.Add(menu);
 
         Text = "Tagbag";
 
-        Shown += (_, _) => { UserCommand.SetMode(_Data, Mode.BrowseMode); };
         FormClosing += (_, _) => { _Data.EventHub.Send(new Shutdown()); };
+        Shown += (_, _) => {
+            UserCommand.SetMode(_Data, Mode.BrowseMode);
+            _Data.CommandLine.Focus();
+        };
 
         KeyPreview = true;
         KeyDown += KeyHandler;
@@ -128,8 +131,6 @@ public class Root : Form
 
         _Data.KeyMap.Register(Keys.Control | Keys.S, UserCommand.Save);
         _Data.KeyMap.Register(Keys.Control | Keys.B, UserCommand.Backup);
-
-        _Data.KeyMap.Register(Keys.F9, (data) => _Data.Report($"{this.ActiveControl}"));
 
         _Data.KeyMap.Register(Keys.F1, (data) => UserCommand.SetCommandMode(data, CommandLineMode.FilterMode));
         _Data.KeyMap.Register(Keys.F2, (data) => UserCommand.SetCommandMode(data, CommandLineMode.TagMode));
@@ -248,6 +249,11 @@ public class Root : Form
             foreach (var id in entries)
                 if (_Data.Tagbag?.Get(id) is Entry entry)
                     ev.Operation.Apply(entry);
+
+            var imgs = "image";
+            if (entries.Count > 1)
+                imgs = $"{entries.Count} images";
+            _Data.EventHub.Send(new Log(LogType.Info, $"Tagged {imgs} with {ev.Operation.ToString()}"));
         }
 
         _Data.EventHub.Send(new ShowEntry(atCursor));

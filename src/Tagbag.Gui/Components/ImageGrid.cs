@@ -178,6 +178,7 @@ public class ImageGrid : Control
                 _EventHub.EntriesUpdated += ListenEntriesUpdated;
                 _EventHub.CursorMoved += ListenCursorMoved;
                 _EventHub.MarkedChanged += ListenMarkedChanged;
+                _EventHub.Send(new CursorMoved(_EntryCollection.GetCursor()));
             }
             else
             {

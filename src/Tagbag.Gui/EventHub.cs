@@ -11,6 +11,7 @@ public class EventHub
     private Semaphore _Lock;
 
     public Action<Shutdown>? Shutdown;
+    public Action<Log>? Log;
 
     public Action<EntriesUpdated>? EntriesUpdated;
     public Action<ShowEntry>? ShowEntry;
@@ -59,6 +60,7 @@ public class EventHub
         switch (ev)
         {
             case Shutdown e: Shutdown?.Invoke(e); break;
+            case Log e: Log?.Invoke(e); break;
 
             case EntriesUpdated e: EntriesUpdated?.Invoke(e); break;
             case ShowEntry e: ShowEntry?.Invoke(e); break;
@@ -74,9 +76,16 @@ public class EventHub
     }
 }
 
+public enum LogType
+{
+    Info,
+    Error,
+}
+
 public abstract record class Event();
 
 public record Shutdown() : Event();
+public record Log(LogType Type, string Message) : Event();
 
 // The collection of entries have been changed. This may include
 // cursor and filter changes.

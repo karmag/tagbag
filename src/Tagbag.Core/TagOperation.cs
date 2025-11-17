@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Tagbag.Core;
@@ -7,7 +8,7 @@ public interface ITagOperation
     public void Apply(Entry entry);
 }
 
-public class TagOperation
+public static class TagOperation
 {
     public static ITagOperation Add(string tag)                         { return new AddTag(tag, null, null); }
     public static ITagOperation Add(string tag, string value)           { return new AddTag(tag, value, null); }
@@ -42,6 +43,13 @@ public class TagOperation
             if (count == 0)
                 entry.Add(tag);
         }
+
+        override public string? ToString()
+        {
+            if (str is null && i is null)
+                return $"+{tag}";
+            return $"{tag} + {ValueToString(str, i)}";
+        }
     }
 
     private class RemoveTag(string tag, string? str, int? i) : ITagOperation
@@ -64,6 +72,13 @@ public class TagOperation
 
             if (count == 0)
                 entry.Remove(tag);
+        }
+
+        override public string? ToString()
+        {
+            if (str is null && i is null)
+                return $"-{tag}";
+            return $"{tag} - {ValueToString(str, i)}";
         }
     }
 
@@ -91,6 +106,13 @@ public class TagOperation
                 entry.Add(tag);
             }
         }
+
+        override public string? ToString()
+        {
+            if (str is null && i is null)
+                return $"={tag}";
+            return $"{tag} = {ValueToString(str, i)}";
+        }
     }
 
     private class CombineOperations(IEnumerable<ITagOperation> operations) : ITagOperation
@@ -100,5 +122,35 @@ public class TagOperation
             foreach (var tagOp in operations)
                 tagOp.Apply(entry);
         }
+
+        override public string? ToString()
+        {
+            return String.Join(", ", operations);
+        }
+    }
+
+    private static string ValueToString(string? strOpt, int? intOpt)
+    {
+        if (strOpt is string str)
+        {
+            var whitespace = "";
+            for (int index = 0; index < str.Length; index++)
+            {
+                if (Char.IsWhiteSpace(str, index))
+                {
+                    whitespace = "\"";
+                    break;
+                }
+            }
+
+            return $"{whitespace}{str}{whitespace}";
+        }
+
+        if (intOpt is int i)
+        {
+            return i.ToString();
+        }
+
+        return "";
     }
 }

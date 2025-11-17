@@ -45,6 +45,9 @@ public class TagTable : Panel
     public void ConfigureComponents()
     {
         _Picture.SizeMode = PictureBoxSizeMode.Zoom;
+        _Picture.TabStop = false;
+
+        _Label.TabStop = false;
 
         _Tags.ReadOnly = true;
         _Tags.ColumnCount = 2;

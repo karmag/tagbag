@@ -44,11 +44,6 @@ public class Data
         else
             EntryCollection.SetBaseEntries([]);
     }
-
-    public void Report(string msg)
-    {
-        System.Console.WriteLine(msg);
-    }
 }
 
 public enum Mode

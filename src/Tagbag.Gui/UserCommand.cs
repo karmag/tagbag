@@ -83,11 +83,13 @@ public static class UserCommand
     public static void Save(Data data)
     {
         data.Tagbag?.Save();
+        data.EventHub.Send(new Log(LogType.Info, "File saved"));
     }
 
     public static void Backup(Data data)
     {
         data.Tagbag?.Backup();
+        data.EventHub.Send(new Log(LogType.Info, "Backup created"));
     }
 
     public static void Quit(Data data)
@@ -104,7 +106,8 @@ public static class UserCommand
             if (bitmap != null)
             {
                 Clipboard.SetData(DataFormats.Bitmap, bitmap);
-                data.Report($"Copied {entry.Path} to clipboard");
+                data.EventHub.Send(new Log(LogType.Info,
+                                           "Copied image to clipboard"));
             }
         }
     }
@@ -116,7 +119,8 @@ public static class UserCommand
         {
             var path = TagbagUtil.GetPath(tb, entry.Path);
             Clipboard.SetData(DataFormats.Text, path);
-            data.Report($"Copied {entry.Path} to clipboard");
+            data.EventHub.Send(new Log(LogType.Info,
+                                       "Copied path to clipboard"));
         }
     }
 }

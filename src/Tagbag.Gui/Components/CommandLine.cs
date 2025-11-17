@@ -19,6 +19,7 @@ public class CommandLine : Panel
 
     private Label _ModeLabel;
     private TextBox _TextBox;
+    private RichLabel _StatusLabel;
 
     public CommandLine(EventHub eventHub)
     {
@@ -26,30 +27,39 @@ public class CommandLine : Panel
 
         var pad = 5;
 
+        _StatusLabel = new RichLabel();
+        _StatusLabel.Dock = DockStyle.Fill;
+        _StatusLabel.Left = pad * 10;
+        _StatusLabel.Font = new Font("Verdana", 14);
+        Controls.Add(_StatusLabel);
+
         _TextBox = new TextBox();
-        _TextBox.Dock = DockStyle.Bottom;
+        _TextBox.Dock = DockStyle.Left;
+        _TextBox.Width = 300;
+        _TextBox.Font = new Font("Arial", 16);
+        _TextBox.Multiline = true;
+        _TextBox.AcceptsTab = true;
+        _TextBox.Height = _TextBox.Font.Height + 4;
         Controls.Add(_TextBox);
 
         _ModeLabel = new Label();
         _ModeLabel.Dock = DockStyle.Left;
         _ModeLabel.Top = pad;
         _ModeLabel.Left = pad;
+        _ModeLabel.Font = new Font("Arial", 14);
         Controls.Add(_ModeLabel);
 
         BackColor = Color.DarkGray;
-        Font = new Font("Arial", 16);
         ClientSizeChanged += (_, _) =>
         {
-            _TextBox.Width = Math.Max(300, Width / 2);
-            Height = _TextBox.Height + 2 * pad;
+            _TextBox.Width = Math.Max(300, Width / 4);
+            Height = _TextBox.Font.Height + 4 + 2 * pad;
         };
-
-        _TextBox.Multiline = true;
-        _TextBox.AcceptsTab = true;
-        _TextBox.Height = _TextBox.Font.Height + 4;
 
         _TextBox.KeyDown += HandleKey;
         SetMode(CommandLineMode.FilterMode);
+
+        eventHub.Log += ListenLog;
     }
 
     private void HandleKey(Object? o, KeyEventArgs e)
@@ -149,5 +159,25 @@ public class CommandLine : Panel
     new public void Focus()
     {
         _TextBox.Focus();
+    }
+
+    private void ListenLog(Log log)
+    {
+        _StatusLabel.Clear();
+        _StatusLabel.AddText(" ");
+
+        switch (log.Type)
+        {
+            case LogType.Info:
+                _StatusLabel.AddText("Info", Color.Green);
+                break;
+
+            case LogType.Error:
+                _StatusLabel.AddText("Error", Color.Red);
+                break;
+        }
+
+        _StatusLabel.AddText(" ");
+        _StatusLabel.AddText(log.Message, Color.Black);
     }
 }
