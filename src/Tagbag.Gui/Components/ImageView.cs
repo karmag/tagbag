@@ -28,6 +28,7 @@ public class ImageView : Panel
         _Picture = new PictureBox();
         _Picture.Dock = DockStyle.Fill;
         _Picture.SizeMode = PictureBoxSizeMode.Zoom;
+        _Picture.BackColor = Color.DarkGray;
         Controls.Add(_Picture);
 
         _Active = false;
