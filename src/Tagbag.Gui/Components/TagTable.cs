@@ -25,6 +25,7 @@ public class TagTable : Panel
         _Label = new Label();
         _Tags = new DataGridView();
         ConfigureComponents();
+        TabStop = false;
 
         _Tags.Dock = DockStyle.Fill;
         Controls.Add(_Tags);

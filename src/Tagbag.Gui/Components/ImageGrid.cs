@@ -45,6 +45,12 @@ public class ImageGrid : Control
 
         _Active = false;
         SetActive(true);
+
+        // TODO: this becomes the target of events just because of
+        // tab-cycle ordering? Do I need to turn this on for all
+        // controls just to be sure that key events are being passed
+        // properly?
+        PreviewKeyDown += (_, ev) => { ev.IsInputKey = true; };
     }
 
     private void RefreshThumbnailCache()
@@ -191,7 +197,9 @@ public class ImageGrid : Control
 
     public Entry? GetEntryAt(int x, int y)
     {
-        return _EntryCollection.Get(_IndexOffset + x + y * _Columns);
+        if (x < _Rows && y < _Columns)
+            return _EntryCollection.Get(_IndexOffset + x + y * _Columns);
+        return null;
     }
 
     public void MoveCursor(int xDelta, int yDelta)

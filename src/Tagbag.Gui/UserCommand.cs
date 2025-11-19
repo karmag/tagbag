@@ -10,19 +10,31 @@ public static class UserCommand
 {
     public static void SetMode(Data data, Mode mode)
     {
+        System.Console.WriteLine($"Mode :: {data.Mode} -> {mode}");
         data.Mode = mode;
-        switch (mode)
+        switch (mode.Application)
         {
-            case Mode.BrowseMode:
+            case Mode.ApplicationMode.Grid:
                 data.ImagePanel.ShowGrid(true);
                 break;
 
-            case Mode.SingleMode:
+            case Mode.ApplicationMode.Single:
                 data.ImagePanel.ShowGrid(false);
                 break;
         }
 
-        data.KeyMap.SwapMode(mode);
+        switch (mode.Input)
+        {
+            case Mode.InputMode.Command:
+                data.CommandLine.SetEnabled(true);
+                data.CommandLine.Focus();
+                break;
+
+            case Mode.InputMode.Browse:
+                break;
+        }
+
+        data.KeyMap.SetMode(mode);
     }
 
     public static void SetCommandMode(Data data, CommandLineMode mode)
@@ -35,29 +47,6 @@ public static class UserCommand
     {
         if (data.EntryCollection.GetCursor() is int index)
             data.EntryCollection.SetCursor(index + offset);
-    }
-
-    public static void MoveGridCursor(Data data, int xDelta, int yDelta)
-    {
-        if (data.Mode == Mode.BrowseMode)
-            data.ImagePanel.ImageGrid.MoveCursor(xDelta, yDelta);
-    }
-
-    public static void MoveGridPage(Data data, int pages)
-    {
-        if (data.Mode == Mode.BrowseMode)
-            data.ImagePanel.ImageGrid.MovePage(pages);
-    }
-
-    public static void ToggleGridMarked(Data data, int x, int y)
-    {
-        if (data.Mode == Mode.BrowseMode &&
-            data.ImagePanel.ImageGrid.GetEntryAt(x, y) is Entry entry)
-        {
-            data.EntryCollection.SetMarked(
-                entry.Id,
-                !data.EntryCollection.IsMarked(entry.Id));
-        }
     }
 
     public static void ToggleMarkCursor(Data data)
@@ -121,6 +110,29 @@ public static class UserCommand
             Clipboard.SetData(DataFormats.Text, path);
             data.EventHub.Send(new Log(LogType.Info,
                                        "Copied path to clipboard"));
+        }
+    }
+
+    // Enables and focuses the command line as necessary for user
+    // input to be accepted.
+    public static void OpenCommandLine(Data data)
+    {
+        data.CommandLine.SetEnabled(true);
+        data.CommandLine.Focus();
+    }
+
+    public static void PressEnter(Data data)
+    {
+        if (data.CommandLine.IsEnabled())
+        {
+            data.CommandLine.PerformCommand();
+            if (data.Mode.Input == Mode.InputMode.Browse)
+                data.CommandLine.SetEnabled(false);
+        }
+        else
+        {
+            data.CommandLine.SetEnabled(true);
+            data.CommandLine.Focus();
         }
     }
 }

@@ -28,12 +28,14 @@ public class CommandLine : Panel
         var pad = 5;
 
         _StatusLabel = new RichLabel();
+        _StatusLabel.Name = "CommandLine:StatusLabel";
         _StatusLabel.Dock = DockStyle.Fill;
         _StatusLabel.Left = pad * 10;
         _StatusLabel.Font = new Font("Verdana", 14);
         Controls.Add(_StatusLabel);
 
         _TextBox = new TextBox();
+        _TextBox.Name = "CommandLine:TextBox";
         _TextBox.Dock = DockStyle.Left;
         _TextBox.Width = 300;
         _TextBox.Font = new Font("Arial", 16);
@@ -43,6 +45,7 @@ public class CommandLine : Panel
         Controls.Add(_TextBox);
 
         _ModeLabel = new Label();
+        _ModeLabel.Name = "CommandLine:ModeLabel";
         _ModeLabel.Dock = DockStyle.Left;
         _ModeLabel.Top = pad;
         _ModeLabel.Left = pad;
@@ -57,84 +60,23 @@ public class CommandLine : Panel
         };
 
         _TextBox.KeyDown += HandleKey;
+
         SetMode(CommandLineMode.FilterMode);
+        SetEnabled(true);
 
         eventHub.Log += ListenLog;
     }
 
-    private void HandleKey(Object? o, KeyEventArgs e)
-    {
-        switch (e.KeyData)
-        {
-            case Keys.Enter:
-                e.SuppressKeyPress = true;
-                var txt = _TextBox.Text;
-                if (txt.Length > 0)
-                {
-                    _TextBox.Text = "";
-                    if (_Mode == CommandLineMode.FilterMode)
-                        PerformFilterCommand(txt);
-                    else
-                        PerformTagCommand(txt);
-                }
-                break;
-        }
-    }
-
-    private void PerformFilterCommand(string text)
-    {
-        try
-        {
-            var filter = FilterBuilder.Build(text);
-            _EventHub.Send(new FilterCommand(filter));
-        }
-        catch (BuildException e)
-        {
-            System.Console.WriteLine($"Filter failed: {e}");
-        }
-    }
-
-    private void PerformTagCommand(string text)
-    {
-        try
-        {
-            var tagOperation = TagBuilder.Build(text);
-            _EventHub.Send(new TagCommand(tagOperation));
-        }
-        catch (BuildException e)
-        {
-            System.Console.WriteLine($"Tag failed {e}");
-        }
-    }
-
-    private void UpdateModeLabel()
-    {
-        if (_Enabled)
-        {
-            switch (_Mode)
-            {
-                case CommandLineMode.TagMode:
-                    _ModeLabel.BackColor = Color.Pink;
-                    break;
-                case CommandLineMode.FilterMode:
-                    _ModeLabel.BackColor = Color.LightGreen;
-                    break;
-            }
-        }
-        else
-        {
-            _ModeLabel.BackColor = Color.DarkGray;
-        }
-    }
-
     public void SetEnabled(bool enabled)
     {
-        if (_Enabled != enabled)
-        {
-            _Enabled = enabled;
-            _TextBox.Enabled = enabled;
-            UpdateModeLabel();
-        }
+        _Enabled = enabled;
+        _TextBox.Enabled = enabled;
+        UpdateModeLabel();
+    }
+
+    public bool IsEnabled()
+    {
+        return _Enabled;
     }
 
     public void SetMode(CommandLineMode mode)
@@ -169,15 +111,89 @@ public class CommandLine : Panel
         switch (log.Type)
         {
             case LogType.Info:
-                _StatusLabel.AddText("Info", Color.Green);
+                //_StatusLabel.AddText("Info", Color.Green);
                 break;
 
             case LogType.Error:
-                _StatusLabel.AddText("Error", Color.Red);
+                _StatusLabel.AddText("ERROR", Color.Red);
                 break;
         }
 
         _StatusLabel.AddText(" ");
         _StatusLabel.AddText(log.Message, Color.Black);
+    }
+
+    public void PerformCommand()
+    {
+        var txt = _TextBox.Text;
+        if (txt.Trim().Length == 0)
+        {
+            _TextBox.Text = "";
+        }
+        else if (txt.Length > 0)
+        {
+            _TextBox.Text = "";
+            if (_Mode == CommandLineMode.FilterMode)
+                PerformFilterCommand(txt);
+            else
+                PerformTagCommand(txt);
+        }
+    }
+
+    private void HandleKey(Object? o, KeyEventArgs e)
+    {
+        switch (e.KeyData)
+        {
+            case Keys.Enter:
+                e.SuppressKeyPress = true;
+                PerformCommand();
+                break;
+        }
+    }
+
+    private void PerformFilterCommand(string text)
+    {
+        try
+        {
+            var filter = FilterBuilder.Build(text);
+            _EventHub.Send(new FilterCommand(filter));
+        }
+        catch (BuildException e)
+        {
+            _EventHub.Send(new Log(LogType.Error, $"Filter failed: {e}"));
+        }
+    }
+
+    private void PerformTagCommand(string text)
+    {
+        try
+        {
+            var tagOperation = TagBuilder.Build(text);
+            _EventHub.Send(new TagCommand(tagOperation));
+        }
+        catch (BuildException e)
+        {
+            _EventHub.Send(new Log(LogType.Error, $"Tag failed: {e}"));
+        }
+    }
+
+    private void UpdateModeLabel()
+    {
+        if (_Enabled)
+        {
+            switch (_Mode)
+            {
+                case CommandLineMode.TagMode:
+                    _ModeLabel.BackColor = Color.Pink;
+                    break;
+                case CommandLineMode.FilterMode:
+                    _ModeLabel.BackColor = Color.LightGreen;
+                    break;
+            }
+        }
+        else
+        {
+            _ModeLabel.BackColor = Color.DarkGray;
+        }
     }
 }

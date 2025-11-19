@@ -22,20 +22,13 @@ public class Root : Form
 
         StartPosition = FormStartPosition.CenterScreen;
 
-        var grid = MakeGridView(_Data);
-        grid.Dock = DockStyle.Fill;
-        Controls.Add(grid);
-
-        var menu = MakeMenu(_Data);
-        menu.Dock = DockStyle.Top;
-        Controls.Add(menu);
+        LayoutControls(_Data);
 
         Text = "Tagbag";
 
         FormClosing += (_, _) => { _Data.EventHub.Send(new Shutdown()); };
         Shown += (_, _) => {
-            UserCommand.SetMode(_Data, Mode.BrowseMode);
-            _Data.CommandLine.Focus();
+            UserCommand.SetMode(_Data, new Mode(Mode.ApplicationMode.Grid, Mode.InputMode.Command));
         };
 
         KeyPreview = true;
@@ -68,6 +61,43 @@ public class Root : Form
         }
 
         throw new ArgumentException($"Multiple command line arguments: [{String.Join(", ", args)}]");
+    }
+
+    private void LayoutControls(Data data)
+    {
+        var pad = 5;
+
+        data.ImagePanel.Name = "ImagePanel";
+        data.ImagePanel.Dock = DockStyle.Fill;
+        data.ImagePanel.Padding = new Padding(pad);
+        Controls.Add(data.ImagePanel);
+
+        var split = new Splitter();
+        split.Name = "Splitter";
+        split.Width = 5;
+        Controls.Add(split);
+
+        var ttPanel = new Panel();
+        ttPanel.Name = "TagTablePanel";
+        ttPanel.Padding = new Padding(pad);
+        ttPanel.Dock = DockStyle.Left;
+        data.TagTable.Name = "TagTable";
+        data.TagTable.Dock = DockStyle.Fill;
+        ttPanel.Controls.Add(data.TagTable);
+        Controls.Add(ttPanel);
+
+        data.StatusBar.Name = "StatusBar";
+        data.StatusBar.Dock = DockStyle.Top;
+        Controls.Add(data.StatusBar);
+
+        data.CommandLine.Name = "CommandLine";
+        data.CommandLine.Dock = DockStyle.Top;
+        data.CommandLine.Padding = new Padding(pad);
+        Controls.Add(data.CommandLine);
+
+        var menu = MakeMenu(_Data);
+        menu.Dock = DockStyle.Top;
+        Controls.Add(menu);
     }
 
     private MenuStrip MakeMenu(Data data)
@@ -127,70 +157,128 @@ public class Root : Form
 
     private void SetupKeyMap()
     {
-        _Data.KeyMap.SwapMode(null);
+        var add = _Data.KeyMap.Add;
 
-        _Data.KeyMap.Register(Keys.Control | Keys.S, UserCommand.Save);
-        _Data.KeyMap.Register(Keys.Control | Keys.B, UserCommand.Backup);
+        Mode GridCommand = new Mode(Mode.ApplicationMode.Grid, Mode.InputMode.Command);
+        Mode GridBrowse = new Mode(Mode.ApplicationMode.Grid, Mode.InputMode.Browse);
+        Mode SingleCommand = new Mode(Mode.ApplicationMode.Single, Mode.InputMode.Command);
+        Mode SingleBrowse = new Mode(Mode.ApplicationMode.Single, Mode.InputMode.Browse);
 
-        _Data.KeyMap.Register(Keys.F1, (data) => UserCommand.SetCommandMode(data, CommandLineMode.FilterMode));
-        _Data.KeyMap.Register(Keys.F2, (data) => UserCommand.SetCommandMode(data, CommandLineMode.TagMode));
+        Func<Data, bool> isCmdClosed = (data) => { return !data.CommandLine.IsEnabled(); };
 
-        _Data.KeyMap.Register(Keys.Control | Keys.Q, (data) => UserCommand.ClearMarked(data));
-        _Data.KeyMap.Register(Keys.Control | Keys.Space, (data) => UserCommand.ToggleMarkCursor(data));
+        // All modes
 
-        _Data.KeyMap.Register(Keys.Control | Keys.C, UserCommand.CursorImageToClipboard);
-        _Data.KeyMap.Register(Keys.Control | Keys.Shift | Keys.C, UserCommand.CursorPathToClipboard);
+        add(new KeyData(null, Keys.F9, (data) => {
+            System.Console.WriteLine($"Name: {ActiveControl?.Name}  Size: {ActiveControl?.Size}");
+        }));
 
-        _Data.KeyMap.Register(Keys.Escape, (data) => UserCommand.PopFilter(data));
+        add(new KeyData(null, Keys.Control | Keys.S, UserCommand.Save));
+        add(new KeyData(null, Keys.Control | Keys.B, UserCommand.Backup));
 
-        // Browse mode
-        
-        _Data.KeyMap.SwapMode(Mode.BrowseMode);
-        _Data.KeyMap.Register(Keys.Tab, (data) => UserCommand.SetMode(data, Mode.SingleMode));
+        // // All image modes
 
-        _Data.KeyMap.Register(Keys.Alt | Keys.Q, (data) => UserCommand.ToggleGridMarked(data, 0, 0));
-        _Data.KeyMap.Register(Keys.Alt | Keys.W, (data) => UserCommand.ToggleGridMarked(data, 1, 0));
-        _Data.KeyMap.Register(Keys.Alt | Keys.E, (data) => UserCommand.ToggleGridMarked(data, 2, 0));
-        _Data.KeyMap.Register(Keys.Alt | Keys.R, (data) => UserCommand.ToggleGridMarked(data, 3, 0));
-        _Data.KeyMap.Register(Keys.Alt | Keys.T, (data) => UserCommand.ToggleGridMarked(data, 4, 0));
+        foreach (var mode in new Mode[] { GridCommand, GridBrowse, SingleCommand, SingleBrowse })
+        {
+            add(new KeyData(mode, Keys.F1, (data) => UserCommand.SetCommandMode(data, CommandLineMode.FilterMode)));
+            add(new KeyData(mode, Keys.F2, (data) => UserCommand.SetCommandMode(data, CommandLineMode.TagMode)));
 
-        _Data.KeyMap.Register(Keys.Alt | Keys.A, (data) => UserCommand.ToggleGridMarked(data, 0, 1));
-        _Data.KeyMap.Register(Keys.Alt | Keys.S, (data) => UserCommand.ToggleGridMarked(data, 1, 1));
-        _Data.KeyMap.Register(Keys.Alt | Keys.D, (data) => UserCommand.ToggleGridMarked(data, 2, 1));
-        _Data.KeyMap.Register(Keys.Alt | Keys.F, (data) => UserCommand.ToggleGridMarked(data, 3, 1));
-        _Data.KeyMap.Register(Keys.Alt | Keys.G, (data) => UserCommand.ToggleGridMarked(data, 4, 1));
+            add(new KeyData(mode, Keys.Enter, UserCommand.PressEnter));
 
-        _Data.KeyMap.Register(Keys.Alt | Keys.Z, (data) => UserCommand.ToggleGridMarked(data, 0, 2));
-        _Data.KeyMap.Register(Keys.Alt | Keys.X, (data) => UserCommand.ToggleGridMarked(data, 1, 2));
-        _Data.KeyMap.Register(Keys.Alt | Keys.C, (data) => UserCommand.ToggleGridMarked(data, 2, 2));
-        _Data.KeyMap.Register(Keys.Alt | Keys.V, (data) => UserCommand.ToggleGridMarked(data, 3, 2));
-        _Data.KeyMap.Register(Keys.Alt | Keys.B, (data) => UserCommand.ToggleGridMarked(data, 4, 2));
+            add(new KeyData(mode, Keys.Control | Keys.C, UserCommand.CursorImageToClipboard));
+            add(new KeyData(mode, Keys.Control | Keys.Shift | Keys.C, UserCommand.CursorPathToClipboard));
 
-        _Data.KeyMap.Register(Keys.Alt | Keys.Up, (data) => UserCommand.MoveGridCursor(data, 0, -1));
-        _Data.KeyMap.Register(Keys.Alt | Keys.Down, (data) => UserCommand.MoveGridCursor(data, 0, 1));
-        _Data.KeyMap.Register(Keys.Alt | Keys.Left, (data) => UserCommand.MoveGridCursor(data, -1, 0));
-        _Data.KeyMap.Register(Keys.Alt | Keys.Right, (data) => UserCommand.MoveGridCursor(data, 1, 0));
+            add(new KeyData(mode, Keys.Tab, (data) =>
+                               UserCommand.SetMode(
+                                   data,
+                                   data.Mode.Switch(data.Mode.Application == Mode.ApplicationMode.Grid ?
+                                                    Mode.ApplicationMode.Single :
+                                                    Mode.ApplicationMode.Grid))));
 
-        _Data.KeyMap.Register(Keys.PageUp, (data) => UserCommand.MoveGridPage(data, -1));
-        _Data.KeyMap.Register(Keys.PageDown, (data) => UserCommand.MoveGridPage(data, 1));
-        _Data.KeyMap.Register(Keys.Home, (data) => UserCommand.MoveGridPage(data, -1000000));
-        _Data.KeyMap.Register(Keys.End, (data) => UserCommand.MoveGridCursor(data, 1000, 1000000));
+            add(new KeyData(mode, Keys.Alt | Keys.Left, (data) => UserCommand.MoveCursor(data, -1)));
+            add(new KeyData(mode, Keys.Alt | Keys.Right, (data) => UserCommand.MoveCursor(data, 1)));
+            add(new KeyData(mode, Keys.Alt | Keys.Up, (data) => data.ImagePanel.MoveCursorRow(-1)));
+            add(new KeyData(mode, Keys.Alt | Keys.Down, (data) => data.ImagePanel.MoveCursorRow(1)));
+
+            add(new KeyData(mode, Keys.PageUp, (data) => data.ImagePanel.MoveCursorPage(-1)));
+            add(new KeyData(mode, Keys.PageDown, (data) => data.ImagePanel.MoveCursorPage(1)));
+
+            add(new KeyData(mode, Keys.Escape, (data) => UserCommand.PopFilter(data)));
+        }
+
+        // foreach (var appMode in new Mode.ApplicationMode[]{ Mode.ApplicationMode.Grid, Mode.ApplicationMode.Single})
+        // {
+        //     foreach (var inputMode in new Mode.InputMode[] { Mode.InputMode.Command, Mode.InputMode.Browse })
+        //     {
+        //         _Data.KeyMap.SwapMode(new Mode(appMode, inputMode));
+
+        //         add(Keys.Control | Keys.Q, (data) => UserCommand.ClearMarked(data));
+        //         add(Keys.Control | Keys.Space, (data) => UserCommand.ToggleMarkCursor(data));
+        //     }
+        // }
+
+        // Grid mode
+
+        foreach (var mode in new Mode[] { GridCommand, GridBrowse })
+        {
+            add(new KeyData(mode, Keys.Tab, (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Single))));
+
+            List<List<Keys>> gridKeys = [[Keys.Q, Keys.W, Keys.E, Keys.R, Keys.T],
+                                         [Keys.A, Keys.S, Keys.D, Keys.F, Keys.G],
+                                         [Keys.Z, Keys.X, Keys.C, Keys.V, Keys.B]];
+
+            for (int y = 0; y < gridKeys.Count; y++)
+            {
+                for (int x = 0; x < gridKeys[y].Count; x++)
+                {
+                    int staticX = x;
+                    int staticY = y;
+                    add(new KeyData(mode, Keys.Alt | gridKeys[y][x], (data) => data.ImagePanel.ToggleMarked(staticX, staticY)));
+                }
+            }
+        }
 
         // Single mode
 
-        _Data.KeyMap.SwapMode(Mode.SingleMode);
-        _Data.KeyMap.Register(Keys.Tab, (data) => UserCommand.SetMode(data, Mode.BrowseMode));
+        foreach (var mode in new Mode[] { SingleCommand, SingleBrowse })
+        {
+            add(new KeyData(mode, Keys.Tab, (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Grid))));
+        }
 
-        _Data.KeyMap.Register(Keys.Alt | Keys.Left, (data) => UserCommand.MoveCursor(data, -1));
-        _Data.KeyMap.Register(Keys.Alt | Keys.Right, (data) => UserCommand.MoveCursor(data, 1));
+        // Command mode
+
+        foreach (var mode in new Mode[] { GridCommand, SingleCommand })
+        {
+            add(new KeyData(mode, Keys.Control | Keys.Enter, (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.InputMode.Browse))));
+
+            add(new KeyData(mode, Keys.Alt | Keys.Up, (data) => data.ImagePanel.MoveCursorRow(-1)));
+            add(new KeyData(mode, Keys.Alt | Keys.Down, (data) => data.ImagePanel.MoveCursorRow(1)));
+        }
+
+        // Browse mode
+
+        foreach (var mode in new Mode[] { GridBrowse, SingleBrowse })
+        {
+            add(new KeyData(mode, Keys.Control | Keys.Enter, (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.InputMode.Command))));
+
+            add(new KeyData(mode, Keys.Home, (data) => data.EntryCollection.MoveCursor(-1000000)));
+            add(new KeyData(mode, Keys.End, (data) => data.EntryCollection.MoveCursor(1000000)));
+
+            add(new KeyData(mode, Keys.Left, (data) => UserCommand.MoveCursor(data, -1), isCmdClosed));
+            add(new KeyData(mode, Keys.Right, (data) => UserCommand.MoveCursor(data, 1), isCmdClosed));
+            add(new KeyData(mode, Keys.Up, (data) => data.ImagePanel.MoveCursorRow(-1), isCmdClosed));
+            add(new KeyData(mode, Keys.Down, (data) => data.ImagePanel.MoveCursorRow(1), isCmdClosed));
+        }
     }
 
     private void KeyHandler(Object? o, KeyEventArgs e)
     {
-        if (_Data.KeyMap.Get(e.KeyData) is Action<Data> action)
+        if (_Data.KeyMap.Get(e.KeyData) is KeyData keyData)
         {
-            e.SuppressKeyPress = true;
-            action(_Data);
+            if (keyData.IsValid?.Invoke(_Data) ?? true)
+            {
+                e.SuppressKeyPress = true;
+                keyData.Action(_Data);
+            }
         }
         // https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.keyeventargs?view=windowsdesktop-9.0
     }
@@ -199,37 +287,6 @@ public class Root : Form
     {
         //e.Handled = true;
         // System.Console.WriteLine(e.KeyChar);
-    }
-
-    private Control MakeGridView(Data data)
-    {
-        var pad = 5;
-
-        var panel = new Control();
-
-        data.ImagePanel.Dock = DockStyle.Fill;
-        data.ImagePanel.Padding = new Padding(pad);
-        panel.Controls.Add(data.ImagePanel);
-
-        var split = new Splitter();
-        split.Width = 5;
-        panel.Controls.Add(split);
-
-        var ttPanel = new Panel();
-        ttPanel.Padding = new Padding(pad);
-        ttPanel.Dock = DockStyle.Left;
-        data.TagTable.Dock = DockStyle.Fill;
-        ttPanel.Controls.Add(data.TagTable);
-        panel.Controls.Add(ttPanel);
-
-        data.StatusBar.Dock = DockStyle.Top;
-        panel.Controls.Add(data.StatusBar);
-
-        data.CommandLine.Dock = DockStyle.Top;
-        data.CommandLine.Padding = new Padding(pad);
-        panel.Controls.Add(data.CommandLine);
-
-        return panel;
     }
 
     private void ListenFilterCommand(FilterCommand ev)

@@ -84,6 +84,12 @@ public class EntryCollection
         _EventHub.Send(new ShowEntry(GetEntryAtCursor()));
     }
 
+    public void MoveCursor(int offset)
+    {
+        if (GetCursor() is int index)
+            SetCursor(index + offset);
+    }
+
     public void PushFilter(IFilter filter)
     {
         _Filters.Push(filter);

@@ -4,55 +4,79 @@ using System.Windows.Forms;
 
 namespace Tagbag.Gui;
 
+public class KeyData
+{
+    public Mode? Mode { get; }
+    public Keys Key { get; }
+    public Action<Data> Action { get; }
+    public Func<Data, bool>? IsValid { get; }
+
+    public KeyData(Mode? mode,
+                   Keys key,
+                   Action<Data> action,
+                   Func<Data, bool>? isValid = null)
+    {
+        Mode = mode;
+        Key = key;
+        Action = action;
+        IsValid = isValid;
+    }
+}
+
 public class KeyMap
 {
+    private List<KeyData> _RawKeys;
+
     private Mode? _Mode;
-    private Dictionary<Mode, Dictionary<Keys, Action<Data>>> _Mapping;
-    private Dictionary<Keys, Action<Data>> _Common;
+    private Dictionary<Mode, Dictionary<Keys, KeyData>> _Mapping;
+    private Dictionary<Keys, KeyData> _Common;
 
     public KeyMap()
     {
-        _Mode = Mode.BrowseMode;
-        _Mapping = new Dictionary<Mode, Dictionary<Keys, Action<Data>>>();
-        _Common = new Dictionary<Keys, Action<Data>>();
+        _RawKeys = new List<KeyData>();
+
+        _Mode = null;
+        _Mapping = new Dictionary<Mode, Dictionary<Keys, KeyData>>();
+        _Common = new Dictionary<Keys, KeyData>();
     }
 
-    private Dictionary<Keys, Action<Data>> GetOrCreateKeyMapping(Mode? mode)
+    private Dictionary<Keys, KeyData> GetOrCreateKeyMapping(Mode? modeOpt)
     {
-        Dictionary<Keys, Action<Data>>? keyMapping = _Common;
-        if (mode is Mode totallyMode)
+        Dictionary<Keys, KeyData>? keyMapping = _Common;
+        if (modeOpt is Mode mode)
         {
-            _Mapping.TryGetValue(totallyMode, out keyMapping);
-            if (keyMapping is Dictionary<Keys, Action<Data>> existingKeyMapping)
+            _Mapping.TryGetValue(mode, out keyMapping);
+            if (keyMapping is Dictionary<Keys, KeyData> existingKeyMapping)
             {
                 return existingKeyMapping;
             }
             else
             {
-                var newKeyMapping = new Dictionary<Keys, Action<Data>>();
-                _Mapping[totallyMode] = newKeyMapping;
+                var newKeyMapping = new Dictionary<Keys, KeyData>();
+                _Mapping[mode] = newKeyMapping;
                 return newKeyMapping;
             }
         }
         return keyMapping;
     }
 
-    public void SwapMode(Mode? mode)
+    public void Add(KeyData keyData)
+    {
+        _RawKeys.Add(keyData);
+        GetOrCreateKeyMapping(keyData.Mode)[keyData.Key] = keyData;
+    }
+
+    public void SetMode(Mode? mode)
     {
         _Mode = mode;
     }
 
-    public void Register(Keys keys, Action<Data> action)
+    public KeyData? Get(Keys keys)
     {
-        GetOrCreateKeyMapping(_Mode)[keys] = action;
-    }
-
-    public Action<Data>? Get(Keys keys)
-    {
-        Action<Data>? action;
-        if (GetOrCreateKeyMapping(_Mode).TryGetValue(keys, out action))
-            return action;
-        GetOrCreateKeyMapping(null).TryGetValue(keys, out action);
-        return action;
+        KeyData? keyData;
+        if (GetOrCreateKeyMapping(_Mode).TryGetValue(keys, out keyData))
+            return keyData;
+        GetOrCreateKeyMapping(null).TryGetValue(keys, out keyData);
+        return keyData;
     }
 }
