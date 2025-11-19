@@ -25,7 +25,7 @@ public class ImageGrid : Control
     private double _TileRatio = 1.3;
     private int _TileWidth = 100;
     private int _TileHeight = 100;
-    private int _Padding = 3;
+    private int _Padding = 2;
 
     private int _ThumbnailVersion = 0;
     private List<Bitmap?> _ThumbnailCache;
@@ -129,6 +129,7 @@ public class ImageGrid : Control
         using var backBrush = new SolidBrush(Color.FromArgb(255, 50, 50, 50));
         using var tileBrush = new SolidBrush(Color.FromArgb(255, 80, 80, 80));
         using var markedBrush = new SolidBrush(Color.Red);
+        using var markedBackBrush = new SolidBrush(Color.LightGray);
         using var cursorPen = new Pen(Color.Yellow, _Padding);
 
         e.Graphics.FillRectangle(backBrush, e.ClipRectangle);
@@ -146,7 +147,15 @@ public class ImageGrid : Control
 
                 if (_EntryCollection.Get(_IndexOffset + counter) is Entry entry &&
                     _EntryCollection.IsMarked(entry.Id))
+                {
                     e.Graphics.FillRectangle(markedBrush, tileRect);
+                    var markSize = _Padding * 2;
+                    e.Graphics.FillRectangle(markedBackBrush,
+                                             tileRect.X + markSize,
+                                             tileRect.Y + markSize,
+                                             tileRect.Width - markSize * 2,
+                                             tileRect.Height - markSize * 2);
+                }
                 else
                     e.Graphics.FillRectangle(tileBrush, tileRect);
 
@@ -158,6 +167,7 @@ public class ImageGrid : Control
                     float xFactor = (float)(tileRect.Width - _Padding * 2) / image.Width;
                     float yFactor = (float)(tileRect.Height - _Padding * 2) / image.Height;
                     float factor = Math.Min(xFactor, yFactor);
+                    factor = factor * (float)0.95;
                     var w = image.Width * factor;
                     var h = image.Height * factor;
 
