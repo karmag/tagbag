@@ -22,7 +22,7 @@ public class StatusBar : RichLabel
         Clear();
 
         // entry count
-        
+
         AddText($"{_EntryCollection.Size(),3}", Color.Black);
         AddText(" / ", Color.Gray);
         AddText(_EntryCollection.MaxSize().ToString(), Color.Gray);

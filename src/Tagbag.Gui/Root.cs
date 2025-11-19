@@ -35,6 +35,7 @@ public class Root : Form
         KeyDown += KeyHandler;
         KeyUp += (_, _) => { };
         KeyPress += KeyPressHandler;
+        PreviewKeyDown += (_, ev) => { ev.IsInputKey = true; };
 
         _Data.EventHub.FilterCommand += ListenFilterCommand;
         _Data.EventHub.TagCommand += ListenTagCommand;
@@ -277,6 +278,7 @@ public class Root : Form
 
     private void KeyHandler(Object? o, KeyEventArgs e)
     {
+        System.Console.WriteLine($"{ActiveControl?.Name} --- {e.KeyData}");
         if (_Data.KeyMap.Get(e.KeyData) is KeyData keyData)
         {
             if (keyData.IsValid?.Invoke(_Data) ?? true)

@@ -14,7 +14,8 @@ public class RichLabel : RichTextBox
         Height = 25;
 
         ReadOnly = true;
-        Multiline = false;
+        Multiline = true;
+        AcceptsTab = true;
         TabStop = false;
     }
 

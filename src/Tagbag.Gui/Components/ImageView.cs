@@ -33,6 +33,7 @@ public class ImageView : Panel
 
         _Active = false;
         SetActive(true);
+        PreviewKeyDown += (_, ev) => { ev.IsInputKey = true; };
     }
 
     public void SetActive(bool active)

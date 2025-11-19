@@ -26,6 +26,7 @@ public class ImagePanel : Panel
         ImageView.Dock = DockStyle.Fill;
 
         ShowGrid(true);
+        PreviewKeyDown += (_, ev) => { ev.IsInputKey = true; };
     }
 
     public void ShowGrid(bool grid)
