@@ -150,6 +150,13 @@ public class EntryCollection
         _EventHub.Send(new MarkedChanged());
     }
 
+    public void MarkVisible()
+    {
+        foreach (var entry in _Entries)
+            _Marked.Add(entry.Id);
+        _EventHub.Send(new MarkedChanged());
+    }
+
     private void RefreshEntries()
     {
         var cursorId = GetEntryAtCursor()?.Id;

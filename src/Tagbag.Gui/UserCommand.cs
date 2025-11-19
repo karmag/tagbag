@@ -43,10 +43,22 @@ public static class UserCommand
         data.CommandLine.Focus();
     }
 
-    public static void MoveCursor(Data data, int offset)
+    // Moves the cursor in either x or y. The cursor is only moved one
+    // step and in one cardinal direction. Values other than -1, 0, 1
+    // are changed to be in that interval.
+    public static void MoveCursor(Data data, int xDelta, int yDelta = 0)
     {
-        if (data.EntryCollection.GetCursor() is int index)
-            data.EntryCollection.SetCursor(index + offset);
+        if (yDelta == 0)
+        {
+            var xOffset = Math.Min(1, Math.Max(-1, xDelta));
+            if (data.EntryCollection.GetCursor() is int index)
+                data.EntryCollection.SetCursor(index + xOffset);
+        }
+        else
+        {
+            var yOffset = Math.Min(1, Math.Max(-1, yDelta));
+            data.ImagePanel.MoveCursorRow(yOffset);
+        }
     }
 
     public static void ToggleMarkCursor(Data data)
@@ -62,6 +74,14 @@ public static class UserCommand
     public static void ClearMarked(Data data)
     {
         data.EntryCollection.ClearMarked();
+    }
+
+    public static void MarkVisible(Data data)
+    {
+        if (data.Mode.Application == Mode.ApplicationMode.Single)
+            ToggleMarkCursor(data);
+        else
+            data.EntryCollection.MarkVisible();
     }
 
     public static void PopFilter(Data data)

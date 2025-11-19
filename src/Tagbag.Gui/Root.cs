@@ -165,6 +165,10 @@ public class Root : Form
         Mode SingleBrowse = new Mode(Mode.ApplicationMode.Single, Mode.InputMode.Browse);
 
         Func<Data, bool> isCmdClosed = (data) => { return !data.CommandLine.IsEnabled(); };
+        Action<Data, int, int> toggleAndMove = (data, x, y) => {
+            UserCommand.ToggleMarkCursor(data);
+            UserCommand.MoveCursor(data, x, y);
+        };
 
         // All modes
 
@@ -196,25 +200,22 @@ public class Root : Form
 
             add(new KeyData(mode, Keys.Alt | Keys.Left, (data) => UserCommand.MoveCursor(data, -1)));
             add(new KeyData(mode, Keys.Alt | Keys.Right, (data) => UserCommand.MoveCursor(data, 1)));
-            add(new KeyData(mode, Keys.Alt | Keys.Up, (data) => data.ImagePanel.MoveCursorRow(-1)));
-            add(new KeyData(mode, Keys.Alt | Keys.Down, (data) => data.ImagePanel.MoveCursorRow(1)));
+            add(new KeyData(mode, Keys.Alt | Keys.Up, (data) => UserCommand.MoveCursor(data, 0, -1)));
+            add(new KeyData(mode, Keys.Alt | Keys.Down, (data) => UserCommand.MoveCursor(data, 0, 1)));
+
+            add(new KeyData(mode, Keys.Control | Keys.Q, UserCommand.ClearMarked));
+            add(new KeyData(mode, Keys.Control | Keys.A, UserCommand.MarkVisible));
+
+            add(new KeyData(mode, Keys.Alt | Keys.Shift | Keys.Left, (data) => toggleAndMove(data, -1, 0)));
+            add(new KeyData(mode, Keys.Alt | Keys.Shift | Keys.Right, (data) => toggleAndMove(data, 1, 0)));
+            add(new KeyData(mode, Keys.Alt | Keys.Shift | Keys.Up, (data) => toggleAndMove(data, 0, -1)));
+            add(new KeyData(mode, Keys.Alt | Keys.Shift | Keys.Down, (data) => toggleAndMove(data, 0, 1)));
 
             add(new KeyData(mode, Keys.PageUp, (data) => data.ImagePanel.MoveCursorPage(-1)));
             add(new KeyData(mode, Keys.PageDown, (data) => data.ImagePanel.MoveCursorPage(1)));
 
             add(new KeyData(mode, Keys.Escape, (data) => UserCommand.PopFilter(data)));
         }
-
-        // foreach (var appMode in new Mode.ApplicationMode[]{ Mode.ApplicationMode.Grid, Mode.ApplicationMode.Single})
-        // {
-        //     foreach (var inputMode in new Mode.InputMode[] { Mode.InputMode.Command, Mode.InputMode.Browse })
-        //     {
-        //         _Data.KeyMap.SwapMode(new Mode(appMode, inputMode));
-
-        //         add(Keys.Control | Keys.Q, (data) => UserCommand.ClearMarked(data));
-        //         add(Keys.Control | Keys.Space, (data) => UserCommand.ToggleMarkCursor(data));
-        //     }
-        // }
 
         // Grid mode
 
@@ -249,9 +250,6 @@ public class Root : Form
         foreach (var mode in new Mode[] { GridCommand, SingleCommand })
         {
             add(new KeyData(mode, Keys.Control | Keys.Enter, (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.InputMode.Browse))));
-
-            add(new KeyData(mode, Keys.Alt | Keys.Up, (data) => data.ImagePanel.MoveCursorRow(-1)));
-            add(new KeyData(mode, Keys.Alt | Keys.Down, (data) => data.ImagePanel.MoveCursorRow(1)));
         }
 
         // Browse mode
@@ -265,8 +263,15 @@ public class Root : Form
 
             add(new KeyData(mode, Keys.Left, (data) => UserCommand.MoveCursor(data, -1), isCmdClosed));
             add(new KeyData(mode, Keys.Right, (data) => UserCommand.MoveCursor(data, 1), isCmdClosed));
-            add(new KeyData(mode, Keys.Up, (data) => data.ImagePanel.MoveCursorRow(-1), isCmdClosed));
-            add(new KeyData(mode, Keys.Down, (data) => data.ImagePanel.MoveCursorRow(1), isCmdClosed));
+            add(new KeyData(mode, Keys.Up, (data) => UserCommand.MoveCursor(data, 0, -1), isCmdClosed));
+            add(new KeyData(mode, Keys.Down, (data) => UserCommand.MoveCursor(data, 0, 1), isCmdClosed));
+
+            add(new KeyData(mode, Keys.Space, (data) => toggleAndMove(data, 1, 0), isCmdClosed));
+
+            add(new KeyData(mode, Keys.Shift | Keys.Left, (data) => toggleAndMove(data, -1, 0), isCmdClosed));
+            add(new KeyData(mode, Keys.Shift | Keys.Right, (data) => toggleAndMove(data, 1, 0), isCmdClosed));
+            add(new KeyData(mode, Keys.Shift | Keys.Up, (data) => toggleAndMove(data, 0, -1), isCmdClosed));
+            add(new KeyData(mode, Keys.Shift | Keys.Down, (data) => toggleAndMove(data, 0, 1), isCmdClosed));
         }
     }
 

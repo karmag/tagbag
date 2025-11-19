@@ -13,6 +13,8 @@ public class StatusBar : RichLabel
         _EntryCollection = entryCollection;
         eventHub.EntriesUpdated += (_) => RefreshText();
         eventHub.MarkedChanged += (_) => RefreshText();
+
+        TabStop = false;
     }
 
     private void RefreshText()
