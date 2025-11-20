@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using Tagbag.Core;
 
@@ -8,11 +9,12 @@ public class EntryCollection
 {
     private EventHub _EventHub;
 
-    private ICollection<Entry> _BaseEntries;
+    private List<Entry> _BaseEntries;
     private List<Entry> _Entries;
     private int? _CursorIndex;
     private Stack<IFilter> _Filters;
     private HashSet<Guid> _Marked;
+    private Comparison<Entry> _SortOrder;
 
     public EntryCollection(EventHub eventHub)
     {
@@ -23,11 +25,20 @@ public class EntryCollection
         _CursorIndex = null;
         _Filters = new Stack<IFilter>();
         _Marked = new HashSet<Guid>();
+
+        _SortOrder = (a, b) => {
+            var dirDiff = String.Compare(Path.GetDirectoryName(a.Path),
+                                         Path.GetDirectoryName(b.Path));
+            if (dirDiff == 0)
+                return String.Compare(a.Path, b.Path, ignoreCase: true);
+            return dirDiff;
+        };
     }
 
     public void SetBaseEntries(ICollection<Entry>? entries)
     {
-        _BaseEntries = entries ?? [];
+        _BaseEntries = new List<Entry>(entries ?? []);
+        _BaseEntries.Sort(_SortOrder);
         _Entries = new List<Entry>(_BaseEntries.Count);
         RefreshEntries();
     }
