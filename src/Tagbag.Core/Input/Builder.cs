@@ -12,6 +12,13 @@ public class BuildException(string msg) : ArgumentException(msg)
         _Token = token;
         return this;
     }
+
+    public string FullMessage()
+    {
+        if (_Token is Token token)
+            return $"{Message} (\"{token.Text}\":{token.Pos})";
+        return Message;
+    }
 }
 
 public class TagBuilder

@@ -149,11 +149,24 @@ public class CommandLine : Panel
         else if (txt.Length > 0)
         {
             _CurrentHistory.Add(txt);
-            _TextBox.Text = "";
-            if (_Mode == CommandLineMode.FilterMode)
-                PerformFilterCommand(txt);
-            else
-                PerformTagCommand(txt);
+            try
+            {
+                if (_Mode == CommandLineMode.FilterMode)
+                {
+                    var filter = FilterBuilder.Build(txt);
+                    _EventHub.Send(new FilterCommand(filter));
+                }
+                else
+                {
+                    var tagOperation = TagBuilder.Build(txt);
+                    _EventHub.Send(new TagCommand(tagOperation));
+                }
+                _TextBox.Text = "";
+            }
+            catch (BuildException e)
+            {
+                _EventHub.Send(new Log(LogType.Error, e.FullMessage()));
+            }
         }
     }
 
@@ -176,32 +189,6 @@ public class CommandLine : Panel
                 e.SuppressKeyPress = true;
                 _TextBox.Text = _CurrentHistory.Prev();
                 break;
-        }
-    }
-
-    private void PerformFilterCommand(string text)
-    {
-        try
-        {
-            var filter = FilterBuilder.Build(text);
-            _EventHub.Send(new FilterCommand(filter));
-        }
-        catch (BuildException e)
-        {
-            _EventHub.Send(new Log(LogType.Error, $"Filter failed: {e}"));
-        }
-    }
-
-    private void PerformTagCommand(string text)
-    {
-        try
-        {
-            var tagOperation = TagBuilder.Build(text);
-            _EventHub.Send(new TagCommand(tagOperation));
-        }
-        catch (BuildException e)
-        {
-            _EventHub.Send(new Log(LogType.Error, $"Tag failed: {e}"));
         }
     }
 
