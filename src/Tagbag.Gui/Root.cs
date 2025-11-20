@@ -28,7 +28,8 @@ public class Root : Form
 
         FormClosing += (_, _) => { _Data.EventHub.Send(new Shutdown()); };
         Shown += (_, _) => {
-            UserCommand.SetMode(_Data, new Mode(Mode.ApplicationMode.Grid, Mode.InputMode.Command));
+            UserCommand.SetMode(_Data, new Mode(Mode.ApplicationMode.Grid, Mode.InputMode.Browse));
+            _Data.CommandLine.SetEnabled(false);
         };
 
         KeyPreview = true;
@@ -186,6 +187,7 @@ public class Root : Form
         {
             add(new KeyData(mode, Keys.F1, (data) => UserCommand.SetCommandMode(data, CommandLineMode.FilterMode)));
             add(new KeyData(mode, Keys.F2, (data) => UserCommand.SetCommandMode(data, CommandLineMode.TagMode)));
+            add(new KeyData(mode, Keys.Control | Keys.Tab, UserCommand.ToggleCommandMode));
 
             add(new KeyData(mode, Keys.Enter, UserCommand.PressEnter));
 

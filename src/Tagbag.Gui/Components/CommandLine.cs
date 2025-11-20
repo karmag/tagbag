@@ -99,6 +99,11 @@ public class CommandLine : Panel
         }
     }
 
+    public CommandLineMode GetMode()
+    {
+        return _Mode;
+    }
+
     new public void Focus()
     {
         _TextBox.Focus();

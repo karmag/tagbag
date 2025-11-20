@@ -43,6 +43,19 @@ public static class UserCommand
         data.CommandLine.Focus();
     }
 
+    public static void ToggleCommandMode(Data data)
+    {
+        switch (data.CommandLine.GetMode())
+        {
+            case CommandLineMode.FilterMode:
+                data.CommandLine.SetMode(CommandLineMode.TagMode);
+                break;
+            case CommandLineMode.TagMode:
+                data.CommandLine.SetMode(CommandLineMode.FilterMode);
+                break;
+        }
+    }
+
     // Moves the cursor in either x or y. The cursor is only moved one
     // step and in one cardinal direction. Values other than -1, 0, 1
     // are changed to be in that interval.
