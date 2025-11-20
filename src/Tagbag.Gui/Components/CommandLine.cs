@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using Tagbag.Core.Input;
@@ -20,6 +21,10 @@ public class CommandLine : Panel
     private Label _ModeLabel;
     private TextBox _TextBox;
     private RichLabel _StatusLabel;
+
+    private History _TagHistory;
+    private History _FilterHistory;
+    private History _CurrentHistory;
 
     public CommandLine(EventHub eventHub)
     {
@@ -62,6 +67,10 @@ public class CommandLine : Panel
 
         _TextBox.KeyDown += HandleKey;
 
+        _TagHistory = new History();
+        _FilterHistory = new History();
+        _CurrentHistory = _TagHistory;
+
         SetMode(CommandLineMode.FilterMode);
         SetEnabled(true);
 
@@ -82,21 +91,22 @@ public class CommandLine : Panel
 
     public void SetMode(CommandLineMode mode)
     {
-        if (_Mode != mode)
+        _Mode = mode;
+        switch (mode)
         {
-            _Mode = mode;
-            switch (mode)
-            {
-                case CommandLineMode.TagMode:
-                    _ModeLabel.Text = "TAG";
-                    break;
+            case CommandLineMode.TagMode:
+                _ModeLabel.Text = "TAG";
+                _TagHistory.Reset();
+                _CurrentHistory = _TagHistory;
+                break;
 
-                case CommandLineMode.FilterMode:
-                    _ModeLabel.Text = "FILTER";
-                    break;
-            }
-            UpdateModeLabel();
+            case CommandLineMode.FilterMode:
+                _ModeLabel.Text = "FILTER";
+                _FilterHistory.Reset();
+                _CurrentHistory = _FilterHistory;
+                break;
         }
+        UpdateModeLabel();
     }
 
     public CommandLineMode GetMode()
@@ -138,6 +148,7 @@ public class CommandLine : Panel
         }
         else if (txt.Length > 0)
         {
+            _CurrentHistory.Add(txt);
             _TextBox.Text = "";
             if (_Mode == CommandLineMode.FilterMode)
                 PerformFilterCommand(txt);
@@ -153,6 +164,17 @@ public class CommandLine : Panel
             case Keys.Enter:
                 e.SuppressKeyPress = true;
                 PerformCommand();
+                break;
+
+            case Keys.Up:
+                e.SuppressKeyPress = true;
+                if (_CurrentHistory.Next() is string s)
+                    _TextBox.Text = s;
+                break;
+
+            case Keys.Down:
+                e.SuppressKeyPress = true;
+                _TextBox.Text = _CurrentHistory.Prev();
                 break;
         }
     }
@@ -200,6 +222,51 @@ public class CommandLine : Panel
         else
         {
             _ModeLabel.BackColor = Color.DarkGray;
+        }
+    }
+
+    private class History
+    {
+        private LinkedList<String> _History;
+        private LinkedListNode<String>? _ScrollBackPosition;
+
+        public History()
+        {
+            _History = new LinkedList<String>();
+            _ScrollBackPosition = null;
+        }
+
+        public void Reset()
+        {
+            _ScrollBackPosition = null;
+        }
+
+        public void Add(string cmd)
+        {
+            cmd = cmd.Trim();
+            _History.Remove(cmd);
+            _History.AddFirst(cmd);
+            _ScrollBackPosition = null;
+        }
+
+        public string? Next()
+        {
+            if (_ScrollBackPosition == null)
+                _ScrollBackPosition = _History.First;
+            else
+                _ScrollBackPosition = _ScrollBackPosition.Next ?? _ScrollBackPosition;
+
+            return _ScrollBackPosition?.Value;
+        }
+
+        public string? Prev()
+        {
+            if (_ScrollBackPosition == null)
+                return null;
+            else
+                _ScrollBackPosition = _ScrollBackPosition.Previous;
+
+            return _ScrollBackPosition?.Value;
         }
     }
 }
