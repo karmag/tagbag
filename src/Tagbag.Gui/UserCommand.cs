@@ -11,17 +11,18 @@ public static class UserCommand
     public static void SetMode(Data data, Mode mode)
     {
         System.Console.WriteLine($"Mode :: {data.Mode} -> {mode}");
-        data.Mode = mode;
         switch (mode.Application)
         {
             case Mode.ApplicationMode.Grid:
-                data.ImagePanel.ShowGrid(true);
+            case Mode.ApplicationMode.Single:
+                data.ImagePanel.ShowGrid(mode.Application == Mode.ApplicationMode.Grid);
                 break;
 
-            case Mode.ApplicationMode.Single:
-                data.ImagePanel.ShowGrid(false);
+            case Mode.ApplicationMode.Scan:
                 break;
         }
+
+        data.MainView.Show((int)mode.Application);
 
         switch (mode.Input)
         {
@@ -31,10 +32,17 @@ public static class UserCommand
                 break;
 
             case Mode.InputMode.Browse:
+                data.CommandLine.SetEnabled(false);
                 break;
         }
 
+        data.Mode = mode;
         data.KeyMap.SetMode(mode);
+    }
+
+    public static void Refresh(Data data)
+    {
+        data.SetTagbag(data.Tagbag);
     }
 
     public static void SetCommandMode(Data data, CommandLineMode mode)

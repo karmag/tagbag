@@ -29,7 +29,6 @@ public class Root : Form
         FormClosing += (_, _) => { _Data.EventHub.Send(new Shutdown()); };
         Shown += (_, _) => {
             UserCommand.SetMode(_Data, new Mode(Mode.ApplicationMode.Grid, Mode.InputMode.Browse));
-            _Data.CommandLine.SetEnabled(false);
         };
 
         KeyPreview = true;
@@ -69,15 +68,18 @@ public class Root : Form
     {
         var pad = 5;
 
+        var TagView = new Control();
+        TagView.Dock = DockStyle.Fill;
+
         data.ImagePanel.Name = "ImagePanel";
         data.ImagePanel.Dock = DockStyle.Fill;
         data.ImagePanel.Padding = new Padding(pad);
-        Controls.Add(data.ImagePanel);
+        TagView.Controls.Add(data.ImagePanel);
 
         var split = new Splitter();
         split.Name = "Splitter";
         split.Width = 5;
-        Controls.Add(split);
+        TagView.Controls.Add(split);
 
         var ttPanel = new Panel();
         ttPanel.Name = "TagTablePanel";
@@ -86,16 +88,25 @@ public class Root : Form
         data.TagTable.Name = "TagTable";
         data.TagTable.Dock = DockStyle.Fill;
         ttPanel.Controls.Add(data.TagTable);
-        Controls.Add(ttPanel);
+        TagView.Controls.Add(ttPanel);
 
         data.StatusBar.Name = "StatusBar";
         data.StatusBar.Dock = DockStyle.Top;
-        Controls.Add(data.StatusBar);
+        TagView.Controls.Add(data.StatusBar);
 
         data.CommandLine.Name = "CommandLine";
         data.CommandLine.Dock = DockStyle.Top;
         data.CommandLine.Padding = new Padding(pad);
-        Controls.Add(data.CommandLine);
+        TagView.Controls.Add(data.CommandLine);
+
+        data.MainView.Add((int)Mode.ApplicationMode.Grid, TagView);
+        data.MainView.Add((int)Mode.ApplicationMode.Single, TagView);
+
+        data.Scan.Dock = DockStyle.Fill;
+        data.MainView.Add((int)Mode.ApplicationMode.Scan, data.Scan);
+
+        data.MainView.Dock = DockStyle.Fill;
+        Controls.Add(data.MainView);
 
         var menu = MakeMenu(_Data);
         menu.Dock = DockStyle.Top;
@@ -133,14 +144,12 @@ public class Root : Form
         var viewMenu = new ToolStripMenuItem("View");
         menuStrip.Items.Add(viewMenu);
 
-        var vGrid = new ToolStripMenuItem("Grid");
-        var vSingle = new ToolStripMenuItem("Single");
-        var vSummary = new ToolStripMenuItem("Tag summary");
-        var vBulk = new ToolStripMenuItem("Bulk");
-        viewMenu.DropDownItems.Add(vGrid);
-        viewMenu.DropDownItems.Add(vSingle);
+        var vTag = new ToolStripMenuItem("Tag");
+        var vSummary = new ToolStripMenuItem("Summary");
+        var vScan = new ToolStripMenuItem("Scan");
+        viewMenu.DropDownItems.Add(vTag);
         viewMenu.DropDownItems.Add(vSummary);
-        viewMenu.DropDownItems.Add(vBulk);
+        viewMenu.DropDownItems.Add(vScan);
 
         var helpMenu = new ToolStripMenuItem("Help");
         menuStrip.Items.Add(helpMenu);
@@ -181,18 +190,21 @@ public class Root : Form
         add(new KeyData(null, Keys.Control | Keys.S, UserCommand.Save));
         add(new KeyData(null, Keys.Control | Keys.B, UserCommand.Backup));
 
+        add(new KeyData(null, Keys.F1, (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Grid))));
+        add(new KeyData(null, Keys.F2, (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Scan))));
+
         // // All image modes
 
         foreach (var mode in new Mode[] { GridCommand, GridBrowse, SingleCommand, SingleBrowse })
         {
-            add(new KeyData(mode, Keys.F1, (data) => UserCommand.SetCommandMode(data, CommandLineMode.FilterMode)));
-            add(new KeyData(mode, Keys.F2, (data) => UserCommand.SetCommandMode(data, CommandLineMode.TagMode)));
             add(new KeyData(mode, Keys.Control | Keys.Tab, UserCommand.ToggleCommandMode));
 
             add(new KeyData(mode, Keys.Enter, UserCommand.PressEnter));
 
             add(new KeyData(mode, Keys.Control | Keys.C, UserCommand.CursorImageToClipboard));
             add(new KeyData(mode, Keys.Control | Keys.Shift | Keys.C, UserCommand.CursorPathToClipboard));
+
+            add(new KeyData(mode, Keys.Control | Keys.R, UserCommand.Refresh));
 
             add(new KeyData(mode, Keys.Tab, (data) =>
                                UserCommand.SetMode(

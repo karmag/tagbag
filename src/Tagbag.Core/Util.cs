@@ -27,7 +27,7 @@ public class TagbagUtil
         return result;
     }
 
-    public static void PopulateImageTags(Tagbag tb, Entry entry)
+    public static bool PopulateImageTags(Tagbag tb, Entry entry)
     {
         try
         {
@@ -37,16 +37,19 @@ public class TagbagUtil
             entry.Set(Const.Height, img.Height);
             img.Dispose();
             #pragma warning restore CA1416
+            return true;
         }
         catch (OutOfMemoryException)
         {
             // Thrown for files that are not images
+            return false;
         }
     }
 
-    public static void PopulateFileTags(Tagbag tb, Entry entry)
+    public static bool PopulateFileTags(Tagbag tb, Entry entry)
     {
         var info = new FileInfo(GetPath(tb, entry.Path));
         entry.Set(Const.Size, (int)info.Length);
+        return true;
     }
 }

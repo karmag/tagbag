@@ -12,10 +12,14 @@ public class Data
 
     public KeyMap KeyMap;
 
+    public Components.CardPanel MainView;
+
     public Components.TagTable TagTable;
     public Components.ImagePanel ImagePanel;
     public Components.CommandLine CommandLine;
     public Components.StatusBar StatusBar;
+
+    public Components.Scan Scan;
 
     public Data()
     {
@@ -29,10 +33,14 @@ public class Data
 
         KeyMap = new KeyMap();
 
+        MainView = new Components.CardPanel();
+
         TagTable = new Components.TagTable(EventHub, ImageCache);
         ImagePanel = new Components.ImagePanel(EventHub, EntryCollection, ImageCache);
         CommandLine = new Components.CommandLine(EventHub);
         StatusBar = new Components.StatusBar(EventHub, EntryCollection);
+
+        Scan = new Components.Scan(this);
     }
 
     public void SetTagbag(Tagbag.Core.Tagbag? tb)
@@ -50,28 +58,43 @@ public class Mode
 {
     public enum ApplicationMode
     {
-        Grid = 1 << 0,
-        Single = 1 << 1,
+        Grid = 1 << 2,
+        Single = 1 << 3,
+        Scan = 1 << 4,
     }
 
     public enum InputMode
     {
-        Command = 1 << 2,
-        Browse = 1 << 3,
+        Command = 1 << 0,
+        Browse = 1 << 1,
     }
 
     public ApplicationMode Application { get; }
-    public InputMode Input { get; }
+    public InputMode? Input { get => GetInput(); }
+    private InputMode? _ActualInput;
 
-    public Mode(ApplicationMode app, InputMode input)
+    public Mode(ApplicationMode app, InputMode? input = null)
     {
         Application = app;
-        Input = input;
+        _ActualInput = input;
     }
 
-    public Mode Switch(ApplicationMode app) { return new Mode(app, Input); }
+    public Mode Switch(ApplicationMode app) { return new Mode(app, _ActualInput); }
     public Mode Switch(InputMode input) { return new Mode(Application, input); }
 
+    private InputMode? GetInput()
+    {
+        switch (Application)
+        {
+            case ApplicationMode.Grid:
+            case ApplicationMode.Single:
+                return _ActualInput;
+
+            default:
+                return null;
+        }
+    }
+    
     override public bool Equals(object? other)
     {
         if (other is Mode mode)
@@ -83,34 +106,38 @@ public class Mode
 
     override public int GetHashCode()
     {
-        return (int)Application | (int)Input;
+        if (Input is InputMode input)
+            return (int)Application | (int)input;
+        return (int)Application;
     }
 
     override public string? ToString()
     {
-        var app = string.Empty;
-        var input = string.Empty;
+        var result = string.Empty;
 
         switch (Application)
         {
             case ApplicationMode.Grid:
-                app = "Grid";
+                result = "Grid";
                 break;
             case ApplicationMode.Single:
-                app = "Single";
+                result = "Single";
+                break;
+            case ApplicationMode.Scan:
+                result = "Scan";
                 break;
         }
 
         switch (Input)
         {
             case InputMode.Command:
-                input = "Command";
+                result += ", Command";
                 break;
             case InputMode.Browse:
-                input = "Browse";
+                result += ", Browse";
                 break;
         }
 
-        return $"Mode({app}, {input})";
+        return $"Mode({result})";
     }
 }

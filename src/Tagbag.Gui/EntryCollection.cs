@@ -39,7 +39,6 @@ public class EntryCollection
     {
         _BaseEntries = new List<Entry>(entries ?? []);
         _BaseEntries.Sort(_SortOrder);
-        _Entries = new List<Entry>(_BaseEntries.Count);
         RefreshEntries();
     }
 
@@ -173,6 +172,7 @@ public class EntryCollection
         var cursorId = GetEntryAtCursor()?.Id;
         var filter = Filter.And(_Filters);
         _Entries.Clear();
+        _Entries.EnsureCapacity(_BaseEntries.Count);
         _CursorIndex = null;
 
         int index = 0;
