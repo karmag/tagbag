@@ -47,7 +47,6 @@ public class CommandLine : Panel
         _TextBox.Multiline = true;
         _TextBox.AcceptsTab = true;
         _TextBox.Height = _TextBox.Font.Height + 4;
-        _TextBox.PreviewKeyDown += (_, ev) => { ev.IsInputKey = true; };
         Controls.Add(_TextBox);
 
         _ModeLabel = new Label();
@@ -75,6 +74,11 @@ public class CommandLine : Panel
         SetEnabled(true);
 
         eventHub.Log += ListenLog;
+
+        GuiTool.Setup(this);
+        GuiTool.Setup(_StatusLabel);
+        GuiTool.Setup(_TextBox);
+        GuiTool.Setup(_ModeLabel);
     }
 
     public void SetEnabled(bool enabled)

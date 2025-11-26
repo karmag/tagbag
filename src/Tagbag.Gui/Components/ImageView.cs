@@ -33,7 +33,8 @@ public class ImageView : Panel
 
         _Active = false;
         SetActive(true);
-        PreviewKeyDown += (_, ev) => { ev.IsInputKey = true; };
+
+        GuiTool.Setup(this);
     }
 
     public void SetActive(bool active)

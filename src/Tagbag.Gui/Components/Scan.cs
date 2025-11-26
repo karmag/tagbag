@@ -21,35 +21,48 @@ public class Scan : Control
     {
         _Data = data;
         LayoutControls();
+
+        GuiTool.Setup(this);
+        GuiTool.Setup(_SelectPathButton);
+        GuiTool.Setup(_Path);
+        GuiTool.Setup(_ScanButton);
+        GuiTool.Setup(_FilesProgress);
+        GuiTool.Setup(_ScannedProgress);
+        GuiTool.Setup(_Report);
     }
 
     private void LayoutControls()
     {
         var main = new Control();
 
+        _Report.Name = "Scan:Report";
         _Report.Dock = DockStyle.Fill;
         _Report.Multiline = true;
         _Report.ReadOnly = true;
         main.Controls.Add(_Report);
 
+        _ScanButton.Name = "Scan:ScanButton";
         _ScanButton.Text = "Scan";
         _ScanButton.Dock = DockStyle.Top;
         _ScanButton.Width = 80;
         _ScanButton.Click += (_, _) => Run();
         main.Controls.Add(_ScanButton);
 
+        _ScannedProgress.Name = "Scan:ScannedProgress";
         _ScannedProgress.Dock = DockStyle.Top;
         main.Controls.Add(_ScannedProgress);
 
+        _FilesProgress.Name = "Scan:FilesProgress";
         _FilesProgress.Dock = DockStyle.Top;
         main.Controls.Add(_FilesProgress);
 
         var path = new Control();
 
+        _Path.Name = "Scan:Path";
         _Path.Dock = DockStyle.Fill;
-        _Path.Text = "Path";
         path.Controls.Add(_Path);
 
+        _SelectPathButton.Name = "Scan:SelectPathButton";
         _SelectPathButton.Text = "Select path";
         _SelectPathButton.Dock = DockStyle.Right;
         path.Controls.Add(_SelectPathButton);

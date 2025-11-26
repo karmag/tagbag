@@ -14,7 +14,7 @@ public class StatusBar : RichLabel
         eventHub.EntriesUpdated += (_) => RefreshText();
         eventHub.MarkedChanged += (_) => RefreshText();
 
-        TabStop = false;
+        GuiTool.Setup(this);
     }
 
     private void RefreshText()

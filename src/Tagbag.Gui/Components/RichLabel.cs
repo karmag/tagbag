@@ -17,6 +17,8 @@ public class RichLabel : RichTextBox
         Multiline = true;
         AcceptsTab = true;
         TabStop = false;
+
+        GuiTool.Setup(this);
     }
 
     new public void Clear()

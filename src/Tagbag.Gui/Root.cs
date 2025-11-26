@@ -14,6 +14,7 @@ public class Root : Form
 
     public Root()
     {
+        Name = "Root";
         _Data = new Data();
 
         Width = 900;
@@ -69,6 +70,7 @@ public class Root : Form
         var pad = 5;
 
         var TagView = new Control();
+        GuiTool.Setup(TagView);
         TagView.Dock = DockStyle.Fill;
 
         data.ImagePanel.Name = "ImagePanel";
@@ -77,11 +79,13 @@ public class Root : Form
         TagView.Controls.Add(data.ImagePanel);
 
         var split = new Splitter();
+        GuiTool.Setup(split);
         split.Name = "Splitter";
         split.Width = 5;
         TagView.Controls.Add(split);
 
         var ttPanel = new Panel();
+        GuiTool.Setup(ttPanel);
         ttPanel.Name = "TagTablePanel";
         ttPanel.Padding = new Padding(pad);
         ttPanel.Dock = DockStyle.Left;
@@ -184,7 +188,7 @@ public class Root : Form
         // All modes
 
         add(new KeyData(null, Keys.F9, (data) => {
-            System.Console.WriteLine($"Name: {ActiveControl?.Name}  Size: {ActiveControl?.Size}");
+            System.Console.WriteLine($"Name: {ActiveControl?.Name}  Size: {ActiveControl?.Size}  Comp: {ActiveControl}");
         }));
 
         add(new KeyData(null, Keys.Control | Keys.S, UserCommand.Save));

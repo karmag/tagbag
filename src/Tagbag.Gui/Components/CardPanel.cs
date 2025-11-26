@@ -10,6 +10,7 @@ public class CardPanel : Control
     public CardPanel()
     {
         _Controls = new Dictionary<int, Control>();
+        GuiTool.Setup(this);
     }
 
     public void Add(int id, Control control)

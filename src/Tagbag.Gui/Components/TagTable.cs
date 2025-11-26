@@ -41,6 +41,11 @@ public class TagTable : Panel
             _Picture.Height = (int)(Width * 0.7);
         };
         eventHub.ShowEntry += (ev) => { ListenShowEntry(ev); };
+
+        GuiTool.Setup(this);
+        GuiTool.Setup(_Picture);
+        GuiTool.Setup(_Label);
+        GuiTool.Setup(_Tags);
     }
 
     public void ConfigureComponents()
