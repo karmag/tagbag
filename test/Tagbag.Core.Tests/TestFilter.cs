@@ -27,6 +27,9 @@ public class TestFilter
         Assert.IsFalse(Filter.Has("key", "not-value").Keep(entry));
         Assert.IsFalse(Filter.Has("number", 2).Keep(entry));
         Assert.IsFalse(Filter.Has("other", "value").Keep(entry));
+
+        entry = new Entry("path/to/image");
+        Assert.IsTrue(Filter.Has("path", "path/to/image").Keep(entry));
     }
 
     [TestMethod]
@@ -66,5 +69,8 @@ public class TestFilter
         Assert.IsTrue(Filter.Regex("case", "abc").Keep(entry));
         Assert.IsTrue(Filter.Regex("start", "^abc").Keep(entry));
         Assert.IsFalse(Filter.Regex("end", "^abc").Keep(entry));
+
+        entry = new Entry("path/to/image");
+        Assert.IsTrue(Filter.Regex("path", "/to/").Keep(entry));
     }
 }

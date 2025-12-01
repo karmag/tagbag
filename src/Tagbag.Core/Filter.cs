@@ -37,6 +37,10 @@ public class Filter
             foreach (var s in entry.GetStrings(_tag) ?? [])
                 if (f(s))
                     return true;
+
+            if (_tag == "path")
+                return f(entry.Path);
+
             return false;
         }
 

@@ -99,8 +99,10 @@ public static class Json
 
     public static Entry DecodeEntry(JsonZipper node)
     {
+        var path = node.Get("Path").As<string>();
+        path = path.Replace("\\", "/");
         var entry = new Entry(new Guid(node.Get("Id").As<string>()),
-                              node.Get("Path").As<string>());
+                              path);
 
         node.Get("Tags").MapObject((key, val) => {
             entry.Set(key, DecodeValue(val));
