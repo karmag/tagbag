@@ -288,6 +288,17 @@ public class FilterBuilder
                 }
                 break;
 
+            case "~=":
+                switch (c.Type)
+                {
+                    case TokenType.String:
+                    case TokenType.Symbol:
+                        return Filter.Regex(a.Text, c.Text);
+
+                    default:
+                        throw new BuildException("Regex operator requires string value").With(c);
+                }
+                
             default:
                 throw new BuildException("Unknown operator").With(b);
         }

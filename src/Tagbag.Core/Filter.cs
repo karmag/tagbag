@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Tagbag.Core;
 
@@ -18,6 +19,7 @@ public class Filter
     public static IFilter And(IEnumerable<IFilter> filters) { return Logic.And(filters); }
     public static IFilter Or(params IFilter[] filters)      { return Logic.Or(filters); }
     public static IFilter Or(IEnumerable<IFilter> filters)  { return Logic.Or(filters); }
+    public static IFilter Regex(string tag, string pattern) { return new RegexFilter(tag, pattern); }
 
     private abstract class BaseFilter : IFilter
     {
@@ -167,6 +169,28 @@ public class Filter
                 default:
                     return "Unknown logic filter type";
             }
+        }
+    }
+
+    private class RegexFilter : BaseFilter
+    {
+        private string _Pattern;
+        private Regex _Regex;
+
+        public RegexFilter(string tag, string pattern) : base(tag)
+        {
+            _Pattern = pattern;
+            _Regex = new Regex(pattern, RegexOptions.IgnoreCase);
+        }
+
+        override public bool Keep(Entry entry)
+        {
+            return AnyString(entry, _Regex.IsMatch);
+        }
+
+        public override string ToString()
+        {
+            return $"{_tag} ~= \"{_Pattern}\"";
         }
     }
 }

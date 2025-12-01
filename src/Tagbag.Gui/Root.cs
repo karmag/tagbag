@@ -50,9 +50,15 @@ public class Root : Form
         var args = Environment.GetCommandLineArgs();
 
         if (args.Length <= 1)
+        {
+            try {
+                return Tagbag.Core.Tagbag.Open(null);
+            } catch (ArgumentException) {
+                // noop
+            }
             return null;
-
-        if (args.Length == 2)
+        }
+        else if (args.Length == 2)
         {
             var path = Tagbag.Core.Tagbag.Locate(args[1]);
             if (path == null)
@@ -61,8 +67,10 @@ public class Root : Form
                 return null;
             return Tagbag.Core.Tagbag.Open(path);
         }
-
-        throw new ArgumentException($"Multiple command line arguments: [{String.Join(", ", args)}]");
+        else
+        {
+            throw new ArgumentException($"Multiple command line arguments: [{String.Join(", ", args)}]");
+        }
     }
 
     private void LayoutControls(Data data)

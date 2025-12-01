@@ -53,4 +53,18 @@ public class TestFilter
                                   Filter.Has("gamma")]).Keep(entry));
         Assert.IsFalse(Filter.Or([]).Keep(entry));
     }
+
+    [TestMethod]
+    public void TestRegex()
+    {
+        var entry = Tester.Entry([["start", "abcandmore"],
+                                  ["end", "stuffandabc"],
+                                  ["case", "HELLOABC!"]]);
+
+        Assert.IsTrue(Filter.Regex("start", "abc").Keep(entry));
+        Assert.IsTrue(Filter.Regex("end", "abc").Keep(entry));
+        Assert.IsTrue(Filter.Regex("case", "abc").Keep(entry));
+        Assert.IsTrue(Filter.Regex("start", "^abc").Keep(entry));
+        Assert.IsFalse(Filter.Regex("end", "^abc").Keep(entry));
+    }
 }
