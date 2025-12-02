@@ -298,7 +298,20 @@ public class FilterBuilder
                     default:
                         throw new BuildException("Regex operator requires string value").With(c);
                 }
-                
+
+            case "<":
+            case ">":
+            case "<=":
+            case ">=":
+                switch (c.Type)
+                {
+                    case TokenType.Number:
+                        return Filter.Math(a.Text, b.Text, int.Parse(c.Text));
+
+                    default:
+                        throw new BuildException("Math operator requires int value").With(c);
+                }
+
             default:
                 throw new BuildException("Unknown operator").With(b);
         }

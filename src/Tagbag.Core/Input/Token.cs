@@ -83,6 +83,8 @@ public class Tokenizer
                         ProcessWhiteSpace();
                     else if (Char.IsAsciiDigit((char)peeked))
                         ProcessNumber();
+                    else if (IsOperator(peeked))
+                        ProcessOperator();
                     else
                         ProcessSymbol();
                     break;
@@ -125,8 +127,14 @@ public class Tokenizer
     private bool IsDelim(int c)
     {
         return Char.IsWhiteSpace((char)c)
+            || IsOperator(c)
             || c == '(' || c == ')' || c == '"' || c == '|'
             || c == -1;
+    }
+
+    private bool IsOperator(int c)
+    {
+        return c == '=' || c == '<' || c == '>' || c == '~';
     }
 
     private void ProcessString()
@@ -160,7 +168,6 @@ public class Tokenizer
         while (Char.IsWhiteSpace((char)peeked))
         {
             Discard();
-            peeked = reader.Peek();
         }
     }
 
@@ -169,13 +176,21 @@ public class Tokenizer
         while (Char.IsAsciiDigit((char)peeked))
         {
             Read();
-            peeked = reader.Peek();
         }
 
         if (!IsDelim(peeked))
             Throw("Expected delimiter after number");
 
         AddToken(TokenType.Number);
+    }
+
+    private void ProcessOperator()
+    {
+        while (IsOperator(peeked))
+        {
+            Read();
+        }
+        AddToken(TokenType.Symbol);
     }
 
     private void ProcessSymbol()

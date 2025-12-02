@@ -31,6 +31,15 @@ public class TestToken
 
         CollectionAssert.AreEqual(GetTexts("123\"abc\""),
                                   new string[]{ "123", "abc" });
+
+        CollectionAssert.AreEqual(GetTexts("a<=b"),
+                                  new string[]{ "a", "<=", "b" });
+
+        CollectionAssert.AreEqual(GetTexts("a~=b"),
+                                  new string[]{ "a", "~=", "b" });
+
+        CollectionAssert.AreEqual(GetTexts("a>=<10"),
+                                  new string[]{ "a", ">=<", "10" });
     }
 
     private Token GetFirst(string input)

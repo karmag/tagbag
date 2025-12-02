@@ -75,6 +75,10 @@ public class TestBuilder
         VerifyFilterBuild("tag ~= abc",
                           [[["tag", "abc"]], [["tag", "qweabcasd"]]],
                           [[["tag", "def"]]]);
+
+        VerifyFilterBuild("tag <= 100",
+                          [[["tag", 99]], [["tag", 100]]],
+                          [[["tag", 101]], [["tag", "value"]]]);
     }
 
     private void VerifyFilterBuild(string input,

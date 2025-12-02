@@ -73,4 +73,24 @@ public class TestFilter
         entry = new Entry("path/to/image");
         Assert.IsTrue(Filter.Regex("path", "/to/").Keep(entry));
     }
+
+    [TestMethod]
+    public void TestMath()
+    {
+        var entry = Tester.Entry([["a", 10]]);
+
+        Assert.IsTrue(Filter.Math("a", "<", 11).Keep(entry));
+        Assert.IsFalse(Filter.Math("a", "<", 10).Keep(entry));
+
+        Assert.IsTrue(Filter.Math("a", ">", 9).Keep(entry));
+        Assert.IsFalse(Filter.Math("a", ">", 10).Keep(entry));
+
+        Assert.IsFalse(Filter.Math("a", "<=", 9).Keep(entry));
+        Assert.IsTrue(Filter.Math("a", "<=", 10).Keep(entry));
+        Assert.IsTrue(Filter.Math("a", "<=", 11).Keep(entry));
+
+        Assert.IsTrue(Filter.Math("a", ">=", 9).Keep(entry));
+        Assert.IsTrue(Filter.Math("a", ">=", 10).Keep(entry));
+        Assert.IsFalse(Filter.Math("a", ">=", 11).Keep(entry));
+    }
 }

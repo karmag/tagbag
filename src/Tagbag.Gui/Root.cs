@@ -172,7 +172,9 @@ public class Root : Form
     private class Button : ICommand
     {
         private Action _Action;
+        #pragma warning disable CS0067
         public event EventHandler? CanExecuteChanged;
+        #pragma warning restore CS0067
         public Button(Action action) { _Action = action; }
         public bool CanExecute(object? _) { return true; }
         public void Execute(object? _) { _Action.Invoke(); }

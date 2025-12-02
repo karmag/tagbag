@@ -20,6 +20,7 @@ public class Filter
     public static IFilter Or(params IFilter[] filters)      { return Logic.Or(filters); }
     public static IFilter Or(IEnumerable<IFilter> filters)  { return Logic.Or(filters); }
     public static IFilter Regex(string tag, string pattern) { return new RegexFilter(tag, pattern); }
+    public static IFilter Math(string tag, string op, int value) { return new MathFilter(tag, op, value); }
 
     private abstract class BaseFilter : IFilter
     {
@@ -192,9 +193,41 @@ public class Filter
             return AnyString(entry, _Regex.IsMatch);
         }
 
-        public override string ToString()
+        override public string ToString()
         {
             return $"{_tag} ~= \"{_Pattern}\"";
+        }
+    }
+
+    private class MathFilter : BaseFilter
+    {
+        private string _OpText;
+        private int _Value;
+        private Func<int, bool> _Op;
+
+        public MathFilter(string tag, string op, int value) : base(tag)
+        {
+            _OpText = op;
+            _Value = value;
+            switch (op)
+            {
+                case "<": _Op = i => { return i < value; }; break;
+                case ">": _Op = i => { return i > value; }; break;
+                case "<=": _Op = i => { return i <= value; }; break;
+                case ">=": _Op = i => { return i >= value; }; break;
+                default:
+                    throw new ArgumentException($"Unknown math operator: {op}");
+            }
+        }
+
+        override public bool Keep(Entry entry)
+        {
+            return AnyInt(entry, _Op);
+        }
+
+        override public string ToString()
+        {
+            return $"{_tag} {_OpText} {_Value}";
         }
     }
 }
