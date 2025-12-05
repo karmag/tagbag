@@ -50,6 +50,26 @@ public class Filter
             foreach (var i in entry.GetInts(_tag) ?? [])
                 if (f(i))
                     return true;
+
+            if (_tag == "tag-count")
+            {
+                var count = 0;
+                foreach (var tag in entry.GetAllTags())
+                {
+                    switch (tag) {
+                        case Const.Width:
+                        case Const.Height:
+                        case Const.Size:
+                            break;
+
+                        default:
+                            count++;
+                            break;
+                    }
+                }
+                return f(count);
+            }
+
             return false;
         }
     }
