@@ -207,7 +207,7 @@ public class Root : Form
         add(new KeyData(null, Keys.F1, (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Grid))));
         add(new KeyData(null, Keys.F2, (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Scan))));
 
-        // // All image modes
+        // All image modes
 
         foreach (var mode in new Mode[] { GridCommand, GridBrowse, SingleCommand, SingleBrowse })
         {

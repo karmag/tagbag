@@ -58,8 +58,16 @@ public class ImageGrid : Control
             while (_ThumbnailCache.Count < _Rows * _Columns)
                 _ThumbnailCache.Add(null);
 
+            var gridSize = _Rows * _Columns;
+
+            // Preload images for next page
+            for (int i = 0; i < gridSize; i++)
+                if (_EntryCollection.Get(_IndexOffset + gridSize + i) is Entry entry)
+                    _ImageCache.GetThumbnail(entry.Id);
+
+            // Load currently visibile images
             var staticVersion = _ThumbnailVersion;
-            for (int i = 0; i < _Rows * _Columns; i++)
+            for (int i = gridSize; i >= 0; i--)
             {
                 if (_EntryCollection.Get(_IndexOffset + i) is Entry entry)
                 {
