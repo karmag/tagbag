@@ -6,13 +6,17 @@ namespace Tagbag.Gui.Components;
 public class StatusBar : RichLabel
 {
     private EntryCollection _EntryCollection;
+    private ImagePanel _ImagePanel;
 
     public StatusBar(EventHub eventHub,
-                     EntryCollection entryCollection)
+                     EntryCollection entryCollection,
+                     ImagePanel imagePanel)
     {
         _EntryCollection = entryCollection;
+        _ImagePanel = imagePanel;
         eventHub.EntriesUpdated += (_) => RefreshText();
         eventHub.MarkedChanged += (_) => RefreshText();
+        eventHub.ViewChanged += (_) => RefreshText();
 
         GuiTool.Setup(this);
     }
@@ -20,6 +24,27 @@ public class StatusBar : RichLabel
     private void RefreshText()
     {
         Clear();
+
+        // position
+
+        var visibleStart = _ImagePanel.GetVisibleStartIndex();
+        if (visibleStart == 0)
+        {
+            AddText("Top", Color.Black);
+        }
+        else if (visibleStart + _ImagePanel.GetVisibleAmount() >= _EntryCollection.Size())
+        {
+            AddText("Bot", Color.Black);
+        }
+        else
+        {
+            var startPercent = (int)((decimal)visibleStart /
+                                     (decimal)_EntryCollection.Size() *
+                                     100);
+            AddText($"{startPercent,2}%", Color.Black);
+        }
+
+        AddText(" --- ", Color.DarkGray);
 
         // entry count
 

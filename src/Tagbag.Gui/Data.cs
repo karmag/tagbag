@@ -38,7 +38,7 @@ public class Data
         TagTable = new Components.TagTable(EventHub, ImageCache);
         ImagePanel = new Components.ImagePanel(EventHub, EntryCollection, ImageCache);
         CommandLine = new Components.CommandLine(EventHub);
-        StatusBar = new Components.StatusBar(EventHub, EntryCollection);
+        StatusBar = new Components.StatusBar(EventHub, EntryCollection, ImagePanel);
 
         Scan = new Components.Scan(this);
     }

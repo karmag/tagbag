@@ -21,6 +21,8 @@ public class EventHub
     public Action<FilterCommand>? FilterCommand;
     public Action<TagCommand>? TagCommand;
 
+    public Action<ViewChanged>? ViewChanged;
+
     public EventHub()
     {
         _EventQueue = new Stack<Event>();
@@ -70,6 +72,8 @@ public class EventHub
             case FilterCommand e: FilterCommand?.Invoke(e); break;
             case TagCommand e: TagCommand?.Invoke(e); break;
 
+            case ViewChanged e: ViewChanged?.Invoke(e); break;
+
             default:
                 throw new ArgumentException($"Unknown event type {ev}");
         }
@@ -97,3 +101,8 @@ public record MarkedChanged() : Event();
 
 public record FilterCommand(IFilter Filter) : Event();
 public record TagCommand(ITagOperation Operation) : Event();
+
+// The entries in view has changed. StartIndex is the index in
+// EntryCollection with the first visible entry. VisibleItems is the
+// number of entries that are visible.
+public record ViewChanged(int StartIndex, int VisibleItems) : Event();

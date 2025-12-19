@@ -80,6 +80,8 @@ public class ImageView : Panel
         {
             _Picture.Image = null;
         }
+
+        _EventHub.Send(new ViewChanged(_EntryCollection.GetCursor() ?? 0, 1));
     }
 
     private async void SetImage(Guid id, Task<Bitmap?> task)

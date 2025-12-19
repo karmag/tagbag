@@ -86,6 +86,7 @@ public class ImageGrid : Control
             }
 
             Invalidate();
+            _EventHub.Send(new ViewChanged(_IndexOffset, _Rows * _Columns));
         }
     }
 
@@ -263,5 +264,15 @@ public class ImageGrid : Control
             }
             Invalidate();
         }
+    }
+
+    public int GetVisibleStartIndex()
+    {
+        return _IndexOffset;
+    }
+
+    public int GetPageSize()
+    {
+        return _Rows * _Columns;
     }
 }

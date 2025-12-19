@@ -84,4 +84,18 @@ public class ImagePanel : Panel
                                        !_EntryCollection.IsMarked(entry2.Id));
         }
     }
+
+    public int GetVisibleStartIndex()
+    {
+        if (_GridMode)
+            return ImageGrid.GetVisibleStartIndex();
+        return _EntryCollection.GetCursor() ?? 0;
+    }
+
+    public int GetVisibleAmount()
+    {
+        if (_GridMode)
+            return ImageGrid.GetPageSize();
+        return 1;
+    }
 }
