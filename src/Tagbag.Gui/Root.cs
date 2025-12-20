@@ -129,6 +129,8 @@ public class Root : Form
     {
         var menuStrip = new MenuStrip();
 
+        // file
+
         var fileMenu = new ToolStripMenuItem("File");
         menuStrip.Items.Add(fileMenu);
 
@@ -153,18 +155,28 @@ public class Root : Form
         fBackup.Command = new Button(() => { UserCommand.Backup(data); });
         fQuit.Command = new Button(() => { UserCommand.Quit(data); });
 
+        // view
+
         var viewMenu = new ToolStripMenuItem("View");
         menuStrip.Items.Add(viewMenu);
 
-        var vTag = new ToolStripMenuItem("Tag");
-        var vSummary = new ToolStripMenuItem("Summary");
+        var vImages = new ToolStripMenuItem("Images");
         var vScan = new ToolStripMenuItem("Scan");
-        viewMenu.DropDownItems.Add(vTag);
-        viewMenu.DropDownItems.Add(vSummary);
+        viewMenu.DropDownItems.Add(vImages);
         viewMenu.DropDownItems.Add(vScan);
+
+        vImages.Command = new Button(() => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Grid)) );
+        vScan.Command = new Button(() => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Scan)) );
+
+        // help
 
         var helpMenu = new ToolStripMenuItem("Help");
         menuStrip.Items.Add(helpMenu);
+
+        var hDebug = new ToolStripMenuItem("Debug print");
+        helpMenu.DropDownItems.Add(hDebug);
+
+        hDebug.Command = new Button(() => System.Console.WriteLine($"Name: {ActiveControl?.Name}  Size: {ActiveControl?.Size}  Comp: {ActiveControl}"));
 
         return menuStrip;
     }

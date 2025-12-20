@@ -33,6 +33,11 @@ public static class UserCommand
 
             case Mode.InputMode.Browse:
                 data.CommandLine.SetEnabled(false);
+                data.MainView.Focus();
+                break;
+
+            default:
+                data.MainView.Focus();
                 break;
         }
 
