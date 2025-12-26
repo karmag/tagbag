@@ -4,21 +4,37 @@ using System.Windows.Forms;
 
 namespace Tagbag.Gui;
 
+public class ActionDef
+{
+    public string Id { get; }
+    public Action<Data> Action { get; }
+    public string Name { get; }
+
+    public ActionDef(string id,
+                     Action<Data> action,
+                     string? name = null)
+    {
+        Id = id;
+        Action = action;
+        Name = name ?? id;
+    }
+}
+
 public class KeyData
 {
     public Mode? Mode { get; }
     public Keys Key { get; }
-    public Action<Data> Action { get; }
+    public string ActionId { get; }
     public Func<Data, bool>? IsValid { get; }
 
     public KeyData(Mode? mode,
                    Keys key,
-                   Action<Data> action,
+                   string actionId,
                    Func<Data, bool>? isValid = null)
     {
         Mode = mode;
         Key = key;
-        Action = action;
+        ActionId = actionId;
         IsValid = isValid;
     }
 }
@@ -26,6 +42,7 @@ public class KeyData
 public class KeyMap
 {
     private List<KeyData> _RawKeys;
+    private Dictionary<string, ActionDef> _ActionMapping;
 
     private Mode? _Mode;
     private Dictionary<Mode, Dictionary<Keys, KeyData>> _Mapping;
@@ -34,6 +51,7 @@ public class KeyMap
     public KeyMap()
     {
         _RawKeys = new List<KeyData>();
+        _ActionMapping = new Dictionary<string, ActionDef>();
 
         _Mode = null;
         _Mapping = new Dictionary<Mode, Dictionary<Keys, KeyData>>();
@@ -60,8 +78,17 @@ public class KeyMap
         return keyMapping;
     }
 
+    public void Add(ActionDef actionDef)
+    {
+        if (_ActionMapping.ContainsKey(actionDef.Id))
+            throw new InvalidOperationException($"Action with name '{actionDef.Id}' already exists");
+        _ActionMapping.Add(actionDef.Id, actionDef);
+    }
+
     public void Add(KeyData keyData)
     {
+        if (!_ActionMapping.ContainsKey(keyData.ActionId))
+            throw new InvalidOperationException($"Action with id '{keyData.ActionId}' doesn't exist");
         _RawKeys.Add(keyData);
         GetOrCreateKeyMapping(keyData.Mode)[keyData.Key] = keyData;
     }
@@ -78,5 +105,17 @@ public class KeyMap
             return keyData;
         GetOrCreateKeyMapping(null).TryGetValue(keys, out keyData);
         return keyData;
+    }
+
+    public ActionDef? Get(string actionId)
+    {
+        ActionDef? actionDef;
+        _ActionMapping.TryGetValue(actionId, out actionDef);
+        return actionDef;
+    }
+
+    public IEnumerable<KeyData> GetKeyData()
+    {
+        return _RawKeys;
     }
 }

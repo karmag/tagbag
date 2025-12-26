@@ -41,7 +41,8 @@ public class Root : Form
         _Data.EventHub.FilterCommand += ListenFilterCommand;
         _Data.EventHub.TagCommand += ListenTagCommand;
 
-        SetupKeyMap();
+        SetupActionDefinitions(_Data.KeyMap);
+        SetupKeyMap(_Data.KeyMap);
         _Data.SetTagbag(GetInitialTagbag());
     }
 
@@ -192,9 +193,73 @@ public class Root : Form
         public void Execute(object? _) { _Action.Invoke(); }
     }
 
-    private void SetupKeyMap()
+    public static void SetupActionDefinitions(KeyMap keyMap)
     {
-        var add = _Data.KeyMap.Add;
+        Action<ActionDef> def = keyMap.Add;
+
+        def(new ActionDef("save", UserCommand.Save, "Save"));
+        def(new ActionDef("backup", UserCommand.Backup, "Backup"));
+
+        def(new ActionDef("mode/grid", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Grid))));
+        def(new ActionDef("mode/single", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Single))));
+        def(new ActionDef("mode/scan", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Scan))));
+        def(new ActionDef("mode/browse", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.InputMode.Browse))));
+        def(new ActionDef("mode/command", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.InputMode.Command))));
+
+        def(new ActionDef("mode/toggle-single",
+                          (data) => UserCommand.SetMode(
+                              data,
+                              data.Mode.Switch(data.Mode.Application == Mode.ApplicationMode.Grid ?
+                                               Mode.ApplicationMode.Single :
+                                               Mode.ApplicationMode.Grid))));
+
+        def(new ActionDef("toggle-command-mode", UserCommand.ToggleCommandMode));
+        def(new ActionDef("press-enter", UserCommand.PressEnter));
+
+        def(new ActionDef("copy-image-to-clipboard", UserCommand.CursorImageToClipboard));
+        def(new ActionDef("copy-path-to-clipboard", UserCommand.CursorPathToClipboard));
+
+        def(new ActionDef("refresh", UserCommand.Refresh));
+
+        def(new ActionDef("cursor/left", (data) => UserCommand.MoveCursor(data, -1)));
+        def(new ActionDef("cursor/right", (data) => UserCommand.MoveCursor(data, 1)));
+        def(new ActionDef("cursor/up", (data) => UserCommand.MoveCursor(data, 0, -1)));
+        def(new ActionDef("cursor/down", (data) => UserCommand.MoveCursor(data, 0, 1)));
+
+        def(new ActionDef("mark/clear", UserCommand.ClearMarked));
+        def(new ActionDef("mark/all-visible", UserCommand.MarkVisible));
+
+        for (int x = 0; x < 5; x++)
+        {
+            for (int y = 0; y < 3; y++)
+            {
+                int staticX = x;
+                int staticY = y;
+                def(new ActionDef($"mark/grid-{x}-{y}", (data) => data.ImagePanel.ToggleMarked(staticX, staticY)));
+            }
+        }
+
+        Action<Data, int, int> toggleAndMove = (data, x, y) => {
+            UserCommand.ToggleMarkCursor(data);
+            UserCommand.MoveCursor(data, x, y);
+        };
+
+        def(new ActionDef("mark-and-move/left", (data) => toggleAndMove(data, -1, 0)));
+        def(new ActionDef("mark-and-move/right", (data) => toggleAndMove(data, 1, 0)));
+        def(new ActionDef("mark-and-move/up", (data) => toggleAndMove(data, 0, -1)));
+        def(new ActionDef("mark-and-move/down", (data) => toggleAndMove(data, 0, 1)));
+
+        def(new ActionDef("scroll/page-up", (data) => data.ImagePanel.MoveCursorPage(-1)));
+        def(new ActionDef("scroll/page-down", (data) => data.ImagePanel.MoveCursorPage(1)));
+        def(new ActionDef("scroll/top", (data) => data.EntryCollection.MoveCursor(-1000000)));
+        def(new ActionDef("scroll/bottom", (data) => data.EntryCollection.MoveCursor(1000000)));
+
+        def(new ActionDef("filter/pop", UserCommand.PopFilter));
+    }
+
+    public static void SetupKeyMap(KeyMap keyMap)
+    {
+        Action<KeyData> add = keyMap.Add;
 
         Mode GridCommand = new Mode(Mode.ApplicationMode.Grid, Mode.InputMode.Command);
         Mode GridBrowse = new Mode(Mode.ApplicationMode.Grid, Mode.InputMode.Browse);
@@ -202,67 +267,54 @@ public class Root : Form
         Mode SingleBrowse = new Mode(Mode.ApplicationMode.Single, Mode.InputMode.Browse);
 
         Func<Data, bool> isCmdClosed = (data) => { return !data.CommandLine.IsEnabled(); };
-        Action<Data, int, int> toggleAndMove = (data, x, y) => {
-            UserCommand.ToggleMarkCursor(data);
-            UserCommand.MoveCursor(data, x, y);
-        };
 
         // All modes
 
-        add(new KeyData(null, Keys.F9, (data) => {
-            System.Console.WriteLine($"Name: {ActiveControl?.Name}  Size: {ActiveControl?.Size}  Comp: {ActiveControl}");
-        }));
+        add(new KeyData(null, Keys.Control | Keys.S, "save"));
+        add(new KeyData(null, Keys.Control | Keys.B, "backup"));
 
-        add(new KeyData(null, Keys.Control | Keys.S, UserCommand.Save));
-        add(new KeyData(null, Keys.Control | Keys.B, UserCommand.Backup));
-
-        add(new KeyData(null, Keys.F1, (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Grid))));
-        add(new KeyData(null, Keys.F2, (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Scan))));
+        add(new KeyData(null, Keys.F1, "mode/grid"));
+        add(new KeyData(null, Keys.F2, "mode/scan"));
 
         // All image modes
 
         foreach (var mode in new Mode[] { GridCommand, GridBrowse, SingleCommand, SingleBrowse })
         {
-            add(new KeyData(mode, Keys.Control | Keys.Tab, UserCommand.ToggleCommandMode));
+            add(new KeyData(mode, Keys.Control | Keys.Tab, "toggle-command-mode"));
 
-            add(new KeyData(mode, Keys.Enter, UserCommand.PressEnter));
+            add(new KeyData(mode, Keys.Enter, "press-enter"));
 
-            add(new KeyData(mode, Keys.Control | Keys.C, UserCommand.CursorImageToClipboard));
-            add(new KeyData(mode, Keys.Control | Keys.Shift | Keys.C, UserCommand.CursorPathToClipboard));
+            add(new KeyData(mode, Keys.Control | Keys.C, "copy-image-to-clipboard"));
+            add(new KeyData(mode, Keys.Control | Keys.Shift | Keys.C, "copy-path-to-clipboard"));
 
-            add(new KeyData(mode, Keys.Control | Keys.R, UserCommand.Refresh));
+            add(new KeyData(mode, Keys.Control | Keys.R, "refresh"));
 
-            add(new KeyData(mode, Keys.Tab, (data) =>
-                               UserCommand.SetMode(
-                                   data,
-                                   data.Mode.Switch(data.Mode.Application == Mode.ApplicationMode.Grid ?
-                                                    Mode.ApplicationMode.Single :
-                                                    Mode.ApplicationMode.Grid))));
+            add(new KeyData(mode, Keys.Tab, "mode/toggle-single"));
 
-            add(new KeyData(mode, Keys.Alt | Keys.Left, (data) => UserCommand.MoveCursor(data, -1)));
-            add(new KeyData(mode, Keys.Alt | Keys.Right, (data) => UserCommand.MoveCursor(data, 1)));
-            add(new KeyData(mode, Keys.Alt | Keys.Up, (data) => UserCommand.MoveCursor(data, 0, -1)));
-            add(new KeyData(mode, Keys.Alt | Keys.Down, (data) => UserCommand.MoveCursor(data, 0, 1)));
+            add(new KeyData(mode, Keys.Alt | Keys.Left, "cursor/left"));
+            add(new KeyData(mode, Keys.Alt | Keys.Right, "cursor/right"));
+            add(new KeyData(mode, Keys.Alt | Keys.Up, "cursor/up"));
+            add(new KeyData(mode, Keys.Alt | Keys.Down, "cursor/down"));
 
-            add(new KeyData(mode, Keys.Control | Keys.Q, UserCommand.ClearMarked));
-            add(new KeyData(mode, Keys.Control | Keys.A, UserCommand.MarkVisible));
+            add(new KeyData(mode, Keys.Control | Keys.Q, "mark/clear"));
+            add(new KeyData(mode, Keys.Control | Keys.A, "mark/all-visible"));
 
-            add(new KeyData(mode, Keys.Alt | Keys.Shift | Keys.Left, (data) => toggleAndMove(data, -1, 0)));
-            add(new KeyData(mode, Keys.Alt | Keys.Shift | Keys.Right, (data) => toggleAndMove(data, 1, 0)));
-            add(new KeyData(mode, Keys.Alt | Keys.Shift | Keys.Up, (data) => toggleAndMove(data, 0, -1)));
-            add(new KeyData(mode, Keys.Alt | Keys.Shift | Keys.Down, (data) => toggleAndMove(data, 0, 1)));
+            add(new KeyData(mode, Keys.Alt | Keys.Shift | Keys.Left, "mark-and-move/left"));
+            add(new KeyData(mode, Keys.Alt | Keys.Shift | Keys.Right, "mark-and-move/right"));
+            add(new KeyData(mode, Keys.Alt | Keys.Shift | Keys.Up, "mark-and-move/up"));
+            add(new KeyData(mode, Keys.Alt | Keys.Shift | Keys.Down, "mark-and-move/down"));
 
-            add(new KeyData(mode, Keys.PageUp, (data) => data.ImagePanel.MoveCursorPage(-1)));
-            add(new KeyData(mode, Keys.PageDown, (data) => data.ImagePanel.MoveCursorPage(1)));
+            add(new KeyData(mode, Keys.PageUp, "scroll/page-up"));
+            add(new KeyData(mode, Keys.PageDown, "scroll/page-down"));
 
-            add(new KeyData(mode, Keys.Escape, (data) => UserCommand.PopFilter(data)));
+            add(new KeyData(mode, Keys.Escape, "filter/pop"));
         }
 
         // Grid mode
 
         foreach (var mode in new Mode[] { GridCommand, GridBrowse })
         {
-            add(new KeyData(mode, Keys.Tab, (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Single))));
+            add(new KeyData(mode, Keys.Tab, "mode/single"));
 
             List<List<Keys>> gridKeys = [[Keys.Q, Keys.W, Keys.E, Keys.R, Keys.T],
                                          [Keys.A, Keys.S, Keys.D, Keys.F, Keys.G],
@@ -274,7 +326,7 @@ public class Root : Form
                 {
                     int staticX = x;
                     int staticY = y;
-                    add(new KeyData(mode, Keys.Alt | gridKeys[y][x], (data) => data.ImagePanel.ToggleMarked(staticX, staticY)));
+                    add(new KeyData(mode, Keys.Alt | gridKeys[y][x], $"mark/grid-{x}-{y}"));
                 }
             }
         }
@@ -283,36 +335,36 @@ public class Root : Form
 
         foreach (var mode in new Mode[] { SingleCommand, SingleBrowse })
         {
-            add(new KeyData(mode, Keys.Tab, (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Grid))));
+            add(new KeyData(mode, Keys.Tab, "mode/grid"));
         }
 
         // Command mode
 
         foreach (var mode in new Mode[] { GridCommand, SingleCommand })
         {
-            add(new KeyData(mode, Keys.Control | Keys.Enter, (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.InputMode.Browse))));
+            add(new KeyData(mode, Keys.Control | Keys.Enter, "mode/browse"));
         }
 
         // Browse mode
 
         foreach (var mode in new Mode[] { GridBrowse, SingleBrowse })
         {
-            add(new KeyData(mode, Keys.Control | Keys.Enter, (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.InputMode.Command))));
+            add(new KeyData(mode, Keys.Control | Keys.Enter, "mode/command"));
 
-            add(new KeyData(mode, Keys.Home, (data) => data.EntryCollection.MoveCursor(-1000000)));
-            add(new KeyData(mode, Keys.End, (data) => data.EntryCollection.MoveCursor(1000000)));
+            add(new KeyData(mode, Keys.Home, "scroll/top"));
+            add(new KeyData(mode, Keys.End, "scroll/bottom"));
 
-            add(new KeyData(mode, Keys.Left, (data) => UserCommand.MoveCursor(data, -1), isCmdClosed));
-            add(new KeyData(mode, Keys.Right, (data) => UserCommand.MoveCursor(data, 1), isCmdClosed));
-            add(new KeyData(mode, Keys.Up, (data) => UserCommand.MoveCursor(data, 0, -1), isCmdClosed));
-            add(new KeyData(mode, Keys.Down, (data) => UserCommand.MoveCursor(data, 0, 1), isCmdClosed));
+            add(new KeyData(mode, Keys.Left, "cursor/left", isCmdClosed));
+            add(new KeyData(mode, Keys.Right, "cursor/right", isCmdClosed));
+            add(new KeyData(mode, Keys.Up, "cursor/up", isCmdClosed));
+            add(new KeyData(mode, Keys.Down, "cursor/down", isCmdClosed));
 
-            add(new KeyData(mode, Keys.Space, (data) => toggleAndMove(data, 1, 0), isCmdClosed));
+            add(new KeyData(mode, Keys.Space, "mark-and-move/right", isCmdClosed));
 
-            add(new KeyData(mode, Keys.Shift | Keys.Left, (data) => toggleAndMove(data, -1, 0), isCmdClosed));
-            add(new KeyData(mode, Keys.Shift | Keys.Right, (data) => toggleAndMove(data, 1, 0), isCmdClosed));
-            add(new KeyData(mode, Keys.Shift | Keys.Up, (data) => toggleAndMove(data, 0, -1), isCmdClosed));
-            add(new KeyData(mode, Keys.Shift | Keys.Down, (data) => toggleAndMove(data, 0, 1), isCmdClosed));
+            add(new KeyData(mode, Keys.Shift | Keys.Left, "mark-and-move/left", isCmdClosed));
+            add(new KeyData(mode, Keys.Shift | Keys.Right, "mark-and-move/right", isCmdClosed));
+            add(new KeyData(mode, Keys.Shift | Keys.Up, "mark-and-move/up", isCmdClosed));
+            add(new KeyData(mode, Keys.Shift | Keys.Down, "mark-and-move/down", isCmdClosed));
         }
     }
 
@@ -324,7 +376,8 @@ public class Root : Form
             if (keyData.IsValid?.Invoke(_Data) ?? true)
             {
                 e.SuppressKeyPress = true;
-                keyData.Action(_Data);
+                if (_Data.KeyMap.Get(keyData.ActionId) is ActionDef def)
+                    def.Action(_Data);
             }
         }
         // https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.keyeventargs?view=windowsdesktop-9.0
