@@ -206,13 +206,6 @@ public class Root : Form
         def(new ActionDef("mode/browse", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.InputMode.Browse))));
         def(new ActionDef("mode/command", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.InputMode.Command))));
 
-        def(new ActionDef("mode/toggle-single",
-                          (data) => UserCommand.SetMode(
-                              data,
-                              data.Mode.Switch(data.Mode.Application == Mode.ApplicationMode.Grid ?
-                                               Mode.ApplicationMode.Single :
-                                               Mode.ApplicationMode.Grid))));
-
         def(new ActionDef("toggle-command-mode", UserCommand.ToggleCommandMode));
         def(new ActionDef("press-enter", UserCommand.PressEnter));
 
@@ -288,8 +281,6 @@ public class Root : Form
             add(new KeyData(mode, Keys.Control | Keys.Shift | Keys.C, "copy-path-to-clipboard"));
 
             add(new KeyData(mode, Keys.Control | Keys.R, "refresh"));
-
-            add(new KeyData(mode, Keys.Tab, "mode/toggle-single"));
 
             add(new KeyData(mode, Keys.Alt | Keys.Left, "cursor/left"));
             add(new KeyData(mode, Keys.Alt | Keys.Right, "cursor/right"));

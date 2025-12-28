@@ -118,4 +118,9 @@ public class KeyMap
     {
         return _RawKeys;
     }
+
+    public IEnumerable<ActionDef> GetActionDefs()
+    {
+        return _ActionMapping.Values;
+    }
 }
