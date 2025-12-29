@@ -40,6 +40,7 @@ public class Root : Form
 
         _Data.EventHub.FilterCommand += ListenFilterCommand;
         _Data.EventHub.TagCommand += ListenTagCommand;
+        _Data.EventHub.TagbagFileSet += ListenTagbagFileSet;
 
         SetupActionDefinitions(_Data.KeyMap);
         SetupKeyMap(_Data.KeyMap);
@@ -405,5 +406,13 @@ public class Root : Form
         }
 
         _Data.EventHub.Send(new ShowEntry(atCursor));
+    }
+
+    private void ListenTagbagFileSet(TagbagFileSet ev)
+    {
+        if (ev.Tagbag == null)
+            Text = "Tagbag";
+        else
+            Text = $"Tagbag - {TagbagUtil.GetRootDirectory(ev.Tagbag)}";
     }
 }

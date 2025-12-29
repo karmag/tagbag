@@ -12,6 +12,7 @@ public class EventHub
 
     public Action<Shutdown>? Shutdown;
     public Action<Log>? Log;
+    public Action<TagbagFileSet>? TagbagFileSet;
 
     public Action<EntriesUpdated>? EntriesUpdated;
     public Action<ShowEntry>? ShowEntry;
@@ -63,6 +64,7 @@ public class EventHub
         {
             case Shutdown e: Shutdown?.Invoke(e); break;
             case Log e: Log?.Invoke(e); break;
+            case TagbagFileSet e: TagbagFileSet?.Invoke(e); break;
 
             case EntriesUpdated e: EntriesUpdated?.Invoke(e); break;
             case ShowEntry e: ShowEntry?.Invoke(e); break;
@@ -90,6 +92,7 @@ public abstract record class Event();
 
 public record Shutdown() : Event();
 public record Log(LogType Type, string Message) : Event();
+public record TagbagFileSet(Tagbag.Core.Tagbag? Tagbag) : Event();
 
 // The collection of entries have been changed. This may include
 // cursor and filter changes.

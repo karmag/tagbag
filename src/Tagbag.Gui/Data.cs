@@ -51,6 +51,8 @@ public class Data
             EntryCollection.SetBaseEntries(tb.GetEntries());
         else
             EntryCollection.SetBaseEntries([]);
+
+        EventHub.Send(new TagbagFileSet(tb));
     }
 }
 
