@@ -54,10 +54,12 @@ Grid keys
  | mode/single             | Tab                 | Tab                 |
  | press-enter             | Enter               | Enter               |
  | refresh                 | Control + R         | Control + R         |
- | scroll/bottom           | End                 |                     |
+ | scroll/bottom           | End                 | Alt + End           |
+ |                         | Alt + End           |                     |
  | scroll/page-down        | Next                | Next                |
  | scroll/page-up          | PageUp              | PageUp              |
- | scroll/top              | Home                |                     |
+ | scroll/top              | Home                | Alt + Home          |
+ |                         | Alt + Home          |                     |
  | toggle-command-mode     | Control + Tab       | Control + Tab       |
  +-------------------------+---------------------+---------------------+
 
@@ -92,9 +94,11 @@ Single keys
  | mode/grid               | Tab                 | Tab                 |
  | press-enter             | Enter               | Enter               |
  | refresh                 | Control + R         | Control + R         |
- | scroll/bottom           | End                 |                     |
+ | scroll/bottom           | End                 | Alt + End           |
+ |                         | Alt + End           |                     |
  | scroll/page-down        | Next                | Next                |
  | scroll/page-up          | PageUp              | PageUp              |
- | scroll/top              | Home                |                     |
+ | scroll/top              | Home                | Alt + Home          |
+ |                         | Alt + Home          |                     |
  | toggle-command-mode     | Control + Tab       | Control + Tab       |
  +-------------------------+---------------------+---------------------+

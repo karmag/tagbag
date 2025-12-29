@@ -335,6 +335,9 @@ public class Root : Form
         foreach (var mode in new Mode[] { GridCommand, SingleCommand })
         {
             add(new KeyData(mode, Keys.Control | Keys.Enter, "mode/browse"));
+
+            add(new KeyData(mode, Keys.Alt | Keys.Home, "scroll/top"));
+            add(new KeyData(mode, Keys.Alt | Keys.End, "scroll/bottom"));
         }
 
         // Browse mode
@@ -345,6 +348,9 @@ public class Root : Form
 
             add(new KeyData(mode, Keys.Home, "scroll/top"));
             add(new KeyData(mode, Keys.End, "scroll/bottom"));
+
+            add(new KeyData(mode, Keys.Alt | Keys.Home, "scroll/top"));
+            add(new KeyData(mode, Keys.Alt | Keys.End, "scroll/bottom"));
 
             add(new KeyData(mode, Keys.Left, "cursor/left", isCmdClosed));
             add(new KeyData(mode, Keys.Right, "cursor/right", isCmdClosed));
