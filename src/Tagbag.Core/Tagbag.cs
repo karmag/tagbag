@@ -10,6 +10,10 @@ public static class Const
     public const string Width = "width";
     public const string Height = "height";
     public const string Size = "size";
+    public const string Hash = "hash/sha256";
+
+    public static IReadOnlySet<string> BuiltinTags =
+        new HashSet<string>(new string[]{Width, Height, Size, Hash});
 }
 
 public class Tagbag

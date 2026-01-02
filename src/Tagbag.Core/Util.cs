@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 
 namespace Tagbag.Core;
 
@@ -72,6 +73,19 @@ public static class TagbagUtil
     {
         var info = new FileInfo(GetPath(tb, entry.Path));
         entry.Set(Const.Size, (int)info.Length);
+
+        using (SHA256 alg = SHA256.Create())
+        {
+            using (FileStream stream = info.OpenRead())
+            {
+                var hash = alg.ComputeHash(stream);
+                var hashString = "";
+                foreach (byte b in hash)
+                    hashString += b.ToString("x2");
+                entry.Set(Const.Hash, hashString);
+            }
+        }
+
         return true;
     }
 

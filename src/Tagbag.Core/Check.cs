@@ -94,7 +94,8 @@ public class Check
 
         var operations = new List<Action>();
         operations.AddRange(UpdateFoundFiles,
-                            FindNonIndexedFiles);
+                            FindNonIndexedFiles,
+                            FindMissingTags);
 
         try
         {
@@ -153,6 +154,30 @@ public class Check
             _FoundProblems.AddLast(new NonIndexedFile(kv.Value));
 
         Progress?.Invoke("Locating missing files", missing.Count, missing.Count);
+    }
+
+    private void FindMissingTags()
+    {
+        Progress?.Invoke("Finding missing tags", 0, 0);
+        var failed = 0;
+
+        var missing = new List<string>();
+        foreach (var entry in _Tagbag.GetEntries())
+        {
+            foreach (var tag in Const.BuiltinTags)
+                if (entry.Get(tag) == null)
+                    missing.Add(tag);
+
+            if (missing.Count > 0)
+            {
+                _FoundProblems.AddLast(new MissingDefaultTags(entry, missing));
+                missing = new List<string>();
+                failed++;
+                Progress?.Invoke("Finding missing tags", failed, 0);
+            }
+        }
+
+        Progress?.Invoke("Finding missing tags", failed, failed);
     }
 
     private void RunFix()
@@ -262,5 +287,49 @@ public class NonIndexedFile : AbstractProblem
             TagbagUtil.PopulateImageTags(fix.GetTagbag(), entry);
             fix.UpdateTagbag(tb => tb.Add(entry));
         }
+    }
+}
+
+public class MissingDefaultTags : AbstractProblem
+{
+    private Entry _Entry;
+    private List<string> _MissingTags;
+
+    public MissingDefaultTags(Entry entry, List<string> missingTags)
+    {
+        _Entry = entry;
+        _MissingTags = missingTags;
+
+        _Cause = "Missing default tags";
+        _Details = $"Missing tags [{String.Join(", ", missingTags)}] for entry {entry.Path}";
+        AddEntry(entry);
+    }
+
+    override public void Fix(FixData fix)
+    {
+        var image = false;
+        var file = false;
+
+        foreach (var tag in _MissingTags)
+        {
+            switch (tag)
+            {
+                case Const.Width:
+                case Const.Height:
+                    image = true;
+                    break;
+
+                case Const.Size:
+                case Const.Hash:
+                    file = true;
+                    break;
+            }
+        }
+
+        if (image)
+            TagbagUtil.PopulateImageTags(fix.GetTagbag(), _Entry);
+
+        if (file)
+            TagbagUtil.PopulateFileTags(fix.GetTagbag(), _Entry);
     }
 }
