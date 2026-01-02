@@ -1,3 +1,4 @@
+using System.Drawing;
 using System.Windows.Forms;
 using Tagbag.Core;
 
@@ -7,15 +8,13 @@ public class Scan : Control
 {
     private Data _Data;
 
-    private Button _SelectPathButton = new Button();
-    private TextBox _Path = new TextBox();
+    private ListBox _ProblemListing = new ListBox();
+    private MoreProgressBar _ProgressBar = new MoreProgressBar();
     private Button _ScanButton = new Button();
-    private MoreProgressBar _FilesProgress = new MoreProgressBar("File");
-    private MoreProgressBar _ScannedProgress = new MoreProgressBar("Entry");
-    private TextBox _Report = new TextBox();
+    private Button _FixAllButton = new Button();
+    private Button _StopButton = new Button();
 
-    private Scanner? _Scanner;
-    private bool _Running;
+    private Check? _Check;
 
     public Scan(Data data)
     {
@@ -23,154 +22,148 @@ public class Scan : Control
         LayoutControls();
 
         GuiTool.Setup(this);
-        GuiTool.Setup(_SelectPathButton);
-        GuiTool.Setup(_Path);
+        GuiTool.Setup(_ProblemListing);
+        GuiTool.Setup(_ProgressBar);
         GuiTool.Setup(_ScanButton);
-        GuiTool.Setup(_FilesProgress);
-        GuiTool.Setup(_ScannedProgress);
-        GuiTool.Setup(_Report);
+        GuiTool.Setup(_FixAllButton);
+        GuiTool.Setup(_StopButton);
+
+        _ScanButton.Click += (_, _) => ClickScan();
+        _FixAllButton.Click += (_, _) => ClickFixAll();
+        _StopButton.Click += (_, _) => ClickStop();
+
+        _Data.EventHub.TagbagFileSet += (_) => AdjustButtons();
+
+        AdjustButtons();
     }
 
     private void LayoutControls()
     {
-        var main = new Control();
+        var font = new Font(FontFamily.GenericSansSerif, 16);
 
-        _Report.Name = "Scan:Report";
-        _Report.Dock = DockStyle.Fill;
-        _Report.Multiline = true;
-        _Report.ReadOnly = true;
-        main.Controls.Add(_Report);
+        _ProblemListing.Dock = DockStyle.Fill;
+        Controls.Add(_ProblemListing);
 
-        _ScanButton.Name = "Scan:ScanButton";
+        _ProgressBar.Dock = DockStyle.Bottom;
+        Controls.Add(_ProgressBar);
+
+        var buttonRow = new Control();
+        buttonRow.Dock = DockStyle.Bottom;
+        buttonRow.Height = 40;
+
+        _FixAllButton.Dock = DockStyle.Left;
+        _FixAllButton.Text = "Fix all";
+        _FixAllButton.Font = font;
+        _FixAllButton.Width = _FixAllButton.Width + 20;
+        buttonRow.Controls.Add(_FixAllButton);
+
+        _ScanButton.Dock = DockStyle.Left;
         _ScanButton.Text = "Scan";
-        _ScanButton.Dock = DockStyle.Top;
-        _ScanButton.Width = 80;
-        _ScanButton.Click += (_, _) => Run();
-        main.Controls.Add(_ScanButton);
+        _ScanButton.Font = font;
+        buttonRow.Controls.Add(_ScanButton);
 
-        _ScannedProgress.Name = "Scan:ScannedProgress";
-        _ScannedProgress.Dock = DockStyle.Top;
-        main.Controls.Add(_ScannedProgress);
+        _StopButton.Dock = DockStyle.Right;
+        _StopButton.Text = "Stop";
+        _StopButton.Font = font;
+        buttonRow.Controls.Add(_StopButton);
 
-        _FilesProgress.Name = "Scan:FilesProgress";
-        _FilesProgress.Dock = DockStyle.Top;
-        main.Controls.Add(_FilesProgress);
-
-        var path = new Control();
-
-        _Path.Name = "Scan:Path";
-        _Path.Dock = DockStyle.Fill;
-        path.Controls.Add(_Path);
-
-        _SelectPathButton.Name = "Scan:SelectPathButton";
-        _SelectPathButton.Text = "Select path";
-        _SelectPathButton.Dock = DockStyle.Right;
-        path.Controls.Add(_SelectPathButton);
-
-        path.Dock = DockStyle.Top;
-        path.Height = 30;
-        main.Controls.Add(path);
-
-        main.Width = 300;
-        main.Height = 300;
-        Controls.Add(main);
+        Controls.Add(buttonRow);
     }
 
-    private void Run()
+    private void AdjustButtons()
     {
-        if (_Running)
-            Stop();
-        else
-            Start();
+        _ScanButton.Enabled = _Check == null || _Check.GetState() == Check.State.None;
+        _FixAllButton.Enabled = _Check?.GetProblems().Count > 0;
+        _StopButton.Enabled = _Check?.GetState() != Check.State.None;
     }
 
-    private void Start()
+    private void ClickScan()
     {
-        lock (this)
+        if (_Data.Tagbag is Tagbag.Core.Tagbag tb)
         {
-            if (!_Running && _Data.Tagbag is Tagbag.Core.Tagbag tb)
-            {
-                _Scanner = new Scanner(tb, null);
-                _Scanner.ProgressReport += CounterUpdate;
-                _Running = true;
-                _ScanButton.Text = "Stop";
-                _Scanner.Start();
-            }
+            _Check = new Check(tb);
+
+            _Check.StateChange += (_, _) => AdjustButtons();
+            _Check.StateChange += (_, _) => RefreshProblemListing();
+            _Check.Progress += _ProgressBar.SetValues;
+
+            _Check.Scan();
+            AdjustButtons();
         }
     }
 
-    private void Stop()
+    private void ClickFixAll()
     {
-        lock (this)
-        {
-            if (_Running)
-            {
-                _Scanner?.Stop();
-                _Running = false;
-                _ScanButton.Text = "Scan";
-
-                _Data.SetTagbag(_Data.Tagbag);
-            }
-        }
+        _Check?.Fix();
+        AdjustButtons();
     }
 
-    private void CounterUpdate(Scanner.Counter counter)
+    private void ClickStop()
     {
-        var files = counter.DirectoriesQueued + counter.FilesQueued;
-        var remainingFiles = counter.DirectoriesRemaining + counter.FilesRemaining;
+        _Check?.Stop();
+        AdjustButtons();
+    }
 
-        _FilesProgress.SetMax(files);
-        _FilesProgress.SetCurrent(files - remainingFiles);
-        _ScannedProgress.SetMax(counter.EntriesQueued);
-        _ScannedProgress.SetCurrent(counter.EntriesQueued - counter.EntriesRemaining);
-
-        if (counter.Completed)
-            Stop();
+    private void RefreshProblemListing()
+    {
+        _ProblemListing.BeginUpdate();
+        _ProblemListing.Items.Clear();
+        foreach (var problem in _Check?.GetProblems() ?? [])
+            _ProblemListing.Items.Add(problem);
+        _ProblemListing.EndUpdate();
     }
 }
 
-public class MoreProgressBar : Control
+public class MoreProgressBar : ProgressBar
 {
-    private Label _Title = new Label();
-    private ProgressBar _ProgressBar = new ProgressBar();
-    private Label _Stats = new Label();
+    private int _Value;
+    private int _Maximum;
 
-    private int _Max = 0;
-    private int _Current = 0;
-
-    public MoreProgressBar(string title)
+    public MoreProgressBar()
     {
-        _ProgressBar.Dock = DockStyle.Fill;
-        Controls.Add(_ProgressBar);
-
-        _Title.Text = title;
-        _Title.Dock = DockStyle.Left;
-        Controls.Add(_Title);
-
-        _Stats.Dock = DockStyle.Right;
-        Controls.Add(_Stats);
+        SetStyle(ControlStyles.UserPaint |
+                 ControlStyles.AllPaintingInWmPaint |
+                 ControlStyles.OptimizedDoubleBuffer, true);
 
         Height = 30;
-
-        UpdateValues();
     }
 
-    public void SetMax(int max)
+    public void SetValues(string text, int value, int max)
     {
-        _Max = max;
-        _ProgressBar.Maximum = max;
-        UpdateValues();
+        Text = text;
+        _Value = value;
+        _Maximum = max;
+
+        Maximum = value + 1;
+        Value = value;
     }
 
-    public void SetCurrent(int current)
+    override protected void OnPaint(PaintEventArgs e)
     {
-        _Current = current;
-        _ProgressBar.Value = current;
-        UpdateValues();
-    }
+        var g = e.Graphics;
+        g.FillRectangle(Brushes.DarkRed, ClientRectangle);
 
-    private void UpdateValues()
-    {
-        _Stats.Text = $"{_Current} / {_Max}";
+        float progressWidth = 0;
+        if (_Value >= 0 && _Maximum > 0)
+            progressWidth = _Value * Width / _Maximum;
+        else if (_Maximum == 0 && _Value == 0)
+            progressWidth = Width;
+
+        g.FillRectangle(Brushes.DarkGreen,
+                        new RectangleF(0, 0, progressWidth, Height));
+
+        using (Font f = new Font(FontFamily.GenericSerif, 16))
+        {
+            string text;
+            if (_Maximum > 0 || (_Maximum == 0 && _Value == 0))
+                text = $"{Text} {_Value} / {_Maximum}";
+            else
+                text = $"{Text} {_Value} / ?";
+
+            var len = g.MeasureString(text, f);
+            var location = new Point(System.Convert.ToInt32((Width / 2) - len.Width / 2),
+                                     System.Convert.ToInt32((Height / 2) - len.Height / 2));
+            g.DrawString(text, f, Brushes.White, location);
+        }
     }
 }

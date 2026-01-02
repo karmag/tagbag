@@ -1,10 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Tagbag.Core;
 
-public class TagbagUtil
+public static class TagbagUtil
 {
+    private static HashSet<string> KnownFileExtensions =
+        new HashSet<string>([".jpg", ".jpeg", ".png", ".bmp", ".gif"]);
+
     public static string GetRootDirectory(Tagbag tb)
     {
         var path = Path.GetDirectoryName(tb.Path);
@@ -25,6 +29,24 @@ public class TagbagUtil
         }
 
         return result;
+    }
+
+    // Returns the relative (and normalized) path for the entry. Will
+    // throw if the entry path given is not a sub-path to the tagbag.
+    public static string GetEntryPath(Tagbag tb, string absolutePath)
+    {
+        var tbRootPath = GetRootDirectory(tb);
+        var relativePath = Path.GetRelativePath(tbRootPath, absolutePath);
+        if (relativePath == absolutePath)
+        {
+            throw new ArgumentException($"{absolutePath} is not a sub-path of {tbRootPath}");
+        }
+        return NormalizePath(relativePath);
+    }
+
+    public static string NormalizePath(string path)
+    {
+        return path.Replace("\\", "/");
     }
 
     public static bool PopulateImageTags(Tagbag tb, Entry entry)
@@ -51,5 +73,10 @@ public class TagbagUtil
         var info = new FileInfo(GetPath(tb, entry.Path));
         entry.Set(Const.Size, (int)info.Length);
         return true;
+    }
+
+    public static bool IsKnownFileExtension(string path)
+    {
+        return KnownFileExtensions.Contains(Path.GetExtension(path).ToLower());
     }
 }

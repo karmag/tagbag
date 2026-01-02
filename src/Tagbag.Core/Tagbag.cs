@@ -149,14 +149,14 @@ public class Entry
     public Entry(string path)
     {
         Id = Guid.NewGuid();
-        Path = path;
+        Path = TagbagUtil.NormalizePath(path);
         Tags = new Dictionary<string, Value>();
     }
 
     public Entry(Guid id, string path)
     {
         Id = id;
-        Path = path;
+        Path = TagbagUtil.NormalizePath(path);
         Tags = new Dictionary<string, Value>();
     }
 
