@@ -71,22 +71,25 @@ public static class TagbagUtil
 
     public static bool PopulateFileTags(Tagbag tb, Entry entry)
     {
-        var info = new FileInfo(GetPath(tb, entry.Path));
-        entry.Set(Const.Size, (int)info.Length);
+        var path = GetPath(tb, entry.Path);
+        entry.Set(Const.Size, (int)new FileInfo(path).Length);
+        entry.Set(Const.Hash, GetFileHash(path));
+        return true;
+    }
 
+    public static string GetFileHash(string path)
+    {
         using (SHA256 alg = SHA256.Create())
         {
-            using (FileStream stream = info.OpenRead())
+            using (FileStream stream = new FileInfo(path).OpenRead())
             {
                 var hash = alg.ComputeHash(stream);
                 var hashString = "";
                 foreach (byte b in hash)
                     hashString += b.ToString("x2");
-                entry.Set(Const.Hash, hashString);
+                return hashString;
             }
         }
-
-        return true;
     }
 
     public static bool IsKnownFileExtension(string path)

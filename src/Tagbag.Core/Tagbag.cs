@@ -138,6 +138,11 @@ public class Tagbag
         return entry;
     }
 
+    public void Remove(Guid id)
+    {
+        Entries.Remove(id);
+    }
+
     public ICollection<Entry> GetEntries()
     {
         return Entries.Values;
@@ -353,5 +358,16 @@ public class Value
 
         sb.Append("]");
         return sb.ToString();
+    }
+
+    public Value Clone()
+    {
+        var value = new Value();
+        value.SetTag(IsTag());
+        foreach (string str in Strings ?? [])
+            value.Add(str);
+        foreach (int i in Ints ?? [])
+            value.Add(i);
+        return value;
     }
 }

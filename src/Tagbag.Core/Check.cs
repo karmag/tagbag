@@ -95,7 +95,8 @@ public class Check
         var operations = new List<Action>();
         operations.AddRange(UpdateFoundFiles,
                             FindNonIndexedFiles,
-                            FindMissingTags);
+                            FindMissingTags,
+                            FindMovedOrDeletedFiles);
 
         try
         {
@@ -178,6 +179,73 @@ public class Check
         }
 
         Progress?.Invoke("Finding missing tags", failed, failed);
+    }
+
+    private void FindMovedOrDeletedFiles()
+    {
+        Progress?.Invoke("Finding moved/deleted files", 0, 0);
+        var found = 0;
+
+        var fileData = new List<(string path, int size, string hash)>();
+
+        foreach (var entry in _Tagbag.GetEntries())
+        {
+            var entryPath = TagbagUtil.GetPath(_Tagbag, entry.Path);
+
+            if (!File.Exists(entryPath))
+            {
+                // Setup data
+                if (fileData.Count == 0)
+                {
+                    foreach (var path in _FoundFiles.Values)
+                    {
+                        var fileInfo = new FileInfo(path);
+                        fileData.Add((path, (int)fileInfo.Length, ""));
+                    }
+                }
+
+                var moved = false;
+
+                var entrySize = entry.GetInts(Const.Size);
+                var entryHash = entry.GetStrings(Const.Hash);
+                if (entrySize != null && entryHash != null)
+                {
+                    for (int i = 0; i < fileData.Count; i++)
+                    {
+                        var (path, size, hash) = fileData[i];
+                        if (entrySize.Contains(size))
+                        {
+                            // Create hash as needed
+                            if (hash.Length == 0)
+                            {
+                                hash = TagbagUtil.GetFileHash(path);
+                                fileData[i] = (path, size, hash);
+                            }
+
+                            // When size and hash matches it's assumed
+                            // to be the file originally pointed to be
+                            // the entry.
+                            if (entryHash.Contains(hash))
+                            {
+                                moved = true;
+                                _FoundProblems.AddLast(new FileMoved(entry, path));
+                                found++;
+                            }
+                        }
+                    }
+                }
+
+                if (!moved)
+                {
+                    _FoundProblems.AddLast(new FileMissing(entry));
+                    found++;
+                }
+            }
+
+            Progress?.Invoke("Finding moved/deleted files", found, 0);
+        }
+
+        Progress?.Invoke("Finding moved/deleted files", found, found);
     }
 
     private void RunFix()
@@ -331,5 +399,58 @@ public class MissingDefaultTags : AbstractProblem
 
         if (file)
             TagbagUtil.PopulateFileTags(fix.GetTagbag(), _Entry);
+    }
+}
+
+public class FileMoved : AbstractProblem
+{
+    private Entry _Entry;
+    private string _NewPath;
+
+    public FileMoved(Entry entry, string newAbsolutePath)
+    {
+        _Entry = entry;
+        _NewPath = newAbsolutePath;
+
+        _Cause = "File moved";
+        _Details = $"File moved from {entry.Path} to {newAbsolutePath}";
+
+        AddEntry(entry);
+        AddFile(newAbsolutePath);
+    }
+
+    override public void Fix(FixData fix)
+    {
+        var entry = new Entry(_Entry.Id, _NewPath);
+
+        foreach (var key in _Entry.GetAllTags())
+            if (_Entry.Get(key) is Value value)
+                entry.Set(key, value.Clone());
+
+        fix.UpdateTagbag(tb =>
+        {
+            tb.Remove(_Entry.Id);
+            tb.Add(entry);
+        });
+    }
+}
+
+public class FileMissing : AbstractProblem
+{
+    private Entry _Entry;
+
+    public FileMissing(Entry entry)
+    {
+        _Entry = entry;
+
+        _Cause = "File missing";
+        _Details = $"File {entry.Path} is missing for entry {entry.Id}";
+
+        AddEntry(entry);
+    }
+
+    override public void Fix(FixData fix)
+    {
+        fix.UpdateTagbag(tb => tb.Remove(_Entry.Id));
     }
 }
