@@ -114,7 +114,9 @@ public class TestCheck
     {
         var tt = new TagbagTestHelper();
         tt.Add(new Item());
-        var expectedId = tt.Add(new Item().SetPath("delete_me.png").NoImage());
+        var expectedId = tt.Add(new Item().SetPath("delete_me.png"));
+
+        File.Delete(TagbagUtil.GetPath(tt.Get(), "delete_me.png"));
 
         var chk = new Check(tt.Get());
         chk.Scan();
