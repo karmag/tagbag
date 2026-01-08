@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Tagbag.Core;
 
 namespace Tagbag.Tests;
 
-public class Tester
+public static class Tester
 {
     public static Entry Entry(params Object?[][] kvArgs)
     {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Tagbag.Core;
@@ -8,6 +9,7 @@ namespace Tagbag.Core;
 public class Check
 {
     public enum State { None, Running, Stopping }
+    // Sends old-state, new-state when state is updated
     public Action<State, State>? StateChange;
     public Action<string, int, int>? Progress;
 
@@ -60,6 +62,25 @@ public class Check
         return _FoundProblems;
     }
 
+    // Blocks the current thread until processing is complete
+    public void Await()
+    {
+        var semaphore = new Semaphore(0, 1);
+
+        var f = (State _, State newState) =>
+        {
+            if (newState == State.None)
+                semaphore.Release();
+        };
+
+        StateChange += f;
+
+        if (_State != State.None)
+            semaphore.WaitOne();
+
+        StateChange -= f;
+    }
+
     private bool CompareAndSet(State oldState, State newState)
     {
         lock (this)
@@ -92,11 +113,10 @@ public class Check
         _FoundFiles.Clear();
         _FoundProblems.Clear();
 
-        var operations = new List<Action>();
-        operations.AddRange(UpdateFoundFiles,
-                            FindNonIndexedFiles,
-                            FindMissingTags,
-                            FindMovedOrDeletedFiles);
+        var operations = new List<Action>([UpdateFoundFiles,
+                                           FindNonIndexedFiles,
+                                           FindMissingTags,
+                                           FindMovedOrDeletedFiles]);
 
         try
         {
@@ -106,10 +126,41 @@ public class Check
                 if (_State != State.Running)
                     break;
             }
+
+            CleanupProblems();
         }
         finally
         {
             ForceSet(State.None);
+        }
+    }
+
+    private void CleanupProblems()
+    {
+        // New files and moved files are overlapping. Remove
+        // NonIndexedFiles problems that overlap with FileMoved
+        // problems.
+
+        var dealtWith = new HashSet<string>();
+        foreach (var problem in _FoundProblems)
+            if (problem is FileMoved fm)
+                foreach (var path in fm.GetFiles())
+                    dealtWith.Add(path);
+
+        var node = _FoundProblems.First;
+        while (node != null)
+        {
+            var next = node.Next;
+
+            if (node.Value is NonIndexedFile nif)
+                foreach (var path in nif.GetFiles())
+                    if (dealtWith.Contains(path))
+                    {
+                        _FoundProblems.Remove(node);
+                        break;
+                    }
+
+            node = next;
         }
     }
 
@@ -223,7 +274,7 @@ public class Check
                             }
 
                             // When size and hash matches it's assumed
-                            // to be the file originally pointed to be
+                            // to be the file originally pointed to by
                             // the entry.
                             if (entryHash.Contains(hash))
                             {
@@ -421,7 +472,8 @@ public class FileMoved : AbstractProblem
 
     override public void Fix(FixData fix)
     {
-        var entry = new Entry(_Entry.Id, _NewPath);
+        var entry = new Entry(_Entry.Id,
+                              TagbagUtil.GetEntryPath(fix.GetTagbag(), _NewPath));
 
         foreach (var key in _Entry.GetAllTags())
             if (_Entry.Get(key) is Value value)
