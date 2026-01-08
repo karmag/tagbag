@@ -219,6 +219,16 @@ public class FilterBuilder
 
     public static IFilter Build(LinkedList<Token> tokens)
     {
+        if (tokens.Count >= 1 && tokens.First?.Value is Token not)
+        {
+            if (not.Type == TokenType.Symbol && not.Text == "not")
+            {
+                tokens.RemoveFirst();
+                var filter = Build(tokens);
+                return Filter.Not(filter);
+            }
+        }
+
         if (tokens.Count > 3)
             throw new BuildException("Too many tokens");
 
