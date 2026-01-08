@@ -1,4 +1,5 @@
 using System.Drawing;
+using System.Threading;
 using System.Windows.Forms;
 using Tagbag.Core;
 
@@ -108,16 +109,31 @@ public class Scan : Control
     {
         _ProblemListing.BeginUpdate();
         _ProblemListing.Items.Clear();
-        foreach (var problem in _Check?.GetProblems() ?? [])
-            _ProblemListing.Items.Add(problem);
-        _ProblemListing.EndUpdate();
+
+        try
+        {
+            var node = (_Check?.GetProblems() ?? []).First;
+            while (node != null)
+            {
+                if (node?.Value is Problem problem)
+                    _ProblemListing.Items.Add(problem);
+                node = node?.Next;
+            }
+        }
+        finally
+        {
+            _ProblemListing.EndUpdate();
+        }
     }
 }
 
-public class MoreProgressBar : ProgressBar
+public class MoreProgressBar : Control
 {
     private int _Value;
     private int _Maximum;
+
+    private System.Windows.Forms.Timer _RefreshTimer;
+    private int _RefreshCounter;
 
     public MoreProgressBar()
     {
@@ -126,6 +142,11 @@ public class MoreProgressBar : ProgressBar
                  ControlStyles.OptimizedDoubleBuffer, true);
 
         Height = 30;
+
+        _RefreshTimer = new System.Windows.Forms.Timer();
+        _RefreshTimer.Interval = 250;
+        _RefreshTimer.Tick += (_, _) => RefreshFunction();
+        _RefreshTimer.Start();
     }
 
     public void SetValues(string text, int value, int max)
@@ -134,8 +155,13 @@ public class MoreProgressBar : ProgressBar
         _Value = value;
         _Maximum = max;
 
-        Maximum = value + 1;
-        Value = value;
+        Interlocked.Increment(ref _RefreshCounter);
+    }
+
+    private void RefreshFunction()
+    {
+        if (0 != Interlocked.Exchange(ref _RefreshCounter, 0))
+            Refresh();
     }
 
     override protected void OnPaint(PaintEventArgs e)

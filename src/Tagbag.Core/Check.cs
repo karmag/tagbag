@@ -128,6 +128,8 @@ public class Check
             }
 
             CleanupProblems();
+
+            Progress?.Invoke("Done", _FoundProblems.Count, _FoundProblems.Count);
         }
         finally
         {
@@ -309,7 +311,7 @@ public class Check
 
         try
         {
-            while (node != null)
+            while (node != null && _State == State.Running)
             {
                 var next = node.Next;
 
