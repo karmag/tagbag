@@ -127,6 +127,7 @@ public class CommandLine : Panel
     {
         _StatusLabel.Clear();
         _StatusLabel.AddText(" ");
+        _StatusLabel.AddText(System.DateTime.Now.ToShortTimeString(), Color.Gray);
 
         switch (log.Type)
         {
