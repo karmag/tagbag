@@ -40,7 +40,10 @@ public class ImageGrid : Control
 
         _ThumbnailCache = new List<Bitmap?>(_Rows * _Columns);
 
-        DoubleBuffered = true; // TODO: don't think this works
+        SetStyle(ControlStyles.UserPaint |
+                 ControlStyles.AllPaintingInWmPaint |
+                 ControlStyles.OptimizedDoubleBuffer, true);
+
         ResizeRedraw = true;
 
         _Active = false;

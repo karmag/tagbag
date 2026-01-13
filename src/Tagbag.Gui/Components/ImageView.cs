@@ -31,6 +31,10 @@ public class ImageView : Panel
         _Picture.BackColor = Color.DarkGray;
         Controls.Add(_Picture);
 
+        SetStyle(ControlStyles.UserPaint |
+                 ControlStyles.AllPaintingInWmPaint |
+                 ControlStyles.OptimizedDoubleBuffer, true);
+
         _Active = false;
         SetActive(true);
 
