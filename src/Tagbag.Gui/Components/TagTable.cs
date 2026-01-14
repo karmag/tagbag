@@ -145,15 +145,8 @@ public class TagTable : Panel
                     foreach (var s in value.GetStrings() ?? [])
                         valueColl.Add(s);
 
-                    switch (tag)
-                    {
-                        case "height":
-                        case "width":
-                        case "size":
-                            if (valueColl.Count == 1)
-                                continue;
-                            break;
-                    }
+                    if (valueColl.Count == 1 && Const.BuiltinTags.Contains(tag))
+                        continue;
 
                     data.Add(
                         new string[] { tag, String.Join(", ", valueColl) });

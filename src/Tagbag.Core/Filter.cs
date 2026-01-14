@@ -55,18 +55,8 @@ public class Filter
             {
                 var count = 0;
                 foreach (var tag in entry.GetAllTags())
-                {
-                    switch (tag) {
-                        case Const.Width:
-                        case Const.Height:
-                        case Const.Size:
-                            break;
-
-                        default:
-                            count++;
-                            break;
-                    }
-                }
+                    if (!Const.BuiltinTags.Contains(tag))
+                        count++;
                 return f(count);
             }
 
