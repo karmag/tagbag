@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Windows.Forms;
 using Tagbag.Core;
 
@@ -37,6 +38,116 @@ static class Program
 
     static void GenDoc2()
     {
+        var sb = new System.Text.StringBuilder();
+
+        GenBuildCommands(sb);
+        GenBreak(sb);
+
+        GenTagHelp(sb);
+        GenBreak(sb);
+
+        GenFilterHelp(sb);
+        GenBreak(sb);
+
+        GenKeyTables(sb);
+
+        System.IO.File.WriteAllText("readme.txt", sb.ToString());
+    }
+
+    static void GenBreak(StringBuilder sb)
+    {
+        sb.AppendLine();
+        sb.AppendLine("----------------------------------------------------------------------");
+        sb.AppendLine();
+    }
+
+    static void GenBuildCommands(StringBuilder sb)
+    {
+        sb.AppendJoin(
+            "\n",
+            "Build commands",
+            "    Run              : dotnet run <optional-initial-path>",
+            "    Build executable : dotnet publish",
+            "    Test             : dotnet test",
+            "    Generate readme  : dotnet run --gen-doc",
+            "",
+            "Standalone executable is located at",
+            @"    bin\Release\net9.0-windows\win-x64\publish\tagbag.exe");
+        sb.AppendLine();
+    }
+
+    static void GenTagHelp(StringBuilder sb)
+    {
+        sb.AppendJoin(
+            "\n",
+            "Tagging",
+            "",
+            "    Tag grammar",
+            "        tag-command = unary | binary | ternary",
+            "        unary       = [\"+\" | \"-\"] tag",
+            "        binary      = tag value",
+            "        ternary     = tag op value",
+            "        tag         = symbol",
+            "        op          = \"+\" | \"-\" | \"=\"",
+            "        value       = int | string | symbol",
+            "",
+            "        Operators",
+            "            + : Add the value to tag.",
+            "            - : Remove the value from tag.",
+            "            = : Set the tag to have value, removing other values.",
+            "",
+            "    Examples",
+            "        river",
+            "            Add the tag \"river\" to the entry.",
+            "        score 10",
+            "            Add the value 10 to the tag \"score\".",
+            "        author = \"Quill Penhammer\"",
+            "            Set the \"author\" tag to be \"Quill Penhammer\" overwriting",
+            "            any old values.",
+            "        -normal",
+            "            Remove the tag normal.");
+        sb.AppendLine();
+    }
+
+    static void GenFilterHelp(StringBuilder sb)
+    {
+        sb.AppendJoin(
+            "\n",
+            "Filtering",
+            "",
+            "    Filter grammar",
+            "        filter-command = unary | binary | ternary | negated",
+            "        unary          = tag",
+            "        binary         = tag value",
+            "        ternary        = tag op value",
+            "        negated        = \"not\" (unary | binary | ternary)",
+            "        tag            = symbol",
+            "        op             = \"=\" | \"~=\" | \"<\" | \"<=\" | \">\" | \">=\"",
+            "        value          = int | string | symbol",
+            "",
+            "        A string is characters enclosed in doublequotes. A symbol is a",
+            "        letter followed by other non-whitespace characters. A symbol",
+            "        will be interpreted as a string in relevant contexts.",
+            "",
+            "        Operators",
+            "            =            : equality",
+            "            ~=           : regular expression, ignores case",
+            "            <, <=, >, >= : general math operators",
+            "",
+            "    Examples",
+            "        cloud",
+            "            Find any entry with the tag \"cloud\" regardless of values.",
+            "        score 4",
+            "            Find any entry where the tag \"score\" is equal to 4.",
+            "        year > 2000",
+            "            Find any entry where the tag \"year\" is greater than 2000.",
+            "        not good",
+            "            Find any entry that doesn't have the tag \"good\".");
+        sb.AppendLine();
+    }
+
+    static void GenKeyTables(StringBuilder sb)
+    {
         KeyMap km = new KeyMap();
         Root.SetupActionDefinitions(km);
         Root.SetupKeyMap(km);
@@ -46,8 +157,6 @@ static class Program
 
         List<KeyData> keyData = new List<KeyData>(km.GetKeyData());
         keyData.Sort((a, b) => String.Compare(a.Key.ToString(), b.Key.ToString()));
-
-        var sb = new System.Text.StringBuilder();
 
         var doc = (string[] headers, Func<KeyData, int> columnIndex) => {
             var table = new Table();
@@ -125,8 +234,6 @@ static class Program
                 }
                 return -1;
             });
-
-        System.IO.File.WriteAllText("readme.txt", sb.ToString());
     }
 
     private class Table

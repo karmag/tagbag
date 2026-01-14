@@ -1,3 +1,76 @@
+Build commands
+    Run              : dotnet run <optional-initial-path>
+    Build executable : dotnet publish
+    Test             : dotnet test
+    Generate readme  : dotnet run --gen-doc
+
+Standalone executable is located at
+    bin\Release\net9.0-windows\win-x64\publish\tagbag.exe
+
+----------------------------------------------------------------------
+
+Tagging
+
+    Tag grammar
+        tag-command = unary | binary | ternary
+        unary       = ["+" | "-"] tag
+        binary      = tag value
+        ternary     = tag op value
+        tag         = symbol
+        op          = "+" | "-" | "="
+        value       = int | string | symbol
+
+        Operators
+            + : Add the value to tag.
+            - : Remove the value from tag.
+            = : Set the tag to have value, removing other values.
+
+    Examples
+        river
+            Add the tag "river" to the entry.
+        score 10
+            Add the value 10 to the tag "score".
+        author = "Quill Penhammer"
+            Set the "author" tag to be "Quill Penhammer" overwriting
+            any old values.
+        -normal
+            Remove the tag normal.
+
+----------------------------------------------------------------------
+
+Filtering
+
+    Filter grammar
+        filter-command = unary | binary | ternary | negated
+        unary          = tag
+        binary         = tag value
+        ternary        = tag op value
+        negated        = "not" (unary | binary | ternary)
+        tag            = symbol
+        op             = "=" | "~=" | "<" | "<=" | ">" | ">="
+        value          = int | string | symbol
+
+        A string is characters enclosed in doublequotes. A symbol is a
+        letter followed by other non-whitespace characters. A symbol
+        will be interpreted as a string in relevant contexts.
+
+        Operators
+            =            : equality
+            ~=           : regular expression, ignores case
+            <, <=, >, >= : general math operators
+
+    Examples
+        cloud
+            Find any entry with the tag "cloud" regardless of values.
+        score 4
+            Find any entry where the tag "score" is equal to 4.
+        year > 2000
+            Find any entry where the tag "year" is greater than 2000.
+        not good
+            Find any entry that doesn't have the tag "good".
+
+----------------------------------------------------------------------
+
 Common keys
  +-----------+-------------+
  | Action    | Key         |
