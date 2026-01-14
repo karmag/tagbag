@@ -9,7 +9,7 @@ public static class Const
     public const string Filename = ".tagbag";
     public const string Width = "width";
     public const string Height = "height";
-    public const string Size = "size";
+    public const string Size = "filesize";
     public const string Hash = "hash/sha256";
 
     public static IReadOnlySet<string> BuiltinTags =
