@@ -1,8 +1,6 @@
 using System;
-using System.Windows;
 using System.Windows.Forms;
 using Tagbag.Core;
-using Tagbag.Gui.Components;
 
 namespace Tagbag.Gui;
 
@@ -48,25 +46,6 @@ public static class UserCommand
     public static void Refresh(Data data)
     {
         data.SetTagbag(data.Tagbag);
-    }
-
-    public static void SetCommandMode(Data data, CommandLineMode mode)
-    {
-        data.CommandLine.SetMode(mode);
-        data.CommandLine.Focus();
-    }
-
-    public static void ToggleCommandMode(Data data)
-    {
-        switch (data.CommandLine.GetMode())
-        {
-            case CommandLineMode.FilterMode:
-                data.CommandLine.SetMode(CommandLineMode.TagMode);
-                break;
-            case CommandLineMode.TagMode:
-                data.CommandLine.SetMode(CommandLineMode.FilterMode);
-                break;
-        }
     }
 
     // Moves the cursor in either x or y. The cursor is only moved one

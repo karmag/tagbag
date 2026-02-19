@@ -207,7 +207,6 @@ public class Root : Form
         def(new ActionDef("mode/browse", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.InputMode.Browse))));
         def(new ActionDef("mode/command", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.InputMode.Command))));
 
-        def(new ActionDef("toggle-command-mode", UserCommand.ToggleCommandMode));
         def(new ActionDef("press-enter", UserCommand.PressEnter));
 
         def(new ActionDef("copy-image-to-clipboard", UserCommand.CursorImageToClipboard));
@@ -274,8 +273,6 @@ public class Root : Form
 
         foreach (var mode in new Mode[] { GridCommand, GridBrowse, SingleCommand, SingleBrowse })
         {
-            add(new KeyData(mode, Keys.Control | Keys.Tab, "toggle-command-mode"));
-
             add(new KeyData(mode, Keys.Enter, "press-enter"));
 
             add(new KeyData(mode, Keys.Control | Keys.C, "copy-image-to-clipboard"));

@@ -6,25 +6,18 @@ using Tagbag.Core.Input;
 
 namespace Tagbag.Gui.Components;
 
-public enum CommandLineMode
-{
-    TagMode,
-    FilterMode,
-}
-
 public class CommandLine : Panel
 {
     private EventHub _EventHub;
-    private CommandLineMode _Mode;
     private bool _Enabled;
 
     private Label _ModeLabel;
     private TextBox _TextBox;
     private RichLabel _StatusLabel;
 
-    private History _TagHistory;
-    private History _FilterHistory;
-    private History _CurrentHistory;
+    private History _History;
+    private string _FilterPrefix = ":";
+    private bool _IsTagMode;
 
     public CommandLine(EventHub eventHub)
     {
@@ -64,14 +57,13 @@ public class CommandLine : Panel
             Height = _TextBox.Font.Height + 4 + 2 * pad;
         };
 
-        _TextBox.KeyDown += HandleKey;
+        _TextBox.KeyDown += HandleKeyDown;
+        _TextBox.KeyUp += HandleKeyUp;
 
-        _TagHistory = new History();
-        _FilterHistory = new History();
-        _CurrentHistory = _TagHistory;
+        _History = new History();
 
-        SetMode(CommandLineMode.FilterMode);
         SetEnabled(true);
+        UpdateMode(force: true);
 
         eventHub.Log += ListenLog;
 
@@ -85,37 +77,12 @@ public class CommandLine : Panel
     {
         _Enabled = enabled;
         _TextBox.Enabled = enabled;
-        UpdateModeLabel();
+        UpdateMode(force: true);
     }
 
     public bool IsEnabled()
     {
         return _Enabled;
-    }
-
-    public void SetMode(CommandLineMode mode)
-    {
-        _Mode = mode;
-        switch (mode)
-        {
-            case CommandLineMode.TagMode:
-                _ModeLabel.Text = "TAG";
-                _TagHistory.Reset();
-                _CurrentHistory = _TagHistory;
-                break;
-
-            case CommandLineMode.FilterMode:
-                _ModeLabel.Text = "FILTER";
-                _FilterHistory.Reset();
-                _CurrentHistory = _FilterHistory;
-                break;
-        }
-        UpdateModeLabel();
-    }
-
-    public CommandLineMode GetMode()
-    {
-        return _Mode;
     }
 
     new public void Focus()
@@ -153,11 +120,13 @@ public class CommandLine : Panel
         }
         else if (txt.Length > 0)
         {
-            _CurrentHistory.Add(txt);
+            _History.Add(txt);
             try
             {
-                if (_Mode == CommandLineMode.FilterMode)
+                txt = txt.TrimStart();
+                if (txt.StartsWith(_FilterPrefix))
                 {
+                    txt = txt.Substring(_FilterPrefix.Length);
                     var filter = FilterBuilder.Build(txt);
                     _EventHub.Send(new FilterCommand(filter));
                 }
@@ -175,7 +144,7 @@ public class CommandLine : Panel
         }
     }
 
-    private void HandleKey(Object? o, KeyEventArgs e)
+    private void HandleKeyDown(Object? o, KeyEventArgs e)
     {
         switch (e.KeyData)
         {
@@ -186,34 +155,47 @@ public class CommandLine : Panel
 
             case Keys.Up:
                 e.SuppressKeyPress = true;
-                if (_CurrentHistory.Next() is string s)
+                if (_History.Next() is string s)
                     _TextBox.Text = s;
                 break;
 
             case Keys.Down:
                 e.SuppressKeyPress = true;
-                _TextBox.Text = _CurrentHistory.Prev();
+                _TextBox.Text = _History.Prev();
                 break;
         }
     }
 
-    private void UpdateModeLabel()
+    private void HandleKeyUp(Object? o, KeyEventArgs e)
     {
+        UpdateMode();
+    }
+
+    private void UpdateMode(bool force = false)
+    {
+        var tagMode = !_TextBox.Text.TrimStart().StartsWith(_FilterPrefix);
+
+        if (tagMode == _IsTagMode && !force)
+            return;
+
+        _IsTagMode = tagMode;
         if (_Enabled)
         {
-            switch (_Mode)
+            if (_IsTagMode)
             {
-                case CommandLineMode.TagMode:
-                    _ModeLabel.BackColor = Color.Pink;
-                    break;
-                case CommandLineMode.FilterMode:
-                    _ModeLabel.BackColor = Color.LightGreen;
-                    break;
+                _ModeLabel.BackColor = Color.Pink;
+                _ModeLabel.Text = "Tag";
+            }
+            else
+            {
+                _ModeLabel.BackColor = Color.LightGreen;
+                _ModeLabel.Text = "Filter";
             }
         }
         else
         {
-            _ModeLabel.BackColor = Color.DarkGray;
+            _ModeLabel.BackColor = Color.LightGray;
+            _ModeLabel.Text = "-";
         }
     }
 

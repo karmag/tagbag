@@ -133,7 +133,6 @@ Grid keys
  | scroll/page-up          | PageUp              | PageUp              |
  | scroll/top              | Home                | Alt + Home          |
  |                         | Alt + Home          |                     |
- | toggle-command-mode     | Control + Tab       | Control + Tab       |
  +-------------------------+---------------------+---------------------+
 
 Single keys
@@ -173,5 +172,4 @@ Single keys
  | scroll/page-up          | PageUp              | PageUp              |
  | scroll/top              | Home                | Alt + Home          |
  |                         | Alt + Home          |                     |
- | toggle-command-mode     | Control + Tab       | Control + Tab       |
  +-------------------------+---------------------+---------------------+
