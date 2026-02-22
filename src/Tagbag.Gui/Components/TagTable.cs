@@ -13,7 +13,9 @@ public class TagTable : Panel
     private ImageCache _ImageCache;
 
     private PictureBox _Picture;
-    private Label _Label;
+    private Label _PathLabel;
+    private Label _DimensionsLabel;
+    private Label _SizeLabel;
     private DataGridView _Tags;
 
     public TagTable(EventHub eventHub,
@@ -22,38 +24,32 @@ public class TagTable : Panel
         _ImageCache = imageCache;
 
         _Picture = new PictureBox();
-        _Label = new Label();
+        _PathLabel = new Label();
+        _DimensionsLabel = new Label();
+        _SizeLabel = new Label();
         _Tags = new DataGridView();
-        ConfigureComponents();
-        TabStop = false;
 
-        _Tags.Dock = DockStyle.Fill;
-        Controls.Add(_Tags);
+        GuiTool.Setup(this);
+        GuiTool.Setup(_Picture);
+        GuiTool.Setup(_PathLabel);
+        GuiTool.Setup(_DimensionsLabel);
+        GuiTool.Setup(_SizeLabel);
+        GuiTool.Setup(_Tags);
 
-        _Label.Dock = DockStyle.Top;
-        Controls.Add(_Label);
-
-        _Picture.Dock = DockStyle.Top;
-        Controls.Add(_Picture);
+        LayoutComponents();
 
         ClientSizeChanged += (_, _) => {
             _Picture.Width = Width;
             _Picture.Height = (int)(Width * 0.7);
         };
         eventHub.ShowEntry += (ev) => { ListenShowEntry(ev); };
-
-        GuiTool.Setup(this);
-        GuiTool.Setup(_Picture);
-        GuiTool.Setup(_Label);
-        GuiTool.Setup(_Tags);
     }
 
-    public void ConfigureComponents()
+    public void LayoutComponents()
     {
-        _Picture.SizeMode = PictureBoxSizeMode.Zoom;
-        _Picture.TabStop = false;
-
-        _Label.TabStop = false;
+        var font = new Font("Arial", 14);
+        var smallFont = new Font("Arial", 10);
+        var smallSizeFont = new Font("Courier New", 12);
 
         _Tags.ReadOnly = true;
         _Tags.ColumnCount = 2;
@@ -70,9 +66,28 @@ public class TagTable : Panel
         _Tags.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         _Tags.MultiSelect = false;
 
-        _Tags.TabStop = false;
-
         _Tags.SelectionChanged += (_, _) => { _Tags.ClearSelection(); };
+
+        _Tags.DefaultCellStyle.Font = font;
+
+        _Tags.Dock = DockStyle.Fill;
+        Controls.Add(_Tags);
+
+        _SizeLabel.Font = smallSizeFont;
+        _SizeLabel.Dock = DockStyle.Top;
+        Controls.Add(_SizeLabel);
+
+        _DimensionsLabel.Font = font;
+        _DimensionsLabel.Dock = DockStyle.Top;
+        Controls.Add(_DimensionsLabel);
+
+        _PathLabel.Font = smallFont;
+        _PathLabel.Dock = DockStyle.Top;
+        Controls.Add(_PathLabel);
+
+        _Picture.SizeMode = PictureBoxSizeMode.Zoom;
+        _Picture.Dock = DockStyle.Top;
+        Controls.Add(_Picture);
     }
 
     private async void SetImage(Guid id, Task<Bitmap?> task)
@@ -98,8 +113,9 @@ public class TagTable : Panel
         {
             var width = "?";
             var height = "?";
+            var size = "?";
 
-            if (entry.GetInts("width") is HashSet<int> widthValues)
+            if (entry.GetInts(Const.Width) is HashSet<int> widthValues)
             {
                 foreach (var value in widthValues)
                 {
@@ -108,7 +124,7 @@ public class TagTable : Panel
                 }
             }
 
-            if (entry.GetInts("height") is HashSet<int> heightValues)
+            if (entry.GetInts(Const.Height) is HashSet<int> heightValues)
             {
                 foreach (var value in heightValues)
                 {
@@ -117,11 +133,24 @@ public class TagTable : Panel
                 }
             }
 
-            _Label.Text = $"{width} x {height}";
+            if (entry.GetInts(Const.Size) is HashSet<int> sizeValues)
+            {
+                foreach (var value in sizeValues)
+                {
+                    size = ReadableSize(value);
+                    break;
+                }
+            }
+
+            _PathLabel.Text = entry.Path;
+            _DimensionsLabel.Text = $"{width} x {height}";
+            _SizeLabel.Text = size;
         }
         else
         {
-            _Label.Text = "";
+            _PathLabel.Text = "";
+            _DimensionsLabel.Text = "";
+            _SizeLabel.Text = "";
         }
 
         _Tags.Rows.Clear();
@@ -148,8 +177,10 @@ public class TagTable : Panel
                     if (valueColl.Count == 1 && Const.BuiltinTags.Contains(tag))
                         continue;
 
-                    data.Add(
-                        new string[] { tag, String.Join(", ", valueColl) });
+                    if (valueColl.Count == 1 && value.IsTag())
+                        data.Add(new string[] { tag, "" });
+                    else
+                        data.Add(new string[] { tag, String.Join(", ", valueColl) });
                 }
             }
 
@@ -157,6 +188,31 @@ public class TagTable : Panel
             foreach (var row in data)
                 _Tags.Rows.Add(row);
         }
+    }
+
+    private string ReadableSize(int inputSize)
+    {
+        var size = (decimal)inputSize;
+        var postfix = "";
+
+        foreach (var item in new string[]{"k", "M", "G", "T"})
+        {
+            if (size / 1024 > 1)
+            {
+                size /= 1024;
+                postfix = item;
+            }
+            else
+                break;
+        }
+
+        postfix = " " + postfix + "b";
+
+        var digits = ((int)size).ToString().Length;
+        if (digits > 2)
+            return ((int)size).ToString() + postfix;
+        else
+            return size.ToString("#.#") + postfix;
     }
 
     public void RefreshEntry()

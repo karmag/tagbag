@@ -89,9 +89,11 @@ Grid keys
  | copy-path-to-clipboard  | Shift + Control + C | Shift + Control + C |
  | cursor/down             | Down                | Alt + Down          |
  |                         | Alt + Down          |                     |
- | cursor/left             | Left                | Alt + Left          |
+ | cursor/left             | Control + K         | Control + K         |
+ |                         | Left                | Alt + Left          |
  |                         | Alt + Left          |                     |
- | cursor/right            | Right               | Alt + Right         |
+ | cursor/right            | Control + J         | Control + J         |
+ |                         | Right               | Alt + Right         |
  |                         | Alt + Right         |                     |
  | cursor/up               | Up                  | Alt + Up            |
  |                         | Alt + Up            |                     |
@@ -143,9 +145,11 @@ Single keys
  | copy-path-to-clipboard  | Shift + Control + C | Shift + Control + C |
  | cursor/down             | Down                | Alt + Down          |
  |                         | Alt + Down          |                     |
- | cursor/left             | Left                | Alt + Left          |
+ | cursor/left             | Control + K         | Control + K         |
+ |                         | Left                | Alt + Left          |
  |                         | Alt + Left          |                     |
- | cursor/right            | Right               | Alt + Right         |
+ | cursor/right            | Control + J         | Control + J         |
+ |                         | Right               | Alt + Right         |
  |                         | Alt + Right         |                     |
  | cursor/up               | Up                  | Alt + Up            |
  |                         | Alt + Up            |                     |

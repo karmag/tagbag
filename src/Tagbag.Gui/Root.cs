@@ -285,6 +285,9 @@ public class Root : Form
             add(new KeyData(mode, Keys.Alt | Keys.Up, "cursor/up"));
             add(new KeyData(mode, Keys.Alt | Keys.Down, "cursor/down"));
 
+            add(new KeyData(mode, Keys.Control | Keys.J, "cursor/right"));
+            add(new KeyData(mode, Keys.Control | Keys.K, "cursor/left"));
+
             add(new KeyData(mode, Keys.Control | Keys.Q, "mark/clear"));
             add(new KeyData(mode, Keys.Control | Keys.A, "mark/all-visible"));
 
@@ -297,6 +300,9 @@ public class Root : Form
             add(new KeyData(mode, Keys.PageDown, "scroll/page-down"));
 
             add(new KeyData(mode, Keys.Escape, "filter/pop"));
+
+            add(new KeyData(mode, Keys.Alt | Keys.Home, "scroll/top"));
+            add(new KeyData(mode, Keys.Alt | Keys.End, "scroll/bottom"));
         }
 
         // Grid mode
@@ -332,9 +338,6 @@ public class Root : Form
         foreach (var mode in new Mode[] { GridCommand, SingleCommand })
         {
             add(new KeyData(mode, Keys.Control | Keys.Enter, "mode/browse"));
-
-            add(new KeyData(mode, Keys.Alt | Keys.Home, "scroll/top"));
-            add(new KeyData(mode, Keys.Alt | Keys.End, "scroll/bottom"));
         }
 
         // Browse mode
@@ -343,11 +346,8 @@ public class Root : Form
         {
             add(new KeyData(mode, Keys.Control | Keys.Enter, "mode/command"));
 
-            add(new KeyData(mode, Keys.Home, "scroll/top"));
-            add(new KeyData(mode, Keys.End, "scroll/bottom"));
-
-            add(new KeyData(mode, Keys.Alt | Keys.Home, "scroll/top"));
-            add(new KeyData(mode, Keys.Alt | Keys.End, "scroll/bottom"));
+            add(new KeyData(mode, Keys.Home, "scroll/top", isCmdClosed));
+            add(new KeyData(mode, Keys.End, "scroll/bottom", isCmdClosed));
 
             add(new KeyData(mode, Keys.Left, "cursor/left", isCmdClosed));
             add(new KeyData(mode, Keys.Right, "cursor/right", isCmdClosed));
