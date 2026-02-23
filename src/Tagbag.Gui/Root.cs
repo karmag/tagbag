@@ -130,6 +130,7 @@ public class Root : Form
     private MenuStrip MakeMenu(Data data)
     {
         var menuStrip = new MenuStrip();
+        GuiTool.Setup(menuStrip);
 
         // file
 

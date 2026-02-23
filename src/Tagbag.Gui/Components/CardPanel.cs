@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace Tagbag.Gui.Components;
 
-public class CardPanel : Control
+public class CardPanel : Panel
 {
     private Dictionary<int, Control> _Controls;
 

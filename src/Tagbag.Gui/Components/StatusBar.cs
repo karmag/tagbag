@@ -30,57 +30,57 @@ public class StatusBar : RichLabel
         var visibleStart = _ImagePanel.GetVisibleStartIndex();
         if (visibleStart == 0)
         {
-            AddText("Top", Color.Black);
+            AddText("Top", GuiTool.ForeColor);
         }
         else if (visibleStart + _ImagePanel.GetVisibleAmount() >= _EntryCollection.Size())
         {
-            AddText("Bot", Color.Black);
+            AddText("Bot", GuiTool.ForeColor);
         }
         else
         {
             var startPercent = (int)((decimal)visibleStart /
                                      (decimal)_EntryCollection.Size() *
                                      100);
-            AddText($"{startPercent,2}%", Color.Black);
+            AddText($"{startPercent,2}%", GuiTool.ForeColor);
         }
 
-        AddText(" --- ", Color.DarkGray);
+        AddText(" --- ", GuiTool.ForeColorAlt);
 
         // entry count
 
-        AddText($"{_EntryCollection.Size(),3}", Color.Black);
-        AddText(" / ", Color.Gray);
-        AddText(_EntryCollection.MaxSize().ToString(), Color.Gray);
+        AddText($"{_EntryCollection.Size(),3}", GuiTool.ForeColor);
+        AddText(" / ", GuiTool.ForeColorDisabled);
+        AddText(_EntryCollection.MaxSize().ToString(), GuiTool.ForeColorDisabled);
 
-        AddText(" --- ", Color.DarkGray);
+        AddText(" --- ", GuiTool.ForeColorAlt);
 
         // marked
 
         var marked = _EntryCollection.GetMarked();
         if (marked.Count == 0)
         {
-            AddText("  0 marked", Color.Gray);
+            AddText("  0 marked", GuiTool.ForeColorDisabled);
         }
         else
         {
             AddText($"{marked.Count,3}", Color.Red);
-            AddText(" marked", Color.Gray);
+            AddText(" marked", GuiTool.ForeColorDisabled);
         }
 
-        AddText(" --- ", Color.DarkGray);
+        AddText(" --- ", GuiTool.ForeColorAlt);
 
         // filter
 
-        AddText("[", Color.Gray);
+        AddText("[", GuiTool.ForeColorDisabled);
         var first = true;
         foreach (var fltr in _EntryCollection.GetFilters().Reverse())
         {
             if (first)
                 first = false;
             else
-                AddText(" / ", Color.Gray);
-            AddText(fltr?.ToString() ?? "", Color.Black);
+                AddText(" / ", GuiTool.ForeColorDisabled);
+            AddText(fltr?.ToString() ?? "", GuiTool.ForeColor);
         }
-        AddText("]", Color.Gray);
+        AddText("]", GuiTool.ForeColorDisabled);
     }
 }

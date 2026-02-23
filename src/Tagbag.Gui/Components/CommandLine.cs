@@ -22,17 +22,23 @@ public class CommandLine : Panel
     public CommandLine(EventHub eventHub)
     {
         _EventHub = eventHub;
+        _StatusLabel = new RichLabel();
+        _TextBox = new TextBox();
+        _ModeLabel = new Label();
+
+        GuiTool.Setup(this);
+        GuiTool.Setup(_StatusLabel);
+        GuiTool.Setup(_TextBox);
+        GuiTool.Setup(_ModeLabel);
 
         var pad = 5;
 
-        _StatusLabel = new RichLabel();
         _StatusLabel.Name = "CommandLine:StatusLabel";
         _StatusLabel.Dock = DockStyle.Fill;
         _StatusLabel.Left = pad * 10;
         _StatusLabel.Font = new Font("Verdana", 14);
         Controls.Add(_StatusLabel);
 
-        _TextBox = new TextBox();
         _TextBox.Name = "CommandLine:TextBox";
         _TextBox.Dock = DockStyle.Left;
         _TextBox.Width = 300;
@@ -40,17 +46,18 @@ public class CommandLine : Panel
         _TextBox.Multiline = true;
         _TextBox.AcceptsTab = true;
         _TextBox.Height = _TextBox.Font.Height + 4;
+        _TextBox.ForeColor = Color.Black;
+        _TextBox.BackColor = Color.White;
         Controls.Add(_TextBox);
 
-        _ModeLabel = new Label();
         _ModeLabel.Name = "CommandLine:ModeLabel";
         _ModeLabel.Dock = DockStyle.Left;
         _ModeLabel.Top = pad;
         _ModeLabel.Left = pad;
         _ModeLabel.Font = new Font("Arial", 14);
+        _ModeLabel.TextAlign = ContentAlignment.MiddleCenter;
         Controls.Add(_ModeLabel);
 
-        BackColor = Color.DarkGray;
         ClientSizeChanged += (_, _) =>
         {
             _TextBox.Width = Math.Max(300, Width / 4);
@@ -66,11 +73,6 @@ public class CommandLine : Panel
         UpdateMode(force: true);
 
         eventHub.Log += ListenLog;
-
-        GuiTool.Setup(this);
-        GuiTool.Setup(_StatusLabel);
-        GuiTool.Setup(_TextBox);
-        GuiTool.Setup(_ModeLabel);
     }
 
     public void SetEnabled(bool enabled)
@@ -94,7 +96,7 @@ public class CommandLine : Panel
     {
         _StatusLabel.Clear();
         _StatusLabel.AddText(" ");
-        _StatusLabel.AddText(System.DateTime.Now.ToShortTimeString(), Color.Gray);
+        _StatusLabel.AddText(System.DateTime.Now.ToShortTimeString(), GuiTool.ForeColorDisabled);
 
         switch (log.Type)
         {
@@ -108,7 +110,7 @@ public class CommandLine : Panel
         }
 
         _StatusLabel.AddText(" ");
-        _StatusLabel.AddText(log.Message, Color.Black);
+        _StatusLabel.AddText(log.Message, GuiTool.ForeColor);
     }
 
     public void PerformCommand()
@@ -181,21 +183,16 @@ public class CommandLine : Panel
         _IsTagMode = tagMode;
         if (_Enabled)
         {
+            _ModeLabel.BackColor = GuiTool.BackColorAlt;
             if (_IsTagMode)
-            {
-                _ModeLabel.BackColor = Color.Pink;
-                _ModeLabel.Text = "Tag";
-            }
+                _ModeLabel.Text = "TAG";
             else
-            {
-                _ModeLabel.BackColor = Color.LightGreen;
-                _ModeLabel.Text = "Filter";
-            }
+                _ModeLabel.Text = "FILTER";
         }
         else
         {
-            _ModeLabel.BackColor = Color.LightGray;
-            _ModeLabel.Text = "-";
+            _ModeLabel.BackColor = GuiTool.BackColorDisabled;
+            _ModeLabel.Text = "";
         }
     }
 

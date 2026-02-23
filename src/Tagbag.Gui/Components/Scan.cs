@@ -50,7 +50,7 @@ public class Scan : Control
     {
         var font = new Font(FontFamily.GenericMonospace, 14);
 
-        var basePlate = new Panel();
+        var basePlate = GuiTool.Setup(new Panel());
         basePlate.Width = 500;
         basePlate.Height = 500;
 
@@ -62,7 +62,7 @@ public class Scan : Control
         statusBox.ColumnCount = 2;
         statusBox.RowCount = 3;
 
-        var label = new Label();
+        var label = GuiTool.Setup(new Label());
         label.Text = "Status";
         label.Font = font;
         label.Width = 300;
@@ -70,7 +70,7 @@ public class Scan : Control
         _ProgressLabel.Font = font;
         statusBox.Controls.Add(_ProgressLabel);
 
-        label = new Label();
+        label = GuiTool.Setup(new Label());
         label.Text = "Problems found";
         label.Font = font;
         label.Width = 300;
@@ -78,7 +78,7 @@ public class Scan : Control
         _ProblemsFoundLabel.Font = font;
         statusBox.Controls.Add(_ProblemsFoundLabel);
 
-        label = new Label();
+        label = GuiTool.Setup(new Label());
         label.Text = "Problems fixed";
         label.Font = font;
         label.Width = 300;
@@ -88,7 +88,7 @@ public class Scan : Control
 
         basePlate.Controls.Add(statusBox);
 
-        var buttonRow = new Panel();
+        var buttonRow = GuiTool.Setup(new Panel());
         buttonRow.Dock = DockStyle.Top;
         buttonRow.Height = 40;
 
@@ -114,9 +114,11 @@ public class Scan : Control
 
     private void AdjustButtons()
     {
-        _ScanButton.Enabled = _Check == null || _Check.GetState() == Check.State.None;
-        _FixAllButton.Enabled = _Check?.GetProblems().Count > 0;
-        _StopButton.Enabled = _Check?.GetState() != Check.State.None;
+        var stopped = _Check == null || _Check.GetState() == Check.State.None;
+
+        _ScanButton.Enabled = stopped;
+        _FixAllButton.Enabled = stopped && _Check?.GetProblems().Count > 0;
+        _StopButton.Enabled = !stopped;
     }
 
     private void ReportChanged(bool force = false)
