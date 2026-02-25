@@ -100,6 +100,27 @@ public class EntryCollection
             SetCursor(index + offset);
     }
 
+    // Updates the cursor to point at an entry not present in toAvoid.
+    // Tries first to go forward then backwards.
+    public void RelocateCursor(HashSet<Guid> toAvoid)
+    {
+        var index = GetCursor() ?? 0;
+
+        for (int i = index; i < _Entries.Count; i++)
+            if (!toAvoid.Contains(_Entries[i].Id))
+            {
+                SetCursor(i);
+                return;
+            }
+
+        for (int i = index; i >= 0; i--)
+            if (!toAvoid.Contains(_Entries[i].Id))
+            {
+                SetCursor(i);
+                return;
+            }
+    }
+
     public void PushFilter(IFilter filter)
     {
         _Filters.Push(filter);

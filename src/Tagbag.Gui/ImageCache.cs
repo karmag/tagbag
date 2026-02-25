@@ -142,7 +142,8 @@ public class ImageCache
             {
                 var path = Tagbag.Core.TagbagUtil.GetPath(_Tagbag, entry.Path);
                 if (File.Exists(path))
-                    return new Bitmap(path);
+                    using (var stream = File.Open(path, FileMode.Open))
+                        return new Bitmap(stream);
             }
         }
         return null;

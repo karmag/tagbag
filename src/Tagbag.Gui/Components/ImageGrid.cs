@@ -46,6 +46,8 @@ public class ImageGrid : Control
 
         ResizeRedraw = true;
 
+        _EventHub.EntriesUpdated += ListenEntriesUpdated;
+
         _Active = false;
         SetActive(true);
 
@@ -199,14 +201,12 @@ public class ImageGrid : Control
             _Active = active;
             if (active)
             {
-                _EventHub.EntriesUpdated += ListenEntriesUpdated;
                 _EventHub.CursorMoved += ListenCursorMoved;
                 _EventHub.MarkedChanged += ListenMarkedChanged;
                 _EventHub.Send(new CursorMoved(_EntryCollection.GetCursor()));
             }
             else
             {
-                _EventHub.EntriesUpdated -= ListenEntriesUpdated;
                 _EventHub.CursorMoved -= ListenCursorMoved;
                 _EventHub.MarkedChanged -= ListenMarkedChanged;
             }

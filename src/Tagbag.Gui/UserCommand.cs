@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using Tagbag.Core;
 
@@ -158,6 +159,43 @@ public static class UserCommand
         {
             data.CommandLine.SetEnabled(true);
             data.CommandLine.Focus();
+        }
+    }
+
+    public static void DeleteEntry(Data data)
+    {
+        var entries = new HashSet<Guid>(data.EntryCollection.GetMarked());
+        if (entries.Count == 0)
+            if (data.EntryCollection.GetEntryAtCursor() is Entry entry)
+                entries = new HashSet<Guid>([entry.Id]);
+
+        if (entries.Count == 0)
+            return;
+
+        if (data.ActionRepeatCount == 0)
+        {
+            data.EventHub.Send(new Log(LogType.Info, "Press again to confirm delete"));
+        }
+        else
+        {
+            // Remove entries and the corresponding files
+            foreach (var id in entries)
+            {
+                if (data.Tagbag?.Get(id) is Entry entry)
+                {
+                    TagbagUtil.MoveToTrash(data.Tagbag, entry);
+                    data.Tagbag.Remove(entry.Id);
+                }
+            }
+
+            data.EntryCollection.RelocateCursor(entries);
+            data.EntryCollection.SetBaseEntries(data.Tagbag?.GetEntries());
+            data.EntryCollection.ClearMarked();
+
+            var msg = $"Deleted {entries.Count} entries";
+            if (entries.Count == 1)
+                msg = "Deleted selected entry";
+            data.EventHub.Send(new Log(LogType.Info, msg));
         }
     }
 }

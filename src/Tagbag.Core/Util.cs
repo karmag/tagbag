@@ -1,3 +1,4 @@
+using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -95,5 +96,14 @@ public static class TagbagUtil
     public static bool IsKnownFileExtension(string path)
     {
         return KnownFileExtensions.Contains(Path.GetExtension(path).ToLower());
+    }
+
+    public static void MoveToTrash(Tagbag tb, Entry entry)
+    {
+        var path = GetPath(tb, entry.Path);
+        if (File.Exists(path))
+            FileSystem.DeleteFile(path,
+                                  UIOption.OnlyErrorDialogs,
+                                  RecycleOption.SendToRecycleBin);
     }
 }

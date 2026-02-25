@@ -1,4 +1,3 @@
-using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -702,9 +701,7 @@ public class DuplicateFiles : AbstractProblem
                 }
             }
 
-            FileSystem.DeleteFile(TagbagUtil.GetPath(fix.GetTagbag(), other.Path),
-                                  UIOption.OnlyErrorDialogs,
-                                  RecycleOption.SendToRecycleBin);
+            TagbagUtil.MoveToTrash(fix.GetTagbag(), other);
 
             fix.UpdateTagbag((tb) => tb.Remove(other.Id));
         }

@@ -249,6 +249,8 @@ public class Root : Form
         def(new ActionDef("scroll/bottom", (data) => data.EntryCollection.MoveCursor(1000000)));
 
         def(new ActionDef("filter/pop", UserCommand.PopFilter));
+
+        def(new ActionDef("entry/delete", UserCommand.DeleteEntry));
     }
 
     public static void SetupKeyMap(KeyMap keyMap)
@@ -304,6 +306,8 @@ public class Root : Form
 
             add(new KeyData(mode, Keys.Alt | Keys.Home, "scroll/top"));
             add(new KeyData(mode, Keys.Alt | Keys.End, "scroll/bottom"));
+
+            add(new KeyData(mode, Keys.Control | Keys.D, "entry/delete"));
         }
 
         // Grid mode
@@ -369,6 +373,14 @@ public class Root : Form
         System.Console.WriteLine($"{ActiveControl?.Name} --- {e.KeyData}");
         if (_Data.KeyMap.Get(e.KeyData) is KeyData keyData)
         {
+            if (_Data.LastActionId == keyData.ActionId)
+                _Data.ActionRepeatCount++;
+            else
+            {
+                _Data.LastActionId = keyData.ActionId;
+                _Data.ActionRepeatCount = 0;
+            }
+
             if (keyData.IsValid?.Invoke(_Data) ?? true)
             {
                 e.SuppressKeyPress = true;

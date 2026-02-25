@@ -12,6 +12,11 @@ public class Data
 
     public KeyMap KeyMap;
 
+    public string? LastActionId; // Internal helper variable
+    // Variable for use by actions that want to make decisions based
+    // on repeated action.
+    public int ActionRepeatCount;
+
     public Components.CardPanel MainView;
 
     public Components.TagTable TagTable;
