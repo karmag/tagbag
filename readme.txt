@@ -97,6 +97,7 @@ Grid keys
  |                         | Alt + Right         |                     |
  | cursor/up               | Up                  | Alt + Up            |
  |                         | Alt + Up            |                     |
+ | entry/delete            | Control + D         | Control + D         |
  | filter/pop              | Escape              | Escape              |
  | mark-and-move/down      | Shift + Down        | Shift + Alt + Down  |
  |                         | Shift + Alt + Down  |                     |
@@ -132,7 +133,9 @@ Grid keys
  | scroll/bottom           | End                 | Alt + End           |
  |                         | Alt + End           |                     |
  | scroll/page-down        | Next                | Next                |
+ |                         | Alt + Next          | Alt + Next          |
  | scroll/page-up          | PageUp              | PageUp              |
+ |                         | Alt + PageUp        | Alt + PageUp        |
  | scroll/top              | Home                | Alt + Home          |
  |                         | Alt + Home          |                     |
  +-------------------------+---------------------+---------------------+
@@ -153,6 +156,7 @@ Single keys
  |                         | Alt + Right         |                     |
  | cursor/up               | Up                  | Alt + Up            |
  |                         | Alt + Up            |                     |
+ | entry/delete            | Control + D         | Control + D         |
  | filter/pop              | Escape              | Escape              |
  | mark-and-move/down      | Shift + Down        | Shift + Alt + Down  |
  |                         | Shift + Alt + Down  |                     |
@@ -173,7 +177,9 @@ Single keys
  | scroll/bottom           | End                 | Alt + End           |
  |                         | Alt + End           |                     |
  | scroll/page-down        | Next                | Next                |
+ |                         | Alt + Next          | Alt + Next          |
  | scroll/page-up          | PageUp              | PageUp              |
+ |                         | Alt + PageUp        | Alt + PageUp        |
  | scroll/top              | Home                | Alt + Home          |
  |                         | Alt + Home          |                     |
  +-------------------------+---------------------+---------------------+

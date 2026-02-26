@@ -323,14 +323,8 @@ public class Root : Form
                                          [Keys.Z, Keys.X, Keys.C, Keys.V, Keys.B]];
 
             for (int y = 0; y < gridKeys.Count; y++)
-            {
                 for (int x = 0; x < gridKeys[y].Count; x++)
-                {
-                    int staticX = x;
-                    int staticY = y;
                     add(new KeyData(mode, Keys.Alt | gridKeys[y][x], $"mark/grid-{x}-{y}"));
-                }
-            }
         }
 
         // Single mode

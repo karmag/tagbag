@@ -215,7 +215,7 @@ public class ImageGrid : Control
 
     public Entry? GetEntryAt(int x, int y)
     {
-        if (x < _Rows && y < _Columns)
+        if (x < _Columns && y < _Rows)
             return _EntryCollection.Get(_IndexOffset + x + y * _Columns);
         return null;
     }
