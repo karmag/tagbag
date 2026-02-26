@@ -301,6 +301,8 @@ public class Root : Form
 
             add(new KeyData(mode, Keys.PageUp, "scroll/page-up"));
             add(new KeyData(mode, Keys.PageDown, "scroll/page-down"));
+            add(new KeyData(mode, Keys.Alt | Keys.PageUp, "scroll/page-up"));
+            add(new KeyData(mode, Keys.Alt | Keys.PageDown, "scroll/page-down"));
 
             add(new KeyData(mode, Keys.Escape, "filter/pop"));
 
