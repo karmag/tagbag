@@ -6,10 +6,12 @@ namespace Tagbag.Gui.Components;
 public class CardPanel : Panel
 {
     private Dictionary<int, Control> _Controls;
+    private int _Current;
 
     public CardPanel()
     {
         _Controls = new Dictionary<int, Control>();
+        _Current = int.MinValue;
         GuiTool.Setup(this);
     }
 
@@ -25,11 +27,20 @@ public class CardPanel : Panel
         Control? ctrl;
         if (_Controls.TryGetValue(id, out ctrl))
         {
-            Controls.Clear();
-            Controls.Add(ctrl);
-            return true;
+            if (_Current != id)
+            {
+                _Current = id;
+                Controls.Clear();
+                Controls.Add(ctrl);
+                return true;
+            }
         }
 
         return false;
+    }
+
+    public int GetCurrent()
+    {
+        return _Current;
     }
 }

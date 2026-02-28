@@ -7,7 +7,7 @@ public class ImagePanel : Panel
 {
     private EntryCollection _EntryCollection;
 
-    public ImageGrid ImageGrid;
+    private ImageGrid ImageGrid;
     private ImageView ImageView;
     private bool _GridMode = false;
 

@@ -138,6 +138,7 @@ Grid keys
  |                         | Alt + PageUp        | Alt + PageUp        |
  | scroll/top              | Home                | Alt + Home          |
  |                         | Alt + Home          |                     |
+ | swap-tag-view           | Control + T         | Control + T         |
  +-------------------------+---------------------+---------------------+
 
 Single keys
@@ -182,4 +183,5 @@ Single keys
  |                         | Alt + PageUp        | Alt + PageUp        |
  | scroll/top              | Home                | Alt + Home          |
  |                         | Alt + Home          |                     |
+ | swap-tag-view           | Control + T         | Control + T         |
  +-------------------------+---------------------+---------------------+

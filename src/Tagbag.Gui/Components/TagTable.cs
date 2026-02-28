@@ -10,6 +10,8 @@ namespace Tagbag.Gui.Components;
 public class TagTable : Panel
 {
     private Entry? _Entry;
+    private EventHub _EventHub;
+    private EntryCollection _EntryCollection;
     private ImageCache _ImageCache;
 
     private PictureBox _Picture;
@@ -18,9 +20,14 @@ public class TagTable : Panel
     private Label _SizeLabel;
     private DataGridView _Tags;
 
+    private bool _Active;
+
     public TagTable(EventHub eventHub,
+                    EntryCollection entryCollection,
                     ImageCache imageCache)
     {
+        _EventHub = eventHub;
+        _EntryCollection = entryCollection;
         _ImageCache = imageCache;
 
         _Picture = new PictureBox();
@@ -28,6 +35,8 @@ public class TagTable : Panel
         _DimensionsLabel = new Label();
         _SizeLabel = new Label();
         _Tags = new DataGridView();
+
+        _Active = false;
 
         GuiTool.Setup(this);
         GuiTool.Setup(_Picture);
@@ -37,15 +46,29 @@ public class TagTable : Panel
         GuiTool.Setup(_Tags);
 
         LayoutComponents();
-
-        ClientSizeChanged += (_, _) => {
-            _Picture.Width = Width;
-            _Picture.Height = (int)(Width * 0.7);
-        };
-        eventHub.ShowEntry += (ev) => { ListenShowEntry(ev); };
+        SetActive(true);
     }
 
-    public void LayoutComponents()
+    public void SetActive(bool active)
+    {
+        if (active != _Active)
+        {
+            _Active = active;
+            if (active)
+            {
+                ClientSizeChanged += ListenClientSizeChanged;
+                _EventHub.ShowEntry += ListenShowEntry;
+                SetEntry(_EntryCollection.GetEntryAtCursor());
+            }
+            else
+            {
+                ClientSizeChanged -= ListenClientSizeChanged;
+                _EventHub.ShowEntry -= ListenShowEntry;
+            }
+        }
+    }
+
+    private void LayoutComponents()
     {
         var font = new Font("Arial", 14);
         var smallFont = new Font("Arial", 10);
@@ -218,6 +241,12 @@ public class TagTable : Panel
     public void RefreshEntry()
     {
         SetEntry(_Entry);
+    }
+
+    private void ListenClientSizeChanged(object? _, EventArgs __)
+    {
+        _Picture.Width = Width;
+        _Picture.Height = (int)(Width * 0.7);
     }
 
     private void ListenShowEntry(ShowEntry ev)

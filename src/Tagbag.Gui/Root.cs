@@ -94,15 +94,11 @@ public class Root : Form
         split.Width = 5;
         TagView.Controls.Add(split);
 
-        var ttPanel = new Panel();
-        GuiTool.Setup(ttPanel);
-        ttPanel.Name = "TagTablePanel";
-        ttPanel.Padding = new Padding(pad);
-        ttPanel.Dock = DockStyle.Left;
-        data.TagTable.Name = "TagTable";
-        data.TagTable.Dock = DockStyle.Fill;
-        ttPanel.Controls.Add(data.TagTable);
-        TagView.Controls.Add(ttPanel);
+        data.TagPanel.Name = "TagPanel";
+        data.TagPanel.Dock = DockStyle.Left;
+        data.TagPanel.Padding = new Padding(pad);
+        data.TagPanel.Width = 300;
+        TagView.Controls.Add(data.TagPanel);
 
         data.StatusBar.Name = "StatusBar";
         data.StatusBar.Dock = DockStyle.Top;
@@ -210,6 +206,8 @@ public class Root : Form
 
         def(new ActionDef("press-enter", UserCommand.PressEnter));
 
+        def(new ActionDef("swap-tag-view", (data) => data.TagPanel.Swap()));
+
         def(new ActionDef("copy-image-to-clipboard", UserCommand.CursorImageToClipboard));
         def(new ActionDef("copy-path-to-clipboard", UserCommand.CursorPathToClipboard));
 
@@ -310,6 +308,8 @@ public class Root : Form
             add(new KeyData(mode, Keys.Alt | Keys.End, "scroll/bottom"));
 
             add(new KeyData(mode, Keys.Control | Keys.D, "entry/delete"));
+
+            add(new KeyData(mode, Keys.Control | Keys.T, "swap-tag-view"));
         }
 
         // Grid mode

@@ -19,7 +19,7 @@ public class Data
 
     public Components.CardPanel MainView;
 
-    public Components.TagTable TagTable;
+    public Components.TagPanel TagPanel;
     public Components.ImagePanel ImagePanel;
     public Components.CommandLine CommandLine;
     public Components.StatusBar StatusBar;
@@ -40,7 +40,7 @@ public class Data
 
         MainView = new Components.CardPanel();
 
-        TagTable = new Components.TagTable(EventHub, ImageCache);
+        TagPanel = new Components.TagPanel(EventHub, EntryCollection, ImageCache);
         ImagePanel = new Components.ImagePanel(EventHub, EntryCollection, ImageCache);
         CommandLine = new Components.CommandLine(EventHub);
         StatusBar = new Components.StatusBar(EventHub, EntryCollection, ImagePanel);
