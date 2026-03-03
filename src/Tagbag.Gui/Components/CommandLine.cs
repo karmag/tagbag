@@ -183,11 +183,16 @@ public class CommandLine : Panel
         _IsTagMode = tagMode;
         if (_Enabled)
         {
-            _ModeLabel.BackColor = GuiTool.BackColorAlt;
             if (_IsTagMode)
+            {
                 _ModeLabel.Text = "TAG";
+                _ModeLabel.BackColor = GuiTool.BackColorTag;
+            }
             else
+            {
                 _ModeLabel.Text = "FILTER";
+                _ModeLabel.BackColor = GuiTool.BackColorFilter;
+            }
         }
         else
         {
