@@ -18,6 +18,7 @@ public static class UserCommand
                 break;
 
             case Mode.ApplicationMode.Scan:
+            case Mode.ApplicationMode.ScanDuplicate:
                 break;
         }
 

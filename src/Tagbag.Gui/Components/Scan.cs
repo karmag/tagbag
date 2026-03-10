@@ -4,7 +4,7 @@ using Tagbag.Core;
 
 namespace Tagbag.Gui.Components;
 
-public class Scan : Control
+public class Scan : Panel
 {
     private Data _Data;
 

@@ -29,8 +29,11 @@ public class TagbagTestHelper
 
         if (item.Image)
         {
-            Bitmap image = new Bitmap(50, 50);
-            using (Graphics g = Graphics.FromImage(image))
+            Bitmap image;
+
+            if (item.ImageGenerator is Func<Bitmap> gen)
+                image = gen();
+            else
             {
                 Color color = Color.FromArgb(_Counter++ % 255,
                                              (_Counter++ * 7) % 255,
@@ -41,9 +44,9 @@ public class TagbagTestHelper
                                            (item.ImageSeed * 463) % 255,
                                            (item.ImageSeed * 877) % 255);
 
-                g.FillRectangle(new SolidBrush(color),
-                                0, 0, image.Width, image.Height);
+                image = MakeImage(50, 50, color);
             }
+
             image.Save(TagbagUtil.GetPath(_Tagbag, item.Path));
         }
 
@@ -57,11 +60,46 @@ public class TagbagTestHelper
                 TagbagUtil.PopulateImageTags(_Tagbag, entry);
             }
 
+            if (item.Tags is Object?[][] kvArgs)
+                Tester.AddTags(entry, kvArgs);
+
             _Tagbag.Add(entry);
             return entry.Id;
         }
 
         return null;
+    }
+
+    public static Bitmap MakeImage(int w, int h, Color color)
+    {
+        var image = new Bitmap(w, h);
+        using (Graphics g = Graphics.FromImage(image))
+        {
+            g.FillRectangle(new SolidBrush(color), 0, 0, w, h);
+        }
+        return image;
+    }
+
+    // Returns an image that is w * (h * totalWeight) large. Each
+    // color is present to a degree related to its weight.
+    public static Bitmap MakeImageWeighted(int w, int h, params (int, Color)[] colorWeights)
+    {
+        var totalWeight = 0;
+        foreach (var cw in colorWeights)
+            totalWeight += cw.Item1;
+
+        var image = new Bitmap(w * totalWeight, h);
+        using (Graphics g = Graphics.FromImage(image))
+        {
+            var counter = 0;
+            foreach (var cw in colorWeights)
+            {
+                g.FillRectangle(new SolidBrush(cw.Item2),
+                                counter * w, 0, w * cw.Item1, h);
+                counter += cw.Item1;
+            }
+        }
+        return image;
     }
 }
 
@@ -72,6 +110,8 @@ public class Item
     public bool Image = true;
     public bool PopulateTags = true;
     public int ImageSeed = -1;
+    public Func<Bitmap>? ImageGenerator;
+    public Object?[][]? Tags;
 
     public Item() { }
 
@@ -92,4 +132,8 @@ public class Item
     // image. If seed is not set a random image will be generated for
     // the entry.
     public Item Seed(int seed) { ImageSeed = seed; return this; }
+
+    public Item WithGen(Func<Bitmap> gen) { ImageGenerator = gen; return this; }
+
+    public Item WithTags(params Object?[][] kvArgs) { Tags = kvArgs; return this; }
 }

@@ -115,6 +115,9 @@ public class Root : Form
         data.Scan.Dock = DockStyle.Fill;
         data.MainView.Add((int)Mode.ApplicationMode.Scan, data.Scan);
 
+        data.ScanDuplicate.Dock = DockStyle.Fill;
+        data.MainView.Add((int)Mode.ApplicationMode.ScanDuplicate, data.ScanDuplicate);
+
         data.MainView.Dock = DockStyle.Fill;
         Controls.Add(data.MainView);
 
@@ -201,6 +204,7 @@ public class Root : Form
         def(new ActionDef("mode/grid", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Grid))));
         def(new ActionDef("mode/single", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Single))));
         def(new ActionDef("mode/scan", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Scan))));
+        def(new ActionDef("mode/scan-duplicate", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.ScanDuplicate))));
         def(new ActionDef("mode/browse", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.InputMode.Browse))));
         def(new ActionDef("mode/command", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.InputMode.Command))));
 
@@ -269,6 +273,7 @@ public class Root : Form
 
         add(new KeyData(null, Keys.F1, "mode/grid"));
         add(new KeyData(null, Keys.F2, "mode/scan"));
+        add(new KeyData(null, Keys.F3, "mode/scan-duplicate"));
 
         // All image modes
 

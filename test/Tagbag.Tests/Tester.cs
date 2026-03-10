@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Tagbag.Core;
 
 namespace Tagbag.Tests;
@@ -10,7 +9,12 @@ public static class Tester
     public static Entry Entry(params Object?[][] kvArgs)
     {
         var entry = new Entry("a");
+        AddTags(entry, kvArgs);
+        return entry;
+    }
 
+    public static void AddTags(Entry entry, params Object?[][] kvArgs)
+    {
         foreach (var kv in kvArgs)
         {
             if (kv[0] is string k)
@@ -35,8 +39,6 @@ public static class Tester
                 throw new ArgumentException($"Keys must be strings: {kv[0]}");
             }
         }
-
-        return entry;
     }
 
     public static void AssertTagsMatch(Entry entry, params Object?[][] kvArgs)

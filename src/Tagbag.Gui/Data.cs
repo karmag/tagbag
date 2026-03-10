@@ -25,6 +25,7 @@ public class Data
     public Components.StatusBar StatusBar;
 
     public Components.Scan Scan;
+    public Components.ScanDuplicate ScanDuplicate;
 
     public Data()
     {
@@ -46,6 +47,7 @@ public class Data
         StatusBar = new Components.StatusBar(EventHub, EntryCollection, ImagePanel);
 
         Scan = new Components.Scan(this);
+        ScanDuplicate = new Components.ScanDuplicate(this);
     }
 
     public void SetTagbag(Tagbag.Core.Tagbag? tb)
@@ -68,6 +70,7 @@ public class Mode
         Grid = 1 << 2,
         Single = 1 << 3,
         Scan = 1 << 4,
+        ScanDuplicate = 1 << 5,
     }
 
     public enum InputMode
@@ -132,6 +135,9 @@ public class Mode
                 break;
             case ApplicationMode.Scan:
                 result = "Scan";
+                break;
+            case ApplicationMode.ScanDuplicate:
+                result = "ScanDuplicate";
                 break;
         }
 

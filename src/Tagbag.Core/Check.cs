@@ -365,10 +365,13 @@ public class Check
 
     private void Check_MissingsDefaultTags()
     {
+        var tags = new HashSet<string>(Const.BuiltinTags);
+        tags.Remove(Const.ColorHash);
+
         var missing = new List<string>();
         foreach (var entry in _Tagbag.GetEntries())
         {
-            foreach (var tag in Const.BuiltinTags)
+            foreach (var tag in tags)
                 if (entry.Get(tag) == null)
                     missing.Add(tag);
 
@@ -686,20 +689,7 @@ public class DuplicateFiles : AbstractProblem
 
         foreach (var other in entries)
         {
-            foreach (var key in other.GetAllTags())
-            {
-                if (other.Get(key) is Value val)
-                {
-                    if (val.IsTag())
-                        master.Add(key);
-
-                    foreach (var i in val.GetInts() ?? [])
-                        master.Add(key, i);
-
-                    foreach (var s in val.GetStrings() ?? [])
-                        master.Add(key, s);
-                }
-            }
+            master.CopyTagsFrom(other);
 
             TagbagUtil.MoveToTrash(fix.GetTagbag(), other);
 

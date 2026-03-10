@@ -11,9 +11,10 @@ public static class Const
     public const string Height = "height";
     public const string Size = "filesize";
     public const string Hash = "hash/sha256";
+    public const string ColorHash = "hash/color";
 
     public static IReadOnlySet<string> BuiltinTags =
-        new HashSet<string>(new string[]{Width, Height, Size, Hash});
+        new HashSet<string>(new string[]{Width, Height, Size, Hash, ColorHash});
 }
 
 public class Tagbag
@@ -229,9 +230,65 @@ public class Entry
     public HashSet<string>? GetStrings(string tag) { return GetEx(tag)?.GetStrings(); }
     public HashSet<int>? GetInts(string tag)       { return GetEx(tag)?.GetInts(); }
 
+    // Returns the int value, if any. If no value is present returns
+    // otherwise. If multiple values are present fold through f to
+    // determine which to return.
+    public int GetIntBy(string tag,
+                        Func<int, int, int> f,
+                        int otherwise = 0)
+    {
+        var ints = GetInts(tag) ?? [];
+        switch (ints.Count)
+        {
+            case 0:
+                return otherwise;
+            case 1:
+                foreach (var i in ints)
+                    return i;
+                break;
+            default:
+                var acc = 0;
+                var first = true;
+                foreach (var i in ints)
+                {
+                    if (first)
+                    {
+                        acc = i;
+                        first = false;
+                    }
+                    else
+                    {
+                        acc = f(acc, i);
+                    }
+                }
+                return acc;
+        }
+        return default;
+    }
+
     public IEnumerable<string> GetAllTags()
     {
         return Tags.Keys;
+    }
+
+    // Copies all non-built-in tags from other into this entry.
+    public void CopyTagsFrom(Entry other)
+    {
+        foreach (var key in other.GetAllTags())
+        {
+            if (!Const.BuiltinTags.Contains(key) &&
+                other.Get(key) is Value val)
+            {
+                if (val.IsTag())
+                    Add(key);
+
+                foreach (var i in val.GetInts() ?? [])
+                    Add(key, i);
+
+                foreach (var s in val.GetStrings() ?? [])
+                    Add(key, s);
+            }
+        }
     }
 }
 
