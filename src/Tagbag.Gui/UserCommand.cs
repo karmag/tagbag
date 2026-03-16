@@ -197,6 +197,8 @@ public static class UserCommand
             if (entries.Count == 1)
                 msg = "Deleted selected entry";
             data.EventHub.Send(new Log(LogType.Info, msg));
+
+            data.ClearActionRepeat();
         }
     }
 }

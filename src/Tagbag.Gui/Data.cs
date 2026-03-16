@@ -61,6 +61,12 @@ public class Data
 
         EventHub.Send(new TagbagFileSet(tb));
     }
+
+    public void ClearActionRepeat()
+    {
+        LastActionId = null;
+        ActionRepeatCount = 0;
+    }
 }
 
 public class Mode
