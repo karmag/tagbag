@@ -328,19 +328,4 @@ public class FilterBuilder
 
         throw new BuildException("Unknown value type").With(c);
     }
-
-    /*
-      a
-      not a
-      a and b
-      a or not b and c
-      tag value     :: tag = value
-      a = 10        :: tag has value
-      a = hello     :: -"-
-      a ~= "regexp" :: regexp found in string value
-      a = (b c d)   :: at least one of the values match
-      a == (b c d)  :: all of the values match
-
-      a == (b c) and not tag value or q
-    */
 }

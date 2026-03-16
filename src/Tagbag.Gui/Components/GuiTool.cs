@@ -16,6 +16,7 @@ public static class GuiTool
 
     public static Color BackColorTag = ColorTranslator.FromHtml("#550000");
     public static Color BackColorFilter = ColorTranslator.FromHtml("#002255");
+    public static Color BackColorCommand = ColorTranslator.FromHtml("#555500");
 
     public static Control Setup(Control control)
     {

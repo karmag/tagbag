@@ -188,6 +188,13 @@ public class EntryCollection
         _EventHub.Send(new MarkedChanged());
     }
 
+    public void SetSorting(Comparison<Entry> comparison)
+    {
+        _SortOrder = comparison;
+        _BaseEntries.Sort(_SortOrder);
+        RefreshEntries();
+    }
+
     private void RefreshEntries()
     {
         var cursorId = GetEntryAtCursor()?.Id;

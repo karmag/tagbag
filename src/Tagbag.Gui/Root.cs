@@ -40,6 +40,7 @@ public class Root : Form
 
         _Data.EventHub.FilterCommand += ListenFilterCommand;
         _Data.EventHub.TagCommand += ListenTagCommand;
+        _Data.EventHub.DataActionCommand += ListenDataActionCommand;
         _Data.EventHub.TagbagFileSet += ListenTagbagFileSet;
 
         SetupActionDefinitions(_Data.KeyMap);
@@ -423,6 +424,12 @@ public class Root : Form
         }
 
         _Data.EventHub.Send(new ShowEntry(atCursor));
+    }
+
+    private void ListenDataActionCommand(DataActionCommand ev)
+    {
+        _Data.EventHub.Send(new Log(LogType.Info, ev.DataAction.ToString() ?? ""));
+        ev.DataAction.GetAction().Invoke(_Data);
     }
 
     private void ListenTagbagFileSet(TagbagFileSet ev)

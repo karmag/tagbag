@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Tagbag.Core;
+using Tagbag.Gui.Components;
 
 namespace Tagbag.Gui;
 
@@ -21,6 +22,7 @@ public class EventHub
 
     public Action<FilterCommand>? FilterCommand;
     public Action<TagCommand>? TagCommand;
+    public Action<DataActionCommand>? DataActionCommand;
 
     public Action<ViewChanged>? ViewChanged;
 
@@ -73,6 +75,7 @@ public class EventHub
 
             case FilterCommand e: FilterCommand?.Invoke(e); break;
             case TagCommand e: TagCommand?.Invoke(e); break;
+            case DataActionCommand e: DataActionCommand?.Invoke(e); break;
 
             case ViewChanged e: ViewChanged?.Invoke(e); break;
 
@@ -104,6 +107,7 @@ public record MarkedChanged() : Event();
 
 public record FilterCommand(IFilter Filter) : Event();
 public record TagCommand(ITagOperation Operation) : Event();
+public record DataActionCommand(IDataAction DataAction) : Event();
 
 // The entries in view has changed. StartIndex is the index in
 // EntryCollection with the first visible entry. VisibleItems is the
