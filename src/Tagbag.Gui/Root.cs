@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 using System.Windows.Input;
 using Tagbag.Core;
@@ -45,14 +46,38 @@ public class Root : Form
 
         SetupActionDefinitions(_Data.KeyMap);
         SetupKeyMap(_Data.KeyMap);
-        _Data.SetTagbag(GetInitialTagbag());
+
+        Initialize();
     }
 
-    private Tagbag.Core.Tagbag? GetInitialTagbag()
+    private void Initialize()
     {
-        var args = Environment.GetCommandLineArgs();
+        string? userPath = null;
 
-        if (args.Length <= 1)
+        var args = Environment.GetCommandLineArgs();
+        switch (args.Length)
+        {
+            case 1:
+                break;
+            case 2:
+                userPath = Path.GetFullPath(args[1]);
+                break;
+            default:
+                throw new Exception($"Tagbag takes 1 optional argument, got {args.Length}");
+        }
+
+        System.Console.WriteLine($"Program root: {Directory.GetCurrentDirectory()}");
+        System.Console.WriteLine($"User path   : {userPath ?? "<null>"}");
+
+        var tagbag = GetInitialTagbag(userPath);
+        _Data.SetTagbag(tagbag);
+
+        SelectStartingFilters(userPath);
+    }
+
+    private Tagbag.Core.Tagbag? GetInitialTagbag(string? userPath)
+    {
+        if (userPath == null)
         {
             try {
                 return Tagbag.Core.Tagbag.Open(null);
@@ -61,18 +86,33 @@ public class Root : Form
             }
             return null;
         }
-        else if (args.Length == 2)
+        else
         {
-            var path = Tagbag.Core.Tagbag.Locate(args[1]);
+            var path = Tagbag.Core.Tagbag.Locate(userPath);
             if (path == null)
                 path = Tagbag.Core.Tagbag.Locate(null);
             if (path == null)
                 return null;
             return Tagbag.Core.Tagbag.Open(path);
         }
-        else
+    }
+
+    // Setup a filter to show entries in the current directory if
+    // current directory is a sub-directory of the current Tagbag
+    // file. For use when starting the program.
+    private void SelectStartingFilters(string? userPath)
+    {
+        if (_Data.Tagbag != null)
         {
-            throw new ArgumentException($"Multiple command line arguments: [{String.Join(", ", args)}]");
+            var wanted = userPath ?? Path.GetFullPath(Directory.GetCurrentDirectory());
+            var tbRoot = Path.GetFullPath(TagbagUtil.GetRootDirectory(_Data.Tagbag));
+
+            if (wanted.StartsWith(tbRoot) && wanted != tbRoot)
+            {
+                var path = wanted.Substring(tbRoot.Length + 1);
+                _Data.EventHub.Send(
+                    new FilterCommand(Filter.Regex("path", "^" + path)));
+            }
         }
     }
 
