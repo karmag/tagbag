@@ -66,6 +66,7 @@ public static class GuiTool
         Setup((Control)table);
         table.DefaultCellStyle.BackColor = table.BackColor;
         table.DefaultCellStyle.ForeColor = table.ForeColor;
+        table.ShowCellToolTips = false;
     }
 
     private static void ForceInput(object? _, PreviewKeyDownEventArgs args)
