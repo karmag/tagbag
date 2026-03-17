@@ -228,16 +228,16 @@ public class DuplicationDetection
                                        int startIndex,
                                        int threshold)
     {
-        for (int one = startIndex; one < data.Count; one++)
-            for (int two = one + 1; two < data.Count; two++)
-                if (data[one].Item2.GetAbsoluteDistance(data[two].Item2) <= threshold)
-                {
-                    lock (data[one].Item1)
-                        data[one].Item1.Add(MatchTag, one);
+        var primary = data[startIndex];
+        for (int i = startIndex + 1; i < data.Count; i++)
+            if (primary.Item2.GetAbsoluteDistance(data[i].Item2) <= threshold)
+            {
+                lock (primary.Item1)
+                    primary.Item1.Add(MatchTag, startIndex);
 
-                    lock (data[two].Item1)
-                        data[two].Item1.Add(MatchTag, one);
-                }
+                lock (data[i].Item1)
+                    data[i].Item1.Add(MatchTag, startIndex);
+            }
     }
 
     // Merges duplicate entries by deleting all but one of them.
