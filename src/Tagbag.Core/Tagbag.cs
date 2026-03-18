@@ -7,6 +7,7 @@ namespace Tagbag.Core;
 public static class Const
 {
     public const string Filename = ".tagbag";
+
     public const string Width = "width";
     public const string Height = "height";
     public const string Size = "filesize";
@@ -264,6 +265,39 @@ public class Entry
                 return acc;
         }
         return default;
+    }
+
+    // Meta tags are tags that provide information about an entry but
+    // are not stored as regular tags and can't be changed. Tags with
+    // the same name may be added but they have no impact on meta
+    // tags.
+    public Value? GetMeta(string tag)
+    {
+        Value? val = null;
+
+        switch (tag)
+        {
+            case "uuid":
+                val = new Value();
+                val.Add(Id.ToString());
+                break;
+
+            case "path":
+                val = new Value();
+                val.Add(Path);
+                break;
+
+            case "tag-count":
+                var count = 0;
+                foreach (var t in GetAllTags())
+                    if (!Const.BuiltinTags.Contains(t))
+                        count++;
+                val = new Value();
+                val.Add(count);
+                break;
+        }
+
+        return val;
     }
 
     public IEnumerable<string> GetAllTags()

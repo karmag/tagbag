@@ -39,8 +39,9 @@ public class Filter
                 if (f(s))
                     return true;
 
-            if (_tag == "path")
-                return f(entry.Path);
+            foreach (var s in entry.GetMeta(_tag)?.GetStrings() ?? [])
+                if (f(s))
+                    return true;
 
             return false;
         }
@@ -51,14 +52,9 @@ public class Filter
                 if (f(i))
                     return true;
 
-            if (_tag == "tag-count")
-            {
-                var count = 0;
-                foreach (var tag in entry.GetAllTags())
-                    if (!Const.BuiltinTags.Contains(tag))
-                        count++;
-                return f(count);
-            }
+            foreach (var i in entry.GetMeta(_tag)?.GetInts() ?? [])
+                if (f(i))
+                    return true;
 
             return false;
         }

@@ -368,6 +368,15 @@ public static class CommandBuilder
         {
             var aInt = a.GetIntBy(tag, int.Min, defaultInt);
             var bInt = b.GetIntBy(tag, int.Min, defaultInt);
+
+            if (a.GetMeta(tag) is Value aVal)
+                foreach (var i in aVal.GetInts() ?? [])
+                    aInt = int.Min(aInt, i);
+
+            if (b.GetMeta(tag) is Value bVal)
+                foreach (var i in bVal.GetInts() ?? [])
+                    bInt = int.Min(bInt, i);
+
             if (aInt < bInt)
                 return a_smaller;
             if (aInt > bInt)
@@ -378,8 +387,8 @@ public static class CommandBuilder
         if (command == "sort-str")
             comp = (a, b) =>
             {
-                var aSet = a.GetStrings(tag);
-                var bSet = b.GetStrings(tag);
+                var aSet = a.GetStrings(tag) ?? a.GetMeta(tag)?.GetStrings();
+                var bSet = b.GetStrings(tag) ?? b.GetMeta(tag)?.GetStrings();
                 if (aSet == null && bSet == null)
                     return 0;
                 if (aSet == null)
