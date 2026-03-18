@@ -205,11 +205,14 @@ public class Root : Form
 
         var vImages = new ToolStripMenuItem("Images");
         var vScan = new ToolStripMenuItem("Scan");
+        var vDuplicate = new ToolStripMenuItem("Find duplicates");
         viewMenu.DropDownItems.Add(vImages);
         viewMenu.DropDownItems.Add(vScan);
+        viewMenu.DropDownItems.Add(vDuplicate);
 
         vImages.Command = new Button(() => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Grid)) );
         vScan.Command = new Button(() => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Scan)) );
+        vDuplicate.Command = new Button(() => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.ScanDuplicate)));
 
         // help
 
