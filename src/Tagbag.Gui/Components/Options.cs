@@ -21,7 +21,7 @@ public class Options : Panel
 
     private void LayoutComponents()
     {
-        var values = new List<ConfigValue<int>>(_Config.GetValues());
+        var values = new List<ConfigValue>(_Config.GetValues());
         var font = new Font(FontFamily.GenericMonospace, 14);
         const int height = 30;
 
@@ -73,42 +73,37 @@ public class Options : Panel
         Controls.Add(table);
     }
 
-    private void SetupRowBehavior(ConfigValue<int> cv,
+    private void SetupRowBehavior(ConfigValue cv,
                                   Label label,
                                   TextBox input,
                                   Button reset)
     {
-        var setInput = (string s) =>
+        var setInput = (Object val) =>
         {
-            try
+            if (cv.SetRaw(val) is string msg)
             {
-                var i = int.Parse(s);
-                if (cv.Set(i) is string msg)
-                {
-                    label.Text = msg;
-                    label.BackColor = Color.DarkRed;
-                    reset.Enabled = true;
-                }
-                else
-                {
-                    label.Text = cv.Name;
-                    label.BackColor = GuiTool.BackColor;
-                    input.Text = s;
-                    reset.Enabled = !cv.IsDefault();
-                }
-            }
-            catch (Exception)
-            {
-                label.Text = "Malformed integer value";
+                label.Text = msg;
                 label.BackColor = Color.DarkRed;
                 reset.Enabled = true;
+            }
+            else
+            {
+                label.Text = cv.Name;
+                label.BackColor = GuiTool.BackColor;
+                input.Text = cv.GetRaw()?.ToString();
+                reset.Enabled = !cv.IsDefault();
             }
         };
 
         input.TextChanged += (_, _) => { setInput(input.Text); };
         reset.Click += (_, _) => { cv.Reset(); };
-        cv.Changed += (_, i) => { setInput(i.ToString()); };
 
-        setInput(cv.Get().ToString());
+        cv.ChangedRaw += (_, val) => {
+            label.Text = cv.Name;
+            input.Text = val.ToString();
+            reset.Enabled = !cv.IsDefault();
+        };
+
+        setInput(cv.GetRaw());
     }
 }

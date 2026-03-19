@@ -14,9 +14,9 @@ public class Config
         Cache = new CacheConfig();
     }
 
-    public IEnumerable<ConfigValue<int>> GetValues()
+    public IEnumerable<ConfigValue> GetValues()
     {
-        var list = new List<ConfigValue<int>>();
+        var list = new List<ConfigValue>();
         list.AddRange(Image.GetValues());
         list.AddRange(Cache.GetValues());
         return list;
@@ -42,22 +42,22 @@ public class ImageConfig
     public ImageConfig()
     {
         Rows = new ConfigValue<int>(
-            "Rows", 3,
+            "Rows", 3, ConfigValue.IntParse,
             "Number of rows of thumbnails",
             ConfigValueContraint.Range(1, 10));
 
         ThumbnailWidth = new ConfigValue<int>(
-            "ThumbnailWidth", 300,
+            "ThumbnailWidth", 300, ConfigValue.IntParse,
             "Width of thumbnail images",
             ConfigValueContraint.Range(1, 10000));
 
         ThumbnailHeight = new ConfigValue<int>(
-            "ThumbnailHeight", 300,
+            "ThumbnailHeight", 300, ConfigValue.IntParse,
             "Height of thumbnail images",
             ConfigValueContraint.Range(1, 10000));
     }
 
-    public IEnumerable<ConfigValue<int>> GetValues()
+    public IEnumerable<ConfigValue> GetValues()
     {
         return [Rows, ThumbnailWidth, ThumbnailHeight];
     }
@@ -71,17 +71,17 @@ public class CacheConfig
     public CacheConfig()
     {
         MaxImages = new ConfigValue<int>(
-            "MaxImages", 20,
+            "MaxImages", 20, ConfigValue.IntParse,
             "Max number of full images cached",
             ConfigValueContraint.Range(1, 100));
 
         MaxThumbnails = new ConfigValue<int>(
-            "MaxThumbnails", 200,
+            "MaxThumbnails", 200, ConfigValue.IntParse,
             "Max number of thumbnails cached",
             ConfigValueContraint.Range(10, 1000));
     }
 
-    public IEnumerable<ConfigValue<int>> GetValues()
+    public IEnumerable<ConfigValue> GetValues()
     {
         return [MaxImages, MaxThumbnails];
     }

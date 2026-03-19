@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Tagbag.Core;
 
@@ -17,49 +18,62 @@ public static class ConfigFile
         throw new InvalidOperationException("Unable to determine config path");
     }
 
-    public static void Save<T>(IEnumerable<ConfigValue<T>> values) where T : IEquatable<T>
+    public static void Save(IEnumerable<ConfigValue> values)
     {
         Save(GetConfigPath(), values);
     }
 
     // Saves the non-default values of the values into the given file.
-    public static void Save<T>(string path,
-                               IEnumerable<ConfigValue<T>> values) where T : IEquatable<T>
+    public static void Save(string path, IEnumerable<ConfigValue> values)
     {
         var data = new Dictionary<string, Object>();
         foreach (var cv in values)
             if (!cv.IsDefault())
-                data[cv.Name] = cv.Get();
+                data[cv.Name] = cv.GetRaw();
 
         using (var stream = File.Open(path, FileMode.Create))
             JsonSerializer.Serialize(stream, data);
     }
 
-    public static bool Load<T>(IEnumerable<ConfigValue<T>> values) where T : IEquatable<T>
+    public static bool Load(IEnumerable<ConfigValue> values)
     {
         return Load(GetConfigPath(), values);
     }
 
     // Populates the values with data found in the config file.
-    public static bool Load<T>(string path,
-                               IEnumerable<ConfigValue<T>> values) where T : IEquatable<T>
+    public static bool Load(string path, IEnumerable<ConfigValue> values)
     {
         if (!File.Exists(path))
             return false;
 
         using (var stream = File.Open(path, FileMode.Open))
         {
-            var data = JsonSerializer.Deserialize<Dictionary<string, int>>(stream);
+            var data = JsonSerializer.Deserialize<Dictionary<string, JsonValue>>(stream);
             if (data != null)
             {
                 foreach (var cv in values)
                 {
-                    int val;
-                    if (data.TryGetValue(cv.Name, out val) &&
-                        cv is ConfigValue<int> intConfigValue &&
-                        val is int i)
+                    JsonValue? json;
+                    if (data.TryGetValue(cv.Name, out json))
                     {
-                        intConfigValue.Set(i);
+                        Object value = cv;
+                        switch (json.GetValueKind())
+                        {
+                            case JsonValueKind.String:
+                                value = json.GetValue<string>();
+                                break;
+                            case JsonValueKind.Number:
+                                value = json.GetValue<int>();
+                                break;
+                            default:
+                                System.Console.WriteLine(
+                                    $"[WARN] Unknown config value type {json.GetValueKind()} for {cv.Name}");
+                                break;
+                        }
+
+                        if (value != cv && cv.SetRaw(value) is string error)
+                            System.Console.WriteLine(
+                                $"[WARN] Loading config for {cv.Name} failed with: {error}");
                     }
                 }
             }
@@ -69,26 +83,69 @@ public static class ConfigFile
     }
 }
 
-public class ConfigValue<T> where T : IEquatable<T>
+public abstract class ConfigValue
 {
+    public Action<Object, Object>? ChangedRaw;
     public string Name { get; }
     public string Description { get; }
+
+    public abstract Object GetRaw();
+    public abstract string? SetRaw(Object value);
+    public abstract void Reset();
+    public abstract bool IsDefault();
+
+    public ConfigValue(string name,
+                       string description)
+    {
+        Name = name;
+        Description = description;
+    }
+
+    public static Func<Object, (bool, int)> IntParse = (Object obj) =>
+    {
+        switch (obj)
+        {
+            case int i:
+                return (true, i);
+            case string s:
+                int intVal;
+                if (int.TryParse(s, out intVal))
+                    return (true, intVal);
+                break;
+        }
+        return (false, default);
+    };
+
+    public static Func<Object, (bool, string)> StringParse = (Object obj) =>
+    {
+        if (obj == null)
+            return (false, "");
+        else
+            return (true, obj.ToString() ?? "");
+    };
+}
+
+public class ConfigValue<T> : ConfigValue where T : IEquatable<T>
+{
     private T _DefaultValue;
     private T _CurrentValue;
+    private Func<Object, (bool, T)> _ParseFn;
     private List<Func<T, string?>> _Constraints;
 
     public Action<T, T>? Changed; // Called with old-value, new-value
 
     public ConfigValue(string name,
                        T defaultValue,
+                       Func<Object, (bool, T)> parseFn,
                        string description,
-                       params Func<T, string?>[] constraints)
+                       params Func<T, string?>[] constraints) : base(name, description)
     {
-        Name = name;
-        Description = description;
         _DefaultValue = defaultValue;
         _CurrentValue = defaultValue;
+        _ParseFn = parseFn;
         _Constraints = new List<Func<T, string?>>(constraints);
+
+        Changed += (a, b) => ChangedRaw?.Invoke(a, b);
 
         if (Set(defaultValue) is string error)
             throw new InvalidOperationException(
@@ -96,6 +153,11 @@ public class ConfigValue<T> where T : IEquatable<T>
     }
 
     public T Get()
+    {
+        return _CurrentValue;
+    }
+
+    override public Object GetRaw()
     {
         return _CurrentValue;
     }
@@ -117,12 +179,20 @@ public class ConfigValue<T> where T : IEquatable<T>
         return null;
     }
 
-    public void Reset()
+    override public string? SetRaw(Object value)
+    {
+        var (ok, val) = _ParseFn(value);
+        if (ok)
+            return Set(val);
+        return "Unparsable value type";
+    }
+
+    override public void Reset()
     {
         Set(_DefaultValue);
     }
 
-    public bool IsDefault()
+    override public bool IsDefault()
     {
         return _DefaultValue.Equals(_CurrentValue);
     }
