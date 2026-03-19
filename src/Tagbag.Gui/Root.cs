@@ -17,6 +17,7 @@ public class Root : Form
     {
         Name = "Root";
         _Data = new Data();
+        _Data.Config.Load();
 
         Width = 900;
         Height = 600;
@@ -68,6 +69,7 @@ public class Root : Form
 
         System.Console.WriteLine($"Program root: {Directory.GetCurrentDirectory()}");
         System.Console.WriteLine($"User path   : {userPath ?? "<null>"}");
+        System.Console.WriteLine($"Config path : {ConfigFile.GetConfigPath()}");
 
         var tagbag = GetInitialTagbag(userPath);
         _Data.SetTagbag(tagbag);
@@ -159,6 +161,9 @@ public class Root : Form
         data.ScanDuplicate.Dock = DockStyle.Fill;
         data.MainView.Add((int)Mode.ApplicationMode.ScanDuplicate, data.ScanDuplicate);
 
+        data.Options.Dock = DockStyle.Fill;
+        data.MainView.Add((int)Mode.ApplicationMode.Options, data.Options);
+
         data.MainView.Dock = DockStyle.Fill;
         Controls.Add(data.MainView);
 
@@ -206,13 +211,16 @@ public class Root : Form
         var vImages = new ToolStripMenuItem("Images");
         var vScan = new ToolStripMenuItem("Scan");
         var vDuplicate = new ToolStripMenuItem("Find duplicates");
+        var vOptions = new ToolStripMenuItem("Options");
         viewMenu.DropDownItems.Add(vImages);
         viewMenu.DropDownItems.Add(vScan);
         viewMenu.DropDownItems.Add(vDuplicate);
+        viewMenu.DropDownItems.Add(vOptions);
 
         vImages.Command = new Button(() => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Grid)) );
         vScan.Command = new Button(() => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Scan)) );
         vDuplicate.Command = new Button(() => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.ScanDuplicate)));
+        vOptions.Command = new Button(() => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Options)));
 
         // help
 
@@ -249,6 +257,7 @@ public class Root : Form
         def(new ActionDef("mode/single", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Single))));
         def(new ActionDef("mode/scan", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Scan))));
         def(new ActionDef("mode/scan-duplicate", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.ScanDuplicate))));
+        def(new ActionDef("mode/options", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.ApplicationMode.Options))));
         def(new ActionDef("mode/browse", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.InputMode.Browse))));
         def(new ActionDef("mode/command", (data) => UserCommand.SetMode(data, data.Mode.Switch(Mode.InputMode.Command))));
 
@@ -318,6 +327,7 @@ public class Root : Form
         add(new KeyData(null, Keys.F1, "mode/grid"));
         add(new KeyData(null, Keys.F2, "mode/scan"));
         add(new KeyData(null, Keys.F3, "mode/scan-duplicate"));
+        add(new KeyData(null, Keys.F4, "mode/options"));
 
         // All image modes
 

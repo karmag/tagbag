@@ -12,12 +12,13 @@ public class ImagePanel : Panel
     private bool _GridMode = false;
 
     public ImagePanel(EventHub eventHub,
+                      Config config,
                       EntryCollection entryCollection,
                       ImageCache imageCache)
     {
         _EntryCollection = entryCollection;
 
-        ImageGrid = new ImageGrid(eventHub, entryCollection, imageCache);
+        ImageGrid = new ImageGrid(eventHub, config, entryCollection, imageCache);
         ImageGrid.Name = "ImageGrid";
         ImageGrid.Dock = DockStyle.Fill;
 

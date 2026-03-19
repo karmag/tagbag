@@ -26,12 +26,18 @@ public class ImageCache
     private Thread _Worker;
     private bool _Running;
 
-    public ImageCache(EventHub eventHub)
+    public ImageCache(EventHub eventHub,
+                      Config config)
     {
-        _ThumbnailWidth = 300;
-        _ThumbnailHeight = 300;
-        _MaxImages = 10;
-        _MaxThumbnails = 100;
+        _ThumbnailWidth = config.Image.ThumbnailWidth.Get();
+        _ThumbnailHeight = config.Image.ThumbnailHeight.Get();
+        _MaxImages = config.Cache.MaxImages.Get();
+        _MaxThumbnails = config.Cache.MaxThumbnails.Get();
+
+        config.Image.ThumbnailWidth.Changed += (_, i) => { _ThumbnailWidth = i; };
+        config.Image.ThumbnailHeight.Changed += (_, i) => { _ThumbnailHeight = i; };
+        config.Cache.MaxImages.Changed += (_, i) => { _MaxImages = i; };
+        config.Cache.MaxThumbnails.Changed += (_, i) => { _MaxThumbnails = i; };
 
         _Tagbag = null;
         _ImageCache = new ConcurrentDictionary<Guid, Task<Bitmap?>>();

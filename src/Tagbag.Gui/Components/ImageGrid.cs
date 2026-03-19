@@ -31,12 +31,19 @@ public class ImageGrid : Control
     private List<Bitmap?> _ThumbnailCache;
 
     public ImageGrid(EventHub eventHub,
+                     Config config,
                      EntryCollection entryCollection,
                      ImageCache imageCache)
     {
         _EventHub = eventHub;
         _EntryCollection = entryCollection;
         _ImageCache = imageCache;
+
+        _Rows = config.Image.Rows.Get();
+        config.Image.Rows.Changed += (_, i) => {
+            _Rows = i;
+            UpdateRenderingFields(true);
+        };
 
         _ThumbnailCache = new List<Bitmap?>(_Rows * _Columns);
 
@@ -108,9 +115,9 @@ public class ImageGrid : Control
     }
 
     // If necessary, updates the fields used for rendering.
-    private void UpdateRenderingFields()
+    private void UpdateRenderingFields(bool force = false)
     {
-        if (Size.Width != _Width || Size.Height != _Height)
+        if (Size.Width != _Width || Size.Height != _Height || force)
         {
             var oldRows = _Rows;
             var oldColumns = _Columns;
@@ -127,7 +134,7 @@ public class ImageGrid : Control
             else
                 _IndexOffset = 0;
 
-            if (_Rows != oldRows || _Columns != oldColumns)
+            if (_Rows != oldRows || _Columns != oldColumns || force)
                 RefreshThumbnailCache();
         }
     }

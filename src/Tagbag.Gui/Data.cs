@@ -5,6 +5,7 @@ public class Data
     public Mode Mode;
 
     public EventHub EventHub;
+    public Config Config;
 
     public Tagbag.Core.Tagbag? Tagbag;
     public EntryCollection EntryCollection { get; }
@@ -26,28 +27,31 @@ public class Data
 
     public Components.Scan Scan;
     public Components.ScanDuplicate ScanDuplicate;
+    public Components.Options Options;
 
     public Data()
     {
         Mode = new Mode(Mode.ApplicationMode.Grid, Mode.InputMode.Command);
 
         EventHub = new EventHub();
+        Config = new Config();
 
         Tagbag = null;
         EntryCollection = new EntryCollection(EventHub);
-        ImageCache = new ImageCache(EventHub);
+        ImageCache = new ImageCache(EventHub, Config);
 
         KeyMap = new KeyMap();
 
         MainView = new Components.CardPanel();
 
         TagPanel = new Components.TagPanel(EventHub, EntryCollection, ImageCache);
-        ImagePanel = new Components.ImagePanel(EventHub, EntryCollection, ImageCache);
+        ImagePanel = new Components.ImagePanel(EventHub, Config, EntryCollection, ImageCache);
         CommandLine = new Components.CommandLine(EventHub);
         StatusBar = new Components.StatusBar(EventHub, EntryCollection, ImagePanel);
 
         Scan = new Components.Scan(this);
         ScanDuplicate = new Components.ScanDuplicate(this);
+        Options = new Components.Options(Config);
     }
 
     public void SetTagbag(Tagbag.Core.Tagbag? tb)
@@ -77,6 +81,7 @@ public class Mode
         Single = 1 << 3,
         Scan = 1 << 4,
         ScanDuplicate = 1 << 5,
+        Options = 1 << 6,
     }
 
     public enum InputMode
@@ -144,6 +149,9 @@ public class Mode
                 break;
             case ApplicationMode.ScanDuplicate:
                 result = "ScanDuplicate";
+                break;
+            case ApplicationMode.Options:
+                result = "Options";
                 break;
         }
 
