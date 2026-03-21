@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Tagbag.Core;
+using Tagbag.Core.Input;
 
 namespace Tagbag.Gui.Components;
 
@@ -20,9 +21,12 @@ public class TagTable : Panel
     private Label _SizeLabel;
     private DataGridView _Tags;
 
+    private HashSet<string> _HideTags;
+
     private bool _Active;
 
     public TagTable(EventHub eventHub,
+                    Config config,
                     EntryCollection entryCollection,
                     ImageCache imageCache)
     {
@@ -36,6 +40,10 @@ public class TagTable : Panel
         _SizeLabel = new Label();
         _Tags = new DataGridView();
 
+        _HideTags = new HashSet<string>();
+        config.Ui.HideTags.Changed += (_, tagString) => SetHideTags(tagString);
+        SetHideTags(config.Ui.HideTags.Get());
+
         _Active = false;
 
         GuiTool.Setup(this);
@@ -47,6 +55,21 @@ public class TagTable : Panel
 
         LayoutComponents();
         SetActive(true);
+    }
+
+    private void SetHideTags(string tagString)
+    {
+        try
+        {
+            var tags = new HashSet<string>();
+            foreach (var token in Tokenizer.GetTokens(tagString))
+                tags.Add(token.Text);
+            _HideTags = tags;
+        }
+        catch (TokenizerException e)
+        {
+            System.Console.WriteLine($"Failed to parse hide-tags: {e.Message}");
+        }
     }
 
     public void SetActive(bool active)
@@ -197,7 +220,7 @@ public class TagTable : Panel
                     foreach (var s in value.GetStrings() ?? [])
                         valueColl.Add(s);
 
-                    if (valueColl.Count == 1 && Const.BuiltinTags.Contains(tag))
+                    if (valueColl.Count == 1 && _HideTags.Contains(tag))
                         continue;
 
                     if (valueColl.Count == 1 && value.IsTag())

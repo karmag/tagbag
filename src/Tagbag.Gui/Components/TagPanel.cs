@@ -13,15 +13,16 @@ public class TagPanel : Panel
     private const int SummaryCard = 2;
 
     public TagPanel(EventHub eventHub,
+                    Config config,
                     EntryCollection entryCollection,
                     ImageCache imageCache)
     {
         _Cards = new CardPanel();
 
-        _TagTable = new Components.TagTable(eventHub, entryCollection, imageCache);
+        _TagTable = new Components.TagTable(eventHub, config, entryCollection, imageCache);
         _TagTable.Dock = DockStyle.Fill;
 
-        _TagSummary = new Components.TagSummary(eventHub, entryCollection);
+        _TagSummary = new Components.TagSummary(eventHub, config, entryCollection);
         _TagSummary.Dock = DockStyle.Fill;
 
         _TagSummary.SetActive(false);

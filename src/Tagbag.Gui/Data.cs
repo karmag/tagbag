@@ -44,7 +44,7 @@ public class Data
 
         MainView = new Components.CardPanel();
 
-        TagPanel = new Components.TagPanel(EventHub, EntryCollection, ImageCache);
+        TagPanel = new Components.TagPanel(EventHub, Config, EntryCollection, ImageCache);
         ImagePanel = new Components.ImagePanel(EventHub, Config, EntryCollection, ImageCache);
         CommandLine = new Components.CommandLine(EventHub);
         StatusBar = new Components.StatusBar(EventHub, EntryCollection, ImagePanel);

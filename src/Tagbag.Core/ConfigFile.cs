@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Tagbag.Core.Input;
 
 namespace Tagbag.Core;
 
@@ -93,6 +94,7 @@ public abstract class ConfigValue
     public abstract string? SetRaw(Object value);
     public abstract void Reset();
     public abstract bool IsDefault();
+    public abstract string? Check(Object value);
 
     public ConfigValue(string name,
                        string description)
@@ -101,7 +103,7 @@ public abstract class ConfigValue
         Description = description;
     }
 
-    public static Func<Object, (bool, int)> IntParse = (Object obj) =>
+    public static (bool, int) IntParse(Object obj)
     {
         switch (obj)
         {
@@ -114,14 +116,37 @@ public abstract class ConfigValue
                 break;
         }
         return (false, default);
-    };
+    }
 
-    public static Func<Object, (bool, string)> StringParse = (Object obj) =>
+    public static (bool, string) StringParse(Object obj)
     {
         if (obj == null)
             return (false, "");
         else
             return (true, obj.ToString() ?? "");
+    }
+
+    public static Func<int, string?> RangeConstraint(int min, int max)
+    {
+        return (int i) =>
+        {
+            if (min <= i && i <= max)
+                return null;
+            return $"Must be in range {min} < x < {max}";
+        };
+    }
+
+    public static Func<string, string?> TokenizeConstraint = (string s) =>
+    {
+        try
+        {
+            Tokenizer.GetTokens(s);
+            return null;
+        }
+        catch (TokenizerException e)
+        {
+            return $"Invalid token sequence; {e.Message}";
+        }
     };
 }
 
@@ -196,17 +221,17 @@ public class ConfigValue<T> : ConfigValue where T : IEquatable<T>
     {
         return _DefaultValue.Equals(_CurrentValue);
     }
-}
 
-public static class ConfigValueContraint
-{
-    public static Func<int, string?> Range(int min, int max)
+    public override string? Check(object value)
     {
-        return (int i) =>
-        {
-            if (min <= i && i <= max)
-                return null;
-            return $"Must be in range {min} < x < {max}";
-        };
+        var (ok, val) = _ParseFn(value);
+        if (!ok)
+            return "Parsing value failed";
+
+        foreach (var c in _Constraints)
+            if (c.Invoke(val) is String error)
+                return error;
+
+        return null;
     }
 }

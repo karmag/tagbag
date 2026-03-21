@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using Tagbag.Core;
+using Tagbag.Core.Input;
 
 namespace Tagbag.Gui.Components;
 
@@ -14,16 +15,22 @@ public class TagSummary : Panel
     private EntryCollection _EntryCollection;
 
     private DataGridView _Tags;
+    private HashSet<string> _HideTags;
 
     private bool _Active;
 
     public TagSummary(EventHub eventHub,
+                      Config config,
                       EntryCollection entryCollection)
     {
         _EventHub = eventHub;
         _EntryCollection = entryCollection;
 
         _Tags = new DataGridView();
+
+        _HideTags = new HashSet<string>();
+        config.Ui.HideSummaryTags.Changed += (_, tagString) => SetHideTags(tagString);
+        SetHideTags(config.Ui.HideSummaryTags.Get());
 
         GuiTool.Setup(this);
         GuiTool.Setup(_Tags);
@@ -32,6 +39,21 @@ public class TagSummary : Panel
 
         _Active = false;
         SetActive(true);
+    }
+
+    private void SetHideTags(string tagString)
+    {
+        try
+        {
+            var tags = new HashSet<string>();
+            foreach (var token in Tokenizer.GetTokens(tagString))
+                tags.Add(token.Text);
+            _HideTags = tags;
+        }
+        catch (TokenizerException e)
+        {
+            System.Console.WriteLine($"Failed to parse summary hide-tags: {e.Message}");
+        }
     }
 
     public void SetActive(bool active)
@@ -88,7 +110,7 @@ public class TagSummary : Panel
             {
                 foreach (var tag in entry.GetAllTags())
                 {
-                    if (Const.BuiltinTags.Contains(tag))
+                    if (_HideTags.Contains(tag))
                         continue;
 
                     var ints = entry.GetInts(tag);

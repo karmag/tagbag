@@ -40,23 +40,40 @@ public class Options : Panel
             label.Height = height;
             label.Width = 400;
 
-            var input = new TextBox();
-            GuiTool.Setup(input);
-            input.Font = font;
-            input.Height = height;
-            input.TextAlign = HorizontalAlignment.Right;
-
             var reset = new Button();
             GuiTool.Setup(reset);
             reset.Text = "Reset";
             reset.Font = font;
             reset.Height = height;
 
-            SetupRowBehavior(cv, label, input, reset);
+            if (cv is ConfigValue<string> cvs)
+            {
+                var button = new Button();
+                GuiTool.Setup(button);
+                button.Text = "Change";
+                button.Font = font;
+                button.Height = height;
+                button.Width = 150;
 
-            table.Controls.Add(label);
-            table.Controls.Add(input);
-            table.Controls.Add(reset);
+                SetupStringBehavior(cvs, label, button, reset);
+                table.Controls.Add(label);
+                table.Controls.Add(button);
+                table.Controls.Add(reset);
+            }
+            else
+            {
+                var input = new TextBox();
+                GuiTool.Setup(input);
+                input.Font = font;
+                input.Height = height;
+                input.Width = 150;
+                input.TextAlign = HorizontalAlignment.Right;
+
+                SetupIntBehavior(cv, label, input, reset);
+                table.Controls.Add(label);
+                table.Controls.Add(input);
+                table.Controls.Add(reset);
+            }
         }
 
         var save = new Button();
@@ -73,7 +90,82 @@ public class Options : Panel
         Controls.Add(table);
     }
 
-    private void SetupRowBehavior(ConfigValue cv,
+    private void SetupStringBehavior(ConfigValue<string> cv,
+                                     Label label,
+                                     Button button,
+                                     Button reset)
+    {
+        button.Click += (_, _) =>
+        {
+            var font = new Font(FontFamily.GenericMonospace, 14);
+
+            var form = new Form();
+            form.Text = cv.Name;
+            form.BackColor = GuiTool.BackColorAlt;
+
+            var panel = new Panel();
+            GuiTool.Setup(panel);
+            panel.Height = 60;
+
+            form.Controls.Add(panel);
+            form.ClientSizeChanged += (_, _) =>
+            {
+                panel.Width = form.Width - 50;
+                panel.Left = 25;
+                panel.Top = (form.Height - panel.Height) / 2 - panel.Height / 2;
+            };
+            form.Width = 700;
+            form.Height = 200;
+
+            var input = new TextBox();
+            input.Font = font;
+            input.Text = cv.Get();
+
+            var accept = new Button();
+            GuiTool.Setup(accept);
+            accept.Font = font;
+            accept.Text = "Accept";
+            accept.Width = 100;
+            accept.Height = 25;
+            accept.Enabled = false;
+
+            var cancel = new Button();
+            GuiTool.Setup(cancel);
+            cancel.Font = font;
+            cancel.Text = "Cancel";
+            cancel.Width = 100;
+            cancel.Height = 25;
+
+            accept.Dock = DockStyle.Right;
+            panel.Controls.Add(accept);
+            cancel.Dock = DockStyle.Right;
+            panel.Controls.Add(cancel);
+            input.Dock = DockStyle.Top;
+            panel.Controls.Add(input);
+
+            input.TextChanged += (_, _) =>
+            {
+                accept.Enabled = cv.Check(Text) == null && Text != cv.Get();
+            };
+
+            accept.Click += (_, _) =>
+            {
+                form.Close();
+                cv.Set(input.Text);
+                reset.Enabled = !cv.IsDefault();
+            };
+
+            cancel.Click += (_, _) => form.Close();
+
+            form.ShowDialog();
+        };
+
+        reset.Enabled = !cv.IsDefault();
+        reset.Click += (_, _) => cv.Reset();
+        cv.Changed += (_, _) => reset.Enabled = !cv.IsDefault();
+    }
+
+    private void SetupIntBehavior(ConfigValue cv,
                                   Label label,
                                   TextBox input,
                                   Button reset)
