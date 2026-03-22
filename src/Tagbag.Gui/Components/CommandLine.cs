@@ -30,7 +30,22 @@ public class CommandLine : Panel
         GuiTool.Setup(_StatusLabel);
         GuiTool.Setup(_TextBox);
         GuiTool.Setup(_ModeLabel);
+        LayoutComponents();
 
+        _TextBox.KeyDown += HandleKeyDown;
+        _TextBox.KeyUp += HandleKeyUp;
+
+        _History = new History();
+
+        SetEnabled(true);
+        UpdateMode(force: true);
+
+        eventHub.Log += ListenLog;
+        eventHub.ShowFilter += ListenShowFilter;
+    }
+
+    private void LayoutComponents()
+    {
         var pad = 5;
 
         _StatusLabel.Name = "CommandLine:StatusLabel";
@@ -63,16 +78,6 @@ public class CommandLine : Panel
             _TextBox.Width = Math.Max(300, Width / 4);
             Height = _TextBox.Font.Height + 4 + 2 * pad;
         };
-
-        _TextBox.KeyDown += HandleKeyDown;
-        _TextBox.KeyUp += HandleKeyUp;
-
-        _History = new History();
-
-        SetEnabled(true);
-        UpdateMode(force: true);
-
-        eventHub.Log += ListenLog;
     }
 
     public void SetEnabled(bool enabled)
@@ -111,6 +116,11 @@ public class CommandLine : Panel
 
         _StatusLabel.AddText(" ");
         _StatusLabel.AddText(log.Message, GuiTool.ForeColor);
+    }
+
+    private void ListenShowFilter(ShowFilter sf)
+    {
+        _TextBox.Text = CommandBuilder.FilterIndicator + sf.Filter.ToString();
     }
 
     public void PerformCommand()
@@ -257,7 +267,7 @@ public class CommandLine : Panel
 
 public static class CommandBuilder
 {
-    private static string FilterIndicator = ":";
+    public static string FilterIndicator = ":";
     private static string CommandIndicator = "!";
 
     public static Tuple<IDataAction?, ITagOperation?, IFilter?> Build(string input)

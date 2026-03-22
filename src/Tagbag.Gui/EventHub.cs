@@ -26,6 +26,8 @@ public class EventHub
 
     public Action<ViewChanged>? ViewChanged;
 
+    public Action<ShowFilter>? ShowFilter;
+
     public EventHub()
     {
         _EventQueue = new Stack<Event>();
@@ -79,6 +81,8 @@ public class EventHub
 
             case ViewChanged e: ViewChanged?.Invoke(e); break;
 
+            case ShowFilter e: ShowFilter?.Invoke(e); break;
+
             default:
                 throw new ArgumentException($"Unknown event type {ev}");
         }
@@ -113,3 +117,5 @@ public record DataActionCommand(IDataAction DataAction) : Event();
 // EntryCollection with the first visible entry. VisibleItems is the
 // number of entries that are visible.
 public record ViewChanged(int StartIndex, int VisibleItems) : Event();
+
+public record ShowFilter(IFilter Filter) : Event();

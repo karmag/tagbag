@@ -44,6 +44,37 @@ public class TagTable : Panel
         config.Ui.HideTags.Changed += (_, tagString) => SetHideTags(tagString);
         SetHideTags(config.Ui.HideTags.Get());
 
+        _Tags.CellMouseDoubleClick += (Object? _, DataGridViewCellMouseEventArgs ev) =>
+            {
+                string? key = _Tags.Rows[ev.RowIndex].Cells[0].Value?.ToString();
+                string? val = _Tags.Rows[ev.RowIndex].Cells[ev.ColumnIndex].Value?.ToString();
+
+                for (int row = ev.RowIndex; row >= 0 && (key == null || key == ""); row--)
+                    key = _Tags.Rows[row].Cells[0].Value?.ToString();
+
+                IFilter? filter = null;
+
+                if (ev.ColumnIndex == 0)
+                {
+                    if (key != null)
+                        filter = Filter.Has(key);
+                }
+                else
+                {
+                    if (key != null && val != null)
+                    {
+                        int i;
+                        if (int.TryParse(val, out i))
+                            filter = Filter.Has(key, i);
+                        else
+                            filter = Filter.Has(key, val);
+                    }
+                }
+
+                if (filter != null)
+                    eventHub.Send(new ShowFilter(filter));
+            };
+
         _Active = false;
 
         GuiTool.Setup(this);
@@ -157,40 +188,13 @@ public class TagTable : Panel
 
         if (entry != null)
         {
-            var width = "?";
-            var height = "?";
-            var size = "?";
-
-            if (entry.GetInts(Const.Width) is HashSet<int> widthValues)
-            {
-                foreach (var value in widthValues)
-                {
-                    width = value.ToString();
-                    break;
-                }
-            }
-
-            if (entry.GetInts(Const.Height) is HashSet<int> heightValues)
-            {
-                foreach (var value in heightValues)
-                {
-                    height = value.ToString();
-                    break;
-                }
-            }
-
-            if (entry.GetInts(Const.Size) is HashSet<int> sizeValues)
-            {
-                foreach (var value in sizeValues)
-                {
-                    size = ReadableSize(value);
-                    break;
-                }
-            }
+            var width = entry.GetIntBy(Const.Width, int.Max);
+            var height = entry.GetIntBy(Const.Height, int.Max);
+            var size = entry.GetIntBy(Const.Size, int.Max);
 
             _PathLabel.Text = entry.Path;
             _DimensionsLabel.Text = $"{width} x {height}";
-            _SizeLabel.Text = size;
+            _SizeLabel.Text = ReadableSize(size);
         }
         else
         {
@@ -207,32 +211,43 @@ public class TagTable : Panel
 
             foreach (var tag in entry.GetAllTags())
             {
+                if (_HideTags.Contains(tag))
+                    continue;
+
                 if (entry.Get(tag) is Value value)
                 {
-                    var valueColl = new List<string>();
+                    var ints = value.GetInts();
+                    var strs = value.GetStrings();
 
-                    if (value.IsTag())
-                        valueColl.Add("true");
-
-                    foreach (var i in value.GetInts() ?? [])
-                        valueColl.Add(i.ToString());
+                    foreach (var i in ints ?? [])
+                        data.Add(new string[] { tag, i.ToString() });
 
                     foreach (var s in value.GetStrings() ?? [])
-                        valueColl.Add(s);
+                        data.Add(new string[] { tag, s });
 
-                    if (valueColl.Count == 1 && _HideTags.Contains(tag))
-                        continue;
-
-                    if (valueColl.Count == 1 && value.IsTag())
+                    if (ints == null && strs == null)
                         data.Add(new string[] { tag, "" });
-                    else
-                        data.Add(new string[] { tag, String.Join(", ", valueColl) });
                 }
             }
 
-            data.Sort((a, b) => { return String.Compare(a[0], b[0]); });
+            data.Sort((a, b) => {
+                var diff = String.Compare(a[0], b[0]);
+                if (diff == 0)
+                    diff = String.Compare(a[1], b[1]);
+                return diff;
+            });
+
+            var lastKey = "";
             foreach (var row in data)
-                _Tags.Rows.Add(row);
+            {
+                if (lastKey != row[0])
+                {
+                    _Tags.Rows.Add(row);
+                    lastKey = row[0];
+                }
+                else
+                    _Tags.Rows.Add(new String[] {"", row[1]});
+            }
         }
     }
 

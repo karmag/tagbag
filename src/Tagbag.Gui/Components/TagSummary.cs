@@ -37,6 +37,40 @@ public class TagSummary : Panel
 
         LayoutComponents();
 
+        _Tags.CellMouseDoubleClick += (Object? _, DataGridViewCellMouseEventArgs ev) =>
+            {
+                string? key = _Tags.Rows[ev.RowIndex].Cells[0].Value?.ToString();
+                string? val = _Tags.Rows[ev.RowIndex].Cells[ev.ColumnIndex].Value?.ToString();
+
+                for (int row = ev.RowIndex; row >= 0 && (key == null || key == ""); row--)
+                    key = _Tags.Rows[row].Cells[0].Value?.ToString();
+
+                IFilter? filter = null;
+
+                switch (ev.ColumnIndex)
+                {
+                    case 0:
+                    case 2:
+                        if (key != null)
+                            filter = Filter.Has(key);
+                        break;
+
+                    case 1:
+                        if (key != null && val != null)
+                        {
+                            int i;
+                            if (int.TryParse(val, out i))
+                                filter = Filter.Has(key, i);
+                            else
+                                filter = Filter.Has(key, val);
+                        }
+                        break;
+                }
+
+                if (filter != null)
+                    eventHub.Send(new ShowFilter(filter));
+            };
+
         _Active = false;
         SetActive(true);
     }
