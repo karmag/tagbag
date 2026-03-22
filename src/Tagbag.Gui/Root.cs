@@ -111,7 +111,7 @@ public class Root : Form
 
             if (wanted.StartsWith(tbRoot) && wanted != tbRoot)
             {
-                var path = wanted.Substring(tbRoot.Length + 1);
+                var path = wanted.Substring(tbRoot.Length + 1).Replace("\\", "/");
                 _Data.EventHub.Send(
                     new FilterCommand(Filter.Regex("path", "^" + path)));
             }
