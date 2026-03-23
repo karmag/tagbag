@@ -1,72 +1,155 @@
 Tagbag
 
-    Tagbag is an application for tagging images.
+    Tagbag connects keywords with images.
 
-        - Tagging is manual.
-        - The images are not manipulated.
+        - Tags are keywords with optional values.
+        - Images are not manipulated.
         - Tags are stored in the nearest .tagbag file.
-        - Primarily keyboard oriented.
 
-Tags
+    New tagbag
 
-    To manipulate tags enter commands in the input field.
-    Tags consist of a key and any number of values, including
-    none at all.
+        To setup a new tagbag file:
 
-    Use [Enter] to access the input field and to execute
-    commands. To see a summary of tags press [Ctrl + T].
+            1. Use "New..." to select a new tagbag root.
+            2. Switch to "Scan / Problems" mode.
+            3. Run "Scan" and then "Fix" to import images.
+            4. Save and start tagging.
 
-Filters
+    Common controls
 
-    Filters limit the amount of entries shown. To add a
-    filter prefix it in the input field with a colon. Filters
-    goes on a stack and can be popped one at a time. Current
-    filters are shown in the status bar.
+        Enter       - Goto / execute command line.
+        Escape      - Pop last filter.
+        Control + S - Save.
 
-    Use [Escape] to pop the current filter. The number of
-    visible entries are shown in the status bar.
+        Tab             - Switch Grid / Single image display.
+        Control + Enter - Switch Command / Browse mode.
+        Control + T     - Switch Tags / Tag-summary mode.
 
-Marks
+        Control + Q        - Clear marks.
+        Control + A        - Mark all visible images.
+        Space              - Mark image.
+        Shift + Arrow keys - Mark image and move.
 
-    Marking allows you to apply tag commands to multiple
-    entries at once. When one or more entries are marked all
-    tag commands are applied to all those entries. Marks
-    persist until removed and are not affected by filters.
+        Controls change depending on mode, see full listing below.
 
-    Entries can be marked with [Space] and [Shift + Arrow
-    Key]. See the mark/* and mark-and-move/* actions for
-    further options.
+    Command line
 
-    Use [Ctrl + Q] to clear all marks. The number of marks
-    are displayed in the status bar.
+        Tag examples:
 
-Browse / command
+            tag                 - Add tag.
+            tag value           - Add tag with value.
+            tag "another value" - Add value with whitespace.
+            tag 15              - Add tag that is number.
+            -tag                - Remove tag and any related values.
 
-    Browse mode is focused on navigating entries. Command
-    mode is focused on manipulating tags. Both modes support
-    most functions, the main difference is in the amount of
-    modifier keys or key strokes required to perform an
-    action.
+        Filter examples:
 
-    Swap between browse and command mode with [Ctrl + Enter].
+            :tag       - Find images that have tag.
+            :tag value - Find images where tag = value.
+            :tag < 15  - Find images where tag value is < 15.
 
-Grid / single
+        See full tagging and filtering syntax below.
 
-    Grid mode show multiple entries. Single mode shows one
-    entry.
+    Status bar
 
-    Swap between grid and single with [Tab].
+        38% --- 279 / 349 --- 60 marked --- [level = 5]
+        [a]        [b]           [c]            [d]
 
-Scan
+            a - Position within the currently visible images. Shows
+            "Top", "Bot", or a percentage.
 
-    Scanning is used to add images to the tagbag as well as
-    fix problems. Access the Scan page with [F2] or the menu.
-    Use [F1] to return to grid view.
+            b - Visible-images / all-images.
 
-Save
+            c - Number of marked images.
 
-    Modifications to entries needs to be saved manually. Use
-    [Ctrl + S] or the menu to save.
+            d - Current filters.
+
+Specifics
+
+    .tagbag
+
+        The .tagbag file contains all the information about
+        tags and images. It's indicating a root position for
+        the tagbag and all sub-directories are considered
+        when scanning for images to include.
+
+    Browse / command
+
+        Browse mode is focused on navigating entries. Command
+        mode is focused on manipulating tags. Both modes
+        support most functions, the main difference is in the
+        amount of modifier keys or key strokes required to
+        perform an action.
+
+        Swap between browse and command mode with [Control +
+        Enter].
+
+    Marks
+
+        Marking allows you to apply tag commands to multiple
+        entries at once. When one or more entries are marked
+        all tag commands are applied to all those entries.
+        Marks persist until removed and are not affected by
+        filters.
+
+        Entries can be marked with [Space] and [Shift + Arrow
+        Key]. See the mark/* and mark-and-move/* actions for
+        further options.
+
+        Use [Control + Q] to clear all marks. The number of
+        marks are displayed in the status bar.
+
+    Scan / Problems
+
+        Scanning is used to add images and to find a number
+        of problems. When images are added they are populated
+        with width, height, filesize, and hash/sha256 tags.
+        These tags are used to identify the image in problem
+        fixing and duplication detection.
+
+            File moved - A file has been moved within the
+            tagbag sub-directories. The corresponding entry
+            is updated to point at the new location.
+
+            File missing - A file that is deleted or moved
+            out of the tagbag sub-directory. The
+            corresponding entry is deleted.
+
+            Duplicate files - Two, or more, files are binary
+            equivalent. All but one of them are removed and
+            the tags from all entries are merged into the
+            remaining entry.
+
+    Duplicate detection
+
+        Finds images with similar color profile. This can
+        find images that have been resized, flipped, rotated,
+        and cropped. Duplicates are found and removed in a
+        three step process.
+
+            Populate hashes - This step adds a hash/color tag
+            to each image for use in comparisons. Only images
+            that lacks the tag are populated.
+
+            Find matches - Uses the color information to find
+            similar images. Images who's similarity is
+            smaller than the given threshold are tagged with
+            the tag "duplicate" and a number. At this point
+            you should verify the findings and remove false
+            positives manually.
+
+                Use   :duplicate
+                and   !sort-int duplicate
+                in the command line to display matches.
+
+            Delete duplicates - For each group of duplicates
+            (entries with the same value in their duplicate
+            tag are a group) deletes all but one of them.
+            Deleted files are moved to the recycle bin. Tags
+            in deleted entries are merged into the remaining
+            entry. The surviving file is chosen based on
+            image dimensions, filesize, directory depth, and
+            path length - in that order.
 
 ----------------------------------------------------------------------
 
@@ -138,6 +221,7 @@ Common keys
  +---------------------+-------------+
  | backup              | Control + B |
  | mode/grid           | F1          |
+ | mode/options        | F4          |
  | mode/scan           | F2          |
  | mode/scan-duplicate | F3          |
  | save                | Control + S |

@@ -209,8 +209,8 @@ public class Root : Form
         menuStrip.Items.Add(viewMenu);
 
         var vImages = new ToolStripMenuItem("Images");
-        var vScan = new ToolStripMenuItem("Scan");
-        var vDuplicate = new ToolStripMenuItem("Find duplicates");
+        var vScan = new ToolStripMenuItem("Scan / Problems");
+        var vDuplicate = new ToolStripMenuItem("Duplicates");
         var vOptions = new ToolStripMenuItem("Options");
         viewMenu.DropDownItems.Add(vImages);
         viewMenu.DropDownItems.Add(vScan);

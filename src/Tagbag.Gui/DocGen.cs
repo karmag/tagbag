@@ -113,75 +113,147 @@ public class DocGen
 
     private void Intro()
     {
-        NewLine("Tagbag");
-        NewLine();
-
-        Paragraph(1, "Tagbag is an application for tagging images.");
-        NewLine();
-
         TextBlock(
-            @"        - Tagging is manual.
-        - The images are not manipulated.
+            @"Tagbag
+
+    Tagbag connects keywords with images.
+
+        - Tags are keywords with optional values.
+        - Images are not manipulated.
         - Tags are stored in the nearest .tagbag file.
-        - Primarily keyboard oriented.
+
+    New tagbag
+
+        To setup a new tagbag file:
+
+            1. Use ""New..."" to select a new tagbag root.
+            2. Switch to ""Scan / Problems"" mode.
+            3. Run ""Scan"" and then ""Fix"" to import images.
+            4. Save and start tagging.
+
+    Common controls
+
+        Enter       - Goto / execute command line.
+        Escape      - Pop last filter.
+        Control + S - Save.
+
+        Tab             - Switch Grid / Single image display.
+        Control + Enter - Switch Command / Browse mode.
+        Control + T     - Switch Tags / Tag-summary mode.
+
+        Control + Q        - Clear marks.
+        Control + A        - Mark all visible images.
+        Space              - Mark image.
+        Shift + Arrow keys - Mark image and move.
+
+        Controls change depending on mode, see full listing below.
+
+    Command line
+
+        Tag examples:
+
+            tag                 - Add tag.
+            tag value           - Add tag with value.
+            tag ""another value"" - Add value with whitespace.
+            tag 15              - Add tag that is number.
+            -tag                - Remove tag and any related values.
+
+        Filter examples:
+
+            :tag       - Find images that have tag.
+            :tag value - Find images where tag = value.
+            :tag < 15  - Find images where tag value is < 15.
+
+        See full tagging and filtering syntax below.
+
+    Status bar
+
+        38% --- 279 / 349 --- 60 marked --- [level = 5]
+        [a]        [b]           [c]            [d]
+
+            a - Position within the currently visible images. Shows
+            ""Top"", ""Bot"", or a percentage.
+
+            b - Visible-images / all-images.
+
+            c - Number of marked images.
+
+            d - Current filters.
 ");
 
-        Paragraph(0, "Tags");
-        Paragraph(1, @"
-To manipulate tags enter commands in the input field. Tags consist of
-a key and any number of values, including none at all.");
-        Paragraph(1, @"
-Use [Enter] to access the input field and to execute commands. To see
-a summary of tags press [Ctrl + T].");
+        Paragraph(0, "Specifics");
 
-        Paragraph(0, "Filters");
-        Paragraph(1, @"
-Filters limit the amount of entries shown. To add a filter prefix it
-in the input field with a colon. Filters goes on a stack and can be
-popped one at a time. Current filters are shown in the status bar.");
-        Paragraph(1, @"
-Use [Escape] to pop the current filter. The number of visible entries
-are shown in the status bar.");
+        Paragraph(1, ".tagbag");
+        Paragraph(2, @"
+The .tagbag file contains all the information about tags and images.
+It's indicating a root position for the tagbag and all sub-directories
+are considered when scanning for images to include.");
 
-        Paragraph(0, "Marks");
-        Paragraph(1, @"
-Marking allows you to apply tag commands to multiple entries at once.
-When one or more entries are marked all tag commands are applied to
-all those entries. Marks persist until removed and are not affected by
-filters.");
-        Paragraph(1, @"
-Entries can be marked with [Space] and [Shift + Arrow Key]. See the
-mark/* and mark-and-move/* actions for further options.");
-        Paragraph(1, @"
-Use [Ctrl + Q] to clear all marks. The number of marks are displayed
-in the status bar.");
-
-        Paragraph(0, "Browse / command");
-        Paragraph(1, @"
+        Paragraph(1, "Browse / command");
+        Paragraph(2, @"
 Browse mode is focused on navigating entries. Command mode is focused
 on manipulating tags. Both modes support most functions, the main
 difference is in the amount of modifier keys or key strokes required
 to perform an action.");
-        Paragraph(1, @"
-Swap between browse and command mode with [Ctrl + Enter].");
+        Paragraph(2, @"
+Swap between browse and command mode with [Control + Enter].");
 
-        Paragraph(0, "Grid / single");
-        Paragraph(1, @"
-Grid mode show multiple entries. Single mode shows one entry.");
-        Paragraph(1, @"
-Swap between grid and single with [Tab].");
+        Paragraph(1, "Marks");
+        Paragraph(2, @"
+Marking allows you to apply tag commands to multiple entries at once.
+When one or more entries are marked all tag commands are applied to
+all those entries. Marks persist until removed and are not affected by
+filters.");
+        Paragraph(2, @"
+Entries can be marked with [Space] and [Shift + Arrow Key]. See the
+mark/* and mark-and-move/* actions for further options.");
+        Paragraph(2, @"
+Use [Control + Q] to clear all marks. The number of marks are
+displayed in the status bar.");
 
-        Paragraph(0, "Scan");
-        Paragraph(1, @"
-Scanning is used to add images to the tagbag as well as fix problems.
-Access the Scan page with [F2] or the menu. Use [F1] to return to grid
-view.");
+        Paragraph(1, "Scan / Problems");
+        Paragraph(2, @"
+Scanning is used to add images and to find a number of problems. When
+images are added they are populated with width, height, filesize, and
+hash/sha256 tags. These tags are used to identify the image in problem
+fixing and duplication detection.");
+        Paragraph(3, @"
+File moved - A file has been moved within the tagbag sub-directories.
+The corresponding entry is updated to point at the new location.");
+        Paragraph(3, @"
+File missing - A file that is deleted or moved out of the tagbag
+sub-directory. The corresponding entry is deleted.");
+        Paragraph(3, @"
+Duplicate files - Two, or more, files are binary equivalent. All but
+one of them are removed and the tags from all entries are merged into
+the remaining entry.");
 
-        Paragraph(0, "Save");
-        Paragraph(1, @"
-Modifications to entries needs to be saved manually. Use [Ctrl + S] or
-the menu to save.");
-    }
+        Paragraph(1, "Duplicate detection");
+        Paragraph(2, @"
+Finds images with similar color profile. This can find images that
+have been resized, flipped, rotated, and cropped. Duplicates are found
+and removed in a three step process.");
+        Paragraph(3, @"
+Populate hashes - This step adds a hash/color tag to each image for
+use in comparisons. Only images that lacks the tag are populated.");
+        Paragraph(3, @"
+Find matches - Uses the color information to find similar images.
+Images who's similarity is smaller than the given threshold are tagged
+with the tag ""duplicate"" and a number. At this point you should verify
+the findings and remove false positives manually.");
+        TextBlock(@"
+                Use   :duplicate
+                and   !sort-int duplicate
+                in the command line to display matches.
+");
+        Paragraph(3, @"
+Delete duplicates - For each group of duplicates (entries with the
+same value in their duplicate tag are a group) deletes all but one of
+them. Deleted files are moved to the recycle bin. Tags in deleted
+entries are merged into the remaining entry. The surviving file is
+chosen based on image dimensions, filesize, directory depth, and path
+length - in that order.");
+}
 
     private void BuildCommands()
     {
