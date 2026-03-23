@@ -34,13 +34,24 @@ public static class Json
             new JsonSerializerOptions{ WriteIndented = true });
     }
 
+    // Reads json from the file. The file must exist. If the file is
+    // empty this returns a minimalistic json representation.
     public static JsonNode ReadFile(string path)
     {
+        var info = new FileInfo(path);
+        if (info.Length == 0)
+        {
+            var obj = new JsonObject();
+            obj.Add("Entries", new JsonArray());
+            return obj;
+        }
+
         using (var stream = File.Open(path, FileMode.Open))
         {
             if (JsonNode.Parse(stream) is JsonNode node)
                 return node;
         }
+
         throw new IOException($"Failed to read JSON from {path}");
     }
 

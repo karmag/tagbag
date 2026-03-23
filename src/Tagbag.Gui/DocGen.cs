@@ -188,6 +188,9 @@ public class DocGen
 The .tagbag file contains all the information about tags and images.
 It's indicating a root position for the tagbag and all sub-directories
 are considered when scanning for images to include.");
+        Paragraph(2, @"
+The .tagbag file can be created through the application or by placing
+an empty .tagbag file in a directory.");
 
         Paragraph(1, "Browse / command");
         Paragraph(2, @"

@@ -73,6 +73,10 @@ Specifics
         the tagbag and all sub-directories are considered
         when scanning for images to include.
 
+        The .tagbag file can be created through the
+        application or by placing an empty .tagbag file in a
+        directory.
+
     Browse / command
 
         Browse mode is focused on navigating entries. Command
