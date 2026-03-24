@@ -150,6 +150,10 @@ public class CommandLine : Panel
             {
                 _EventHub.Send(new Log(LogType.Error, e.FullMessage()));
             }
+            catch (ArgumentException e)
+            {
+                _EventHub.Send(new Log(LogType.Error, e.Message));
+            }
         }
     }
 
@@ -313,9 +317,8 @@ public static class CommandBuilder
             {
                 switch (command.Text)
                 {
-                    case "sort-int":
-                    case "sort-str":
-                        return BuildSortBy(tokens);
+                    case "sort":
+                        return BuildSort(tokens);
                     default:
                         throw new BuildException("Unknown command").With(command);
                 }
@@ -327,114 +330,115 @@ public static class CommandBuilder
         throw new ArgumentException("No command given");
     }
 
-    private static IDataAction BuildSortBy(LinkedList<Token> tokens)
+    private static IDataAction BuildSort(LinkedList<Token> tokens)
     {
-        string command = (tokens.First?.Value as Token)?.Text ?? "";
-        string tag = "";
+        var node = tokens.First;
+
+        string? command = node?.Value.Text;
+        string? tag;
         string order = "asc";
+        string? lookup = null;
+        var extra = new List<string>();
 
-        if (tokens.Count >= 2)
+        node = node?.Next;
+
+        tag = node?.Value.Text;
+
+        node = node?.Next;
+
+        for (; node != null; node = node?.Next)
         {
-            if (tokens.First?.Next?.Value is Token tagToken)
+            switch (node.Value.Text)
             {
-                if (tagToken.Type != TokenType.Symbol &&
-                    tagToken.Type != TokenType.String)
-                    throw new BuildException("Tag must be string or symbol").With(tagToken);
-
-                tag = tagToken.Text;
+                case "asc":
+                case "desc":
+                    order = node.Value.Text;
+                    break;
+                case "int":
+                case "str":
+                    lookup = node.Value.Text;
+                    break;
+                default:
+                    extra.Add(node.Value.Text);
+                    break;
             }
         }
 
-        if (tokens.Count >= 3)
+        if (command != "sort")
+            throw new ArgumentException("Not a sort command");
+
+        if (extra.Count > 0)
+            throw new ArgumentException(
+                $"Unknown sort arguments: {String.Join(" ", extra)}");
+
+        if (tag == null)
+            tag = "path";
+
+        Comparison<Entry> comp;
+        switch (lookup)
         {
-            if (tokens.First?.Next?.Next?.Value is Token ordering)
-            {
-                switch (ordering.Text)
-                {
-                    case "asc":
-                    case "desc":
-                        order = ordering.Text;
-                        break;
-                    default:
-                        throw new BuildException("Ordering must asc or desc").With(ordering);
-                }
+            case "int":
+                comp = (a, b) => CompareInt(a, b, tag, order == "asc");
+                break;
+
+                case "str":
+                    comp = (a, b) => CompareString(a, b, tag, order == "asc");
+                    break;
+
+                default:
+                    comp = (a, b) =>
+                    {
+                        var diff = CompareInt(a, b, tag, order == "asc");
+                        if (diff == 0)
+                            diff = CompareString(a, b, tag, order == "asc");
+                        return diff;
+                    };
+                    break;
             }
-        }
-
-        if (tokens.Count >= 4 || tokens.Count <= 1)
-            throw new BuildException("sort-by takes 1 or 2 arguments");
-
-        var defaultInt = int.MaxValue;
-        var a_smaller = -1;
-        var a_bigger = 1;
-        if (order == "desc")
-        {
-            defaultInt = int.MinValue;
-            a_smaller = 1;
-            a_bigger = -1;
-        }
-
-        Comparison<Entry> comp = (a, b) =>
-        {
-            var aInt = a.GetIntBy(tag, int.Min, defaultInt);
-            var bInt = b.GetIntBy(tag, int.Min, defaultInt);
-
-            if (a.GetMeta(tag) is Value aVal)
-                foreach (var i in aVal.GetInts() ?? [])
-                    aInt = int.Min(aInt, i);
-
-            if (b.GetMeta(tag) is Value bVal)
-                foreach (var i in bVal.GetInts() ?? [])
-                    bInt = int.Min(bInt, i);
-
-            if (aInt < bInt)
-                return a_smaller;
-            if (aInt > bInt)
-                return a_bigger;
-            return 0;
-        };
-
-        if (command == "sort-str")
-            comp = (a, b) =>
-            {
-                var aSet = a.GetStrings(tag) ?? a.GetMeta(tag)?.GetStrings();
-                var bSet = b.GetStrings(tag) ?? b.GetMeta(tag)?.GetStrings();
-                if (aSet == null && bSet == null)
-                    return 0;
-                if (aSet == null)
-                    return a_bigger;
-                if (bSet == null)
-                    return a_smaller;
-
-                if (aSet.Count == 1 && bSet.Count == 1)
-                    foreach (var aStr in aSet)
-                        foreach (var bStr in bSet)
-                            switch (String.Compare(aStr, bStr, true))
-                            {
-                                case -1:
-                                    return a_smaller;
-                                case 1:
-                                    return a_bigger;
-                                default:
-                                    return 0;
-                            }
-
-                var aList = new List<string>(aSet);
-                var bList = new List<string>(bSet);
-                switch (String.Compare(aList[0], bList[0], true))
-                {
-                    case -1:
-                        return a_smaller;
-                    case 1:
-                        return a_bigger;
-                    default:
-                        return 0;
-                }
-            };
 
         return new GenericDataAction(
             $"Sort by \"{tag}\" {order}",
             (Data data) => data.EntryCollection.SetSorting(comp));
+    }
+
+    private static int CompareInt(Entry a, Entry b, string tag, bool asc)
+    {
+        var defaultInt = asc ? int.MaxValue : int.MinValue;
+        var aInt = a.GetIntBy(tag, int.Min, otherwise: defaultInt);
+        var bInt = b.GetIntBy(tag, int.Min, otherwise: defaultInt);
+
+        if (a.GetMeta(tag) is Value aVal)
+            foreach (var i in aVal.GetInts() ?? [])
+                aInt = int.Min(aInt, i);
+
+        if (b.GetMeta(tag) is Value bVal)
+            foreach (var i in bVal.GetInts() ?? [])
+                bInt = int.Min(bInt, i);
+
+        if (aInt < bInt)
+            return asc ? -1 : 1;
+        if (aInt > bInt)
+            return asc ? 1 : -1;
+        return 0;
+    }
+
+    private static int CompareString(Entry a, Entry b, string tag, bool asc)
+    {
+        var aStrs = new List<string>(a.GetStrings(tag) ?? []);
+        var bStrs = new List<string>(b.GetStrings(tag) ?? []);
+
+        if (Const.MetaTags.Contains(tag))
+        {
+            aStrs.AddRange(a.GetMeta(tag)?.GetStrings() ?? []);
+            bStrs.AddRange(b.GetMeta(tag)?.GetStrings() ?? []);
+        }
+
+        aStrs.Sort();
+        bStrs.Sort();
+
+        var aVal = aStrs.Count > 0 ? aStrs[0] : null;
+        var bVal = bStrs.Count > 0 ? bStrs[0] : null;
+        return String.Compare(aVal, bVal, ignoreCase: true) * (asc ? 1 : -1);
     }
 }
 

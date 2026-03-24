@@ -26,13 +26,7 @@ public class EntryCollection
         _Filters = new Stack<IFilter>();
         _Marked = new HashSet<Guid>();
 
-        _SortOrder = (a, b) => {
-            var dirDiff = String.Compare(Path.GetDirectoryName(a.Path),
-                                         Path.GetDirectoryName(b.Path));
-            if (dirDiff == 0)
-                return String.Compare(a.Path, b.Path, ignoreCase: true);
-            return dirDiff;
-        };
+        _SortOrder = (a, b) => String.Compare(a.Path, b.Path, ignoreCase: true);
     }
 
     public void SetBaseEntries(ICollection<Entry>? entries)

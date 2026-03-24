@@ -78,6 +78,14 @@ public class Tokenizer
                     ProcessString();
                     break;
 
+                case '-':
+                    Read();
+                    if (Char.IsAsciiDigit((char)peeked))
+                        ProcessNumber();
+                    else
+                        ProcessSymbol();
+                    break;
+
                 default:
                     if (Char.IsWhiteSpace((char)peeked))
                         ProcessWhiteSpace();

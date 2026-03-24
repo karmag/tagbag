@@ -15,7 +15,10 @@ public static class Const
     public const string ColorHash = "hash/color";
 
     public static IReadOnlySet<string> BuiltinTags =
-        new HashSet<string>(new string[]{Width, Height, Size, Hash, ColorHash});
+        new HashSet<string>([Width, Height, Size, Hash, ColorHash]);
+
+    public static IReadOnlySet<string> MetaTags =
+        new HashSet<string>(["uuid", "path", "tag-count"]);
 }
 
 public class Tagbag

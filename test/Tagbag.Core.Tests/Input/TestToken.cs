@@ -11,8 +11,11 @@ public class TestToken
     public void TestBasicTokenization()
     {
         Assert.AreEqual(GetFirst("symbol"), new Token(0, TokenType.Symbol, "symbol"));
+        Assert.AreEqual(GetFirst("-symbol"), new Token(0, TokenType.Symbol, "-symbol"));
+        Assert.AreEqual(GetFirst("-"), new Token(0, TokenType.Symbol, "-"));
         Assert.AreEqual(GetFirst("\"str\""), new Token(0, TokenType.String, "str"));
         Assert.AreEqual(GetFirst("123"), new Token(0, TokenType.Number, "123"));
+        Assert.AreEqual(GetFirst("-123"), new Token(0, TokenType.Number, "-123"));
         Assert.AreEqual(GetFirst("("), new Token(0, TokenType.ParenOpen, "("));
         Assert.AreEqual(GetFirst(")"), new Token(0, TokenType.ParenClose, ")"));
         Assert.AreEqual(GetFirst("|"), new Token(0, TokenType.Symbol, "|"));

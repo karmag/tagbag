@@ -24,6 +24,9 @@ public class DocGen
         FilterHelp();
         ChapterBreak();
 
+        CommandHelp();
+        ChapterBreak();
+
         KeyTables();
         ChapterBreak();
 
@@ -246,9 +249,8 @@ with the tag ""duplicate"" and a number. At this point you should verify
 the findings and remove false positives manually.");
         TextBlock(@"
                 Use   :duplicate
-                and   !sort-int duplicate
-                in the command line to display matches.
-");
+                and   !sort duplicate
+                in the command line to display matches.");
         Paragraph(3, @"
 Delete duplicates - For each group of duplicates (entries with the
 same value in their duplicate tag are a group) deletes all but one of
@@ -337,6 +339,20 @@ Standalone executable is located at
             Find any entry where the tag 'year' is greater than 2000.
         not good
             Find any entry that doesn't have the tag 'good'.");
+        NewLine();
+    }
+
+    private void CommandHelp()
+    {
+        TextBlock(
+        @"Commands
+
+    Sort grammar
+        sort-command = 'sort' | 'sort' tag option*
+        tag          = symbol
+        option       = order-option | type-option
+        order-option = 'asc' | 'desc'
+        type-option  = 'int' | 'str'");
         NewLine();
     }
 

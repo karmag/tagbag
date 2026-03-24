@@ -143,7 +143,7 @@ Specifics
             positives manually.
 
                 Use   :duplicate
-                and   !sort-int duplicate
+                and   !sort duplicate
                 in the command line to display matches.
 
             Delete duplicates - For each group of duplicates
@@ -216,6 +216,17 @@ Filtering
             Find any entry where the tag 'year' is greater than 2000.
         not good
             Find any entry that doesn't have the tag 'good'.
+
+----------------------------------------------------------------------
+
+Commands
+
+    Sort grammar
+        sort-command = 'sort' | 'sort' tag option*
+        tag          = symbol
+        option       = order-option | type-option
+        order-option = 'asc' | 'desc'
+        type-option  = 'int' | 'str'
 
 ----------------------------------------------------------------------
 
